@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://DragonFive.github.io/</id>
+    <title>dragon</title>
+    <updated>2019-11-13T13:52:50.152Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://DragonFive.github.io/"/>
+    <link rel="self" href="https://DragonFive.github.io//atom.xml"/>
+    <subtitle>Code is cheap, show me the theory</subtitle>
+    <logo>https://DragonFive.github.io//images/avatar.png</logo>
+    <icon>https://DragonFive.github.io//favicon.ico</icon>
+    <rights>All rights reserved 2019, dragon</rights>
+    <entry>
+        <title type="html"><![CDATA[caffe-源码学习——只看一篇就够了]]></title>
+        <id>https://DragonFive.github.io//post/caffe-source-code-stud</id>
+        <link href="https://DragonFive.github.io//post/caffe-source-code-stud">
+        </link>
+        <updated>2017-06-12T13:18:22.000Z</updated>
+        <summary type="html"><![CDATA[<hr>
+<p>title: caffe-源码学习——只看一篇就够了<br>
+date: 2017/6/12 15:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>深度学习</li>
+<li>caffe</li>
+<li>deeplearning</li>
+<li>python</li>
+</ul>
+<hr>
+<h1 id="网络模型">网络模型</h1>
+<p>说caffe代码难懂，其实关键点在于caffe中有很多基础的数学运算代码，如果能够对掌握这些数学运算，剩下的就是推公式了。</p>
+<h2 id="激活函数">激活函数</h2>
+<h2 id="sigmoid">sigmoid</h2>
+<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面。</p>
+]]></summary>
+        <content type="html"><![CDATA[<hr>
+<p>title: caffe-源码学习——只看一篇就够了<br>
+date: 2017/6/12 15:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>深度学习</li>
+<li>caffe</li>
+<li>deeplearning</li>
+<li>python</li>
+</ul>
+<hr>
+<h1 id="网络模型">网络模型</h1>
+<p>说caffe代码难懂，其实关键点在于caffe中有很多基础的数学运算代码，如果能够对掌握这些数学运算，剩下的就是推公式了。</p>
+<h2 id="激活函数">激活函数</h2>
+<h2 id="sigmoid">sigmoid</h2>
+<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面。</p>
+<!--more-->
+<pre><code class="language-cpp">template &lt;typename Dtype&gt;
+inline Dtype sigmoid(Dtype x) {
+  return 0.5 * tanh(0.5 * x) + 0.5;
+}
+
+template &lt;typename Dtype&gt;
+void SigmoidLayer&lt;Dtype&gt;::Forward_cpu(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,
+    const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top) {
+  const Dtype* bottom_data = bottom[0]-&gt;cpu_data();
+  Dtype* top_data = top[0]-&gt;mutable_cpu_data();
+  const int count = bottom[0]-&gt;count();
+  for (int i = 0; i &lt; count; ++i) {
+    top_data[i] = sigmoid(bottom_data[i]);
+  }
+}
+
+template &lt;typename Dtype&gt;
+void SigmoidLayer&lt;Dtype&gt;::Backward_cpu(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top,
+    const vector&lt;bool&gt;&amp; propagate_down,
+    const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom) {
+  if (propagate_down[0]) {
+    const Dtype* top_data = top[0]-&gt;cpu_data();
+    const Dtype* top_diff = top[0]-&gt;cpu_diff();
+    Dtype* bottom_diff = bottom[0]-&gt;mutable_cpu_diff();
+    const int count = bottom[0]-&gt;count();
+    for (int i = 0; i &lt; count; ++i) {
+      const Dtype sigmoid_x = top_data[i];
+      bottom_diff[i] = top_diff[i] * sigmoid_x * (1. - sigmoid_x);
+    }
+  }
+}
+</code></pre>
+<p><strong>sigmoid函数</strong><br>
+注意这里的sigmoid函数与标准的定义不太一样。参见ufld里面的定义<br>
+[神经网络UFLD</p>
+<p>](http://ufldl.stanford.edu/wiki/index.php/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C)</p>
+<p>而在这里 sigmoid = 0.5 * tanh(0.5 * x) + 0.5, sigmoid变化范围为从0-1, tanh从-1到1，乘于0.5再加上0.5两者变化范围就一样了。<br>
+<strong>forward_cpu</strong><br>
+这个很容易就能看懂，就是对每一个bottom元素计算sigmoid就得到来top的元素。</p>
+<p><strong>backward_cpu</strong><br>
+发现新版的代码真的很好懂，sigmoid函数的到函数是sigmoid*(1-sigmoid) , 所以这里就直接利用来。其中propagate_down表明这一层是否要反传。</p>
+<h3 id="softmaxlayer">softmaxlayer</h3>
+<p>这段代码比较复杂，比较好的注释如下。但是这个注释针对的代码版本比较老。<br>
+<a href="http://blog.csdn.net/u010668083/article/details/44857455">caffe深度学习网络softmax层代码注释</a></p>
+<p>这里我们分析比较新的代码，当前(20170622)比较新的代码是20161202提交的代码，结构如下</p>
+<pre><code class="language-cpp">/template &lt;typename Dtype&gt;
+void SoftmaxLayer&lt;Dtype&gt;::Reshape(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,
+      const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top) {
+  softmax_axis_ =
+      bottom[0]-&gt;CanonicalAxisIndex(this-&gt;layer_param_.softmax_param().axis());
+  //softmax层的输出应该与输入层一致
+  top[0]-&gt;ReshapeLike(*bottom[0]);
+  vector&lt;int&gt; mult_dims(1, bottom[0]-&gt;shape(softmax_axis_));
+  sum_multiplier_.Reshape(mult_dims);
+  Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
+  caffe_set(sum_multiplier_.count(), Dtype(1), multiplier_data);
+  outer_num_ = bottom[0]-&gt;count(0, softmax_axis_);
+  inner_num_ = bottom[0]-&gt;count(softmax_axis_ + 1);
+  vector&lt;int&gt; scale_dims = bottom[0]-&gt;shape();
+  // scale_尺寸为：num*1*height*width
+  scale_dims[softmax_axis_] = 1;
+  scale_.Reshape(scale_dims);
+}
+//前向计算，得到softmax的值
+template &lt;typename Dtype&gt;
+void SoftmaxLayer&lt;Dtype&gt;::Forward_cpu(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,
+    const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top) {
+  const Dtype* bottom_data = bottom[0]-&gt;cpu_data();
+  Dtype* top_data = top[0]-&gt;mutable_cpu_data();
+  Dtype* scale_data = scale_.mutable_cpu_data();
+  int channels = bottom[0]-&gt;shape(softmax_axis_);
+  int dim = bottom[0]-&gt;count() / outer_num_;
+  caffe_copy(bottom[0]-&gt;count(), bottom_data, top_data);
+  // We need to subtract the max to avoid numerical issues, compute the exp,
+  // and then normalize.
+  // 先找到最大值
+  for (int i = 0; i &lt; outer_num_; ++i) {//outer_num就是num输出数据的数目
+    // initialize scale_data to the first plane
+    caffe_copy(inner_num_, bottom_data + i * dim, scale_data);//dim表示每个数据有多少个不同类别的值.
+    for (int j = 0; j &lt; channels; j++) {
+      for (int k = 0; k &lt; inner_num_; k++) {
+        scale_data[k] = std::max(scale_data[k],//每个元素表示应该是当前位置中所有类别和channel里面最大的那一个。
+            bottom_data[i * dim + j * inner_num_ + k]);
+      }
+    }
+    // subtraction 减去最大值 详细分析见后面 
+    caffe_cpu_gemm&lt;Dtype&gt;(CblasNoTrans, CblasNoTrans, channels, inner_num_,
+        1, -1., sum_multiplier_.cpu_data(), scale_data, 1., top_data);
+    // exponentiation 求指数
+    caffe_exp&lt;Dtype&gt;(dim, top_data, top_data);
+    // sum after exp 求和
+    caffe_cpu_gemv&lt;Dtype&gt;(CblasTrans, channels, inner_num_, 1.,
+        top_data, sum_multiplier_.cpu_data(), 0., scale_data);
+    // division 做除法
+    for (int j = 0; j &lt; channels; j++) {
+      caffe_div(inner_num_, top_data, scale_data, top_data);
+      top_data += inner_num_;
+    }
+  }
+}
+
+template &lt;typename Dtype&gt;
+void SoftmaxLayer&lt;Dtype&gt;::Backward_cpu(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top,
+    const vector&lt;bool&gt;&amp; propagate_down,
+    const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom) {
+  const Dtype* top_diff = top[0]-&gt;cpu_diff();
+  const Dtype* top_data = top[0]-&gt;cpu_data();
+  Dtype* bottom_diff = bottom[0]-&gt;mutable_cpu_diff();
+  Dtype* scale_data = scale_.mutable_cpu_data();
+  int channels = top[0]-&gt;shape(softmax_axis_);
+  int dim = top[0]-&gt;count() / outer_num_;
+  caffe_copy(top[0]-&gt;count(), top_diff, bottom_diff);
+  for (int i = 0; i &lt; outer_num_; ++i) {
+    // compute dot(top_diff, top_data) and subtract them from the bottom diff
+	//计算top_diff与top_data的点集
+    for (int k = 0; k &lt; inner_num_; ++k) {
+      scale_data[k] = caffe_cpu_strided_dot&lt;Dtype&gt;(channels,
+          bottom_diff + i * dim + k, inner_num_,
+          top_data + i * dim + k, inner_num_);
+    }
+    // subtraction
+    caffe_cpu_gemm&lt;Dtype&gt;(CblasNoTrans, CblasNoTrans, channels, inner_num_, 1,
+        -1., sum_multiplier_.cpu_data(), scale_data, 1., bottom_diff + i * dim);
+  }
+  // elementwise multiplication
+  caffe_mul(top[0]-&gt;count(), bottom_diff, top_data, bottom_diff);
+}
+
+
+#ifdef CPU_ONLY
+STUB_GPU(SoftmaxLayer);
+#endif
+
+INSTANTIATE_CLASS(SoftmaxLayer);
+
+</code></pre>
+<p>**caffe_cpu_gemm减法 **<br>
+在forward_cpu函数里做减法的时候调用来caffe_cpu_gemm函数，这个函数的实现在 src/caffe/util/math_functions.cpp里面<br>
+<a href="http://blog.csdn.net/seven_first/article/details/47378697#1-caffecpugemm-%E5%87%BD%E6%95%B0">caffecpugemm-函数</a></p>
+<pre><code class="language-cpp">template&lt;&gt;
+void caffe_cpu_gemm&lt;float&gt;(const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const float alpha, const float* A, const float* B, const float beta,
+    float* C) {
+  int lda = (TransA == CblasNoTrans) ? K : M;
+  int ldb = (TransB == CblasNoTrans) ? N : K;
+  cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
+      ldb, beta, C, N);
+}
+</code></pre>
+<blockquote>
+<p>功能： C=alpha<em>A</em>B+beta*C<br>
+A,B,C 是输入矩阵（一维数组格式）<br>
+CblasRowMajor :数据是行主序的（二维数据也是用一维数组储存的）<br>
+TransA, TransB：是否要对A和B做转置操作（CblasTrans CblasNoTrans）<br>
+M： A、C 的行数<br>
+N： B、C 的列数<br>
+K： A 的列数， B 的行数<br>
+lda ： A的列数（不做转置）行数（做转置）<br>
+ldb： B的列数（不做转置）行数（做转置）</p>
+</blockquote>
+<p>所以这里求减法：</p>
+<pre><code class="language-cpp">    caffe_cpu_gemm&lt;Dtype&gt;(CblasNoTrans, CblasNoTrans, channels, inner_num_,
+        1, -1., sum_multiplier_.cpu_data(), scale_data, 1., top_data);
+</code></pre>
+<p>就是： <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mi>o</mi><mi>p</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>=</mo><mi>t</mi><mi>o</mi><mi>p</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>−</mo><mn>1</mn><mo>∗</mo><mi>s</mi><mi>u</mi><mi>m</mi><mi mathvariant="normal">_</mi><mi>m</mi><mi>u</mi><mi>l</mi><mi>t</mi><mi>i</mi><mi>p</mi><mi>l</mi><mi>i</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">.</mi><mi>c</mi><mi>p</mi><mi>u</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>(</mo><mo>)</mo><mo>∗</mo><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi></mrow><annotation encoding="application/x-tex">top\_data = top\_data - 1* sum\_multiplier\_.cpu\_data()*scale\_data</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">m</span><span class="mord mathdefault">u</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">t</span><span class="mord mathdefault">i</span><span class="mord mathdefault">p</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">i</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord">.</span><span class="mord mathdefault">c</span><span class="mord mathdefault">p</span><span class="mord mathdefault">u</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">(</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span></span></span></span>， 这里用top_data来减而不用bottom一方面是因为bottom是const的，取的是cpu_data(), 而top_data是mutable_cpu_data,另一方面之前已经把数据从bottom拷贝到top里面去了。</p>
+<p>而在back_ward函数里面也用到了这个函数。</p>
+<pre><code class="language-cpp">caffe_cpu_gemm&lt;Dtype&gt;(CblasNoTrans, CblasNoTrans, channels, inner_num_, 1,
+        -1., sum_multiplier_.cpu_data(), scale_data, 1., bottom_diff + i * dim);
+</code></pre>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>b</mi><mi>o</mi><mi>t</mi><mi>t</mi><mi>o</mi><mi>m</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>i</mi><mi>f</mi><mi>f</mi><mo>+</mo><mi>i</mi><mo>∗</mo><mi>d</mi><mi>i</mi><mi>m</mi><mo>=</mo><mi>b</mi><mi>o</mi><mi>t</mi><mi>t</mi><mi>o</mi><mi>m</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>i</mi><mi>f</mi><mi>f</mi><mo>+</mo><mi>i</mi><mo>∗</mo><mi>d</mi><mi>i</mi><mi>m</mi><mo>−</mo><mi>s</mi><mi>u</mi><mi>m</mi><mi mathvariant="normal">_</mi><mi>m</mi><mi>u</mi><mi>l</mi><mi>t</mi><mi>i</mi><mi>p</mi><mi>l</mi><mi>i</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">.</mi><mi>c</mi><mi>p</mi><msub><mi>u</mi><mi>d</mi></msub><mi>a</mi><mi>t</mi><mi>a</mi><mo>(</mo><mo>)</mo><mo>∗</mo><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi></mrow><annotation encoding="application/x-tex">bottom\_diff + i * dim = bottom\_diff + i * dim - sum\_multiplier\_.cpu_data() * scale\_data
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">b</span><span class="mord mathdefault">o</span><span class="mord mathdefault">t</span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">m</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">m</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">b</span><span class="mord mathdefault">o</span><span class="mord mathdefault">t</span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">m</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.77777em;vertical-align:-0.08333em;"></span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">m</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">m</span><span class="mord mathdefault">u</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">t</span><span class="mord mathdefault">i</span><span class="mord mathdefault">p</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">i</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord">.</span><span class="mord mathdefault">c</span><span class="mord mathdefault">p</span><span class="mord"><span class="mord mathdefault">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">(</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span></span></span></span></span></p>
+<p><strong>caffe_exp指数</strong><br>
+caffe_exp函数是用来求指数的，其中一个实现是这样的。</p>
+<pre><code class="language-cpp">template &lt;&gt;
+void caffe_exp&lt;float&gt;(const int n, const float* a, float* y) {
+  vsExp(n, a, y);
+}
+</code></pre>
+<blockquote>
+<p>功能：  y[i] = exp(a[i] )</p>
+</blockquote>
+<p>所以， forward_cpu里面的指数就很容易理解了。</p>
+<pre><code>caffe_exp&lt;Dtype&gt;(dim, top_data, top_data);
+</code></pre>
+<p>top_data[i] = exp(topdata[i])<br>
+<strong>caffe_cpu_gemv求和</strong></p>
+<pre><code class="language-cpp">template &lt;&gt;
+void caffe_cpu_gemv&lt;float&gt;(const CBLAS_TRANSPOSE TransA, const int M,
+    const int N, const float alpha, const float* A, const float* x,
+    const float beta, float* y) {
+  cblas_sgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
+}
+</code></pre>
+<blockquote>
+<p>功能： y=alpha<em>A</em>x+beta*y<br>
+其中X和Y是向量，A 是矩阵<br>
+M：A 的行数<br>
+N：A 的列数<br>
+cblas_sgemv 中的 参数1 表示对X和Y的每个元素都进行操作</p>
+</blockquote>
+<p>forward_cpu里面的求和就很容易理解了</p>
+<pre><code class="language-cpp">    // sum after exp 求和
+    caffe_cpu_gemv&lt;Dtype&gt;(CblasTrans, channels, inner_num_, 1.,
+        top_data, sum_multiplier_.cpu_data(), 0., scale_data);
+
+</code></pre>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>=</mo><mo>∑</mo><mi>t</mi><mi>o</mi><mi>p</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>∗</mo><mi>s</mi><mi>u</mi><mi>m</mi><mi mathvariant="normal">_</mi><mi>m</mi><mi>u</mi><mi>l</mi><mi>t</mi><mi>i</mi><mi>p</mi><mi>l</mi><mi>i</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">.</mi><mi>c</mi><mi>p</mi><mi>u</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>(</mo><mo>)</mo><mo>[</mo><mi>i</mi><mo>]</mo><mo separator="true">;</mo></mrow><annotation encoding="application/x-tex">scale\_data =\sum top\_data[i]*sum\_multiplier\_.cpu\_data()[i];</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">m</span><span class="mord mathdefault">u</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">t</span><span class="mord mathdefault">i</span><span class="mord mathdefault">p</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">i</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord">.</span><span class="mord mathdefault">c</span><span class="mord mathdefault">p</span><span class="mord mathdefault">u</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">(</span><span class="mclose">)</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mpunct">;</span></span></span></span></p>
+<p><strong>caffe_div除法</strong></p>
+<pre><code class="language-cpp">template &lt;&gt;
+void caffe_div&lt;float&gt;(const int n, const float* a, const float* b,
+    float* y) {
+  vsDiv(n, a, b, y);
+}
+
+</code></pre>
+<blockquote>
+<p>功能 y[i] = a[i] / b[i]</p>
+</blockquote>
+<pre><code class="language-cpp">    // division 做除法
+    for (int j = 0; j &lt; channels; j++) {
+      caffe_div(inner_num_, top_data, scale_data, top_data);
+      top_data += inner_num_;
+
+</code></pre>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mi>o</mi><mi>p</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>=</mo><mi>t</mi><mi>o</mi><mi>p</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>[</mo><mi>i</mi><mo>]</mo><mi mathvariant="normal">/</mi><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo separator="true">;</mo></mrow><annotation encoding="application/x-tex">top\_data[i] = top\_data[i] / scale\_data[i];</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mord">/</span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mpunct">;</span></span></span></span></p>
+<p><strong>caffe_cpu_strided_dot</strong></p>
+<pre><code class="language-cpp">template &lt;&gt;
+double caffe_cpu_strided_dot&lt;double&gt;(const int n, const double* x,
+    const int incx, const double* y, const int incy) {
+  return cblas_ddot(n, x, incx, y, incy);
+}
+
+</code></pre>
+<blockquote>
+<p>功能： 返回 vector X 和 vector Y 的内积。<br>
+incx， incy ： 步长，即每隔incx 或 incy 个element 进行操作。</p>
+</blockquote>
+<p><strong>caffe_mul</strong></p>
+<pre><code class="language-cpp">template &lt;&gt;
+void caffe_mul&lt;float&gt;(const int n, const float* a, const float* b,
+    float* y) {
+  vsMul(n, a, b, y);
+}
+
+</code></pre>
+<p>功能 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>=</mo><mi>a</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>∗</mo><mi>b</mi><mo>[</mo><mi>i</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">y[i]=a[i] * b[i]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">a</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">b</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span></span></span></span></p>
+<pre><code class="language-cpp"> caffe_mul(top[0]-&gt;count(), bottom_diff, top_data, bottom_diff);
+
+</code></pre>
+<p>bottom_diff[i] = bottom_diff[i] * top_data[i]</p>
+<p><strong>反向传播公式推导</strong><br>
+<a href="https://www.zhihu.com/question/28927103">Caffe Softmax层的实现原理,知乎</a></p>
+<p>看完softmax layer的实现，我们再来看一下SoftmaxWithLossLayer的代码实现。</p>
+<h2 id="卷积层">卷积层</h2>
+<h3 id="计算量与参数量">计算量与参数量</h3>
+<p>每个样本做一次前向传播时卷积计算量为： $ i* j<em>M</em>N<em>K</em>L  $ ，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi><mo>∗</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">i*j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.05724em;">j</span></span></span></span>是卷积核的大小，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi><mo>∗</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">M*L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault">L</span></span></span></span>是输出特征图的大小，K是输入特征图通道数，L是输出特征图通道数。</p>
+<p>参数量为：$ i<em>J</em>K*L $</p>
+<p>所以有个比例叫做计算量参数量之比 CPR，如果在前馈时每个批次batch_size = B, 则表示将B个输入合并成一个矩阵进行计算，那么相当于每次的输出特征图增大来B倍，所以CPR提升来B倍，也就是，每次计算的时候参数重复利用率提高来B倍。</p>
+<p>卷积层：局部互连，权值共享，</p>
+<h3 id="源码学习">源码学习</h3>
+<p>先用grep函数在caffe根目录下搜索一下包含ConvolutionLayer的文件有哪些，然后从头文件入手慢慢分析，下面是结果，精简来一些无效成分，在caffe的include文件夹下执行：</p>
+<pre><code class="language-bash">grep -n -H -R &quot;ConvolutionLayer&quot;
+
+</code></pre>
+<p>-n表示显示行号，-H表示显示文件名，-R表示递归查找 后面部分表示查找的内容<br>
+结果如下</p>
+<pre><code class="language-bash">caffe/layer_factory.hpp:31: * (for example, when your layer has multiple backends, see GetConvolutionLayer
+caffe/layers/base_conv_layer.hpp:15: *        ConvolutionLayer and DeconvolutionLayer.
+caffe/layers/base_conv_layer.hpp:18:class BaseConvolutionLayer : public Layer&lt;Dtype&gt; {
+caffe/layers/base_conv_layer.hpp:20:  explicit BaseConvolutionLayer(const LayerParameter&amp; param)
+caffe/layers/deconv_layer.hpp:17: *        opposite sense as ConvolutionLayer.
+caffe/layers/deconv_layer.hpp:19: *   ConvolutionLayer computes each output value by dotting an input window with
+caffe/layers/deconv_layer.hpp:22: *   DeconvolutionLayer is ConvolutionLayer with the forward and backward passes
+caffe/layers/deconv_layer.hpp:24: *   parameters, but they take the opposite sense as in ConvolutionLayer (so
+caffe/layers/deconv_layer.hpp:29:class DeconvolutionLayer : public BaseConvolutionLayer&lt;Dtype&gt; {
+caffe/layers/deconv_layer.hpp:32:      : BaseConvolutionLayer&lt;Dtype&gt;(param) {}
+caffe/layers/im2col_layer.hpp:14: *        column vectors.  Used by ConvolutionLayer to perform convolution
+caffe/layers/conv_layer.hpp:31:class ConvolutionLayer : public BaseConvolutionLayer&lt;Dtype&gt; {
+caffe/layers/conv_layer.hpp:35:   *    with ConvolutionLayer options:
+caffe/layers/conv_layer.hpp:64:  explicit ConvolutionLayer(const LayerParameter&amp; param)
+caffe/layers/conv_layer.hpp:65:      : BaseConvolutionLayer&lt;Dtype&gt;(param) {}
+caffe/layers/cudnn_conv_layer.hpp:16: * @brief cuDNN implementation of ConvolutionLayer.
+caffe/layers/cudnn_conv_layer.hpp:17: *        Fallback to ConvolutionLayer for CPU mode.
+caffe/layers/cudnn_conv_layer.hpp:30:class CuDNNConvolutionLayer : public ConvolutionLayer&lt;Dtype&gt; {
+caffe/layers/cudnn_conv_layer.hpp:32:  explicit CuDNNConvolutionLayer(const LayerParameter&amp; param)
+caffe/layers/cudnn_conv_layer.hpp:33:      : ConvolutionLayer&lt;Dtype&gt;(param), handles_setup_(false) {}
+caffe/layers/cudnn_conv_layer.hpp:38:  virtual ~CuDNNConvolutionLayer();
+
+
+</code></pre>
+<p>主要有三个类包含这个卷积层的实现：<br>
+base_conv_layer：主要是卷积层基类的实现<br>
+deconv_layer： 目测是反向传播时候的卷积层的逆向过程<br>
+cudnn_conv_layer：目测是cudnn实现的卷积层版本继承自BaseConvolutionLayer,GPU版本</p>
+<p>接下来我们就打开这三个文件，跳转到相关行，详细看一下。</p>
+<pre><code>class BaseConvolutionLayer : public Layer&lt;Dtype&gt; {
+ public:
+  explicit BaseConvolutionLayer(const LayerParameter&amp; param)
+      : Layer&lt;Dtype&gt;(param) {}
+  virtual void LayerSetUp(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,
+      const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top);
+  virtual void Reshape(const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,
+      const vector&lt;Blob&lt;Dtype&gt;*&gt;&amp; top);
+
+  virtual inline int MinBottomBlobs() const { return 1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline bool EqualNumBottomTopBlobs() const { return true; }
+
+ protected:
+  // Helper functions that abstract away the column buffer and gemm arguments.
+  // The last argument in forward_cpu_gemm is so that we can skip the im2col if
+  // we just called weight_cpu_gemm with the same input.
+  void forward_cpu_gemm(const Dtype* input, const Dtype* weights,
+      Dtype* output, bool skip_im2col = false);
+  void forward_cpu_bias(Dtype* output, const Dtype* bias);
+  void backward_cpu_gemm(const Dtype* input, const Dtype* weights,
+      Dtype* output);
+  void weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype*
+      weights);
+  void backward_cpu_bias(Dtype* bias, const Dtype* input);
+
+#ifndef CPU_ONLY
+  void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights,
+      Dtype* output, bool skip_im2col = false);
+  void forward_gpu_bias(Dtype* output, const Dtype* bias);
+  void backward_gpu_gemm(const Dtype* input, const Dtype* weights,
+      Dtype* col_output);
+  void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype*
+      weights);
+  void backward_gpu_bias(Dtype* bias, const Dtype* input);
+#endif
+
+</code></pre>
+<p>这里给出来CPU和GPU版本的代码的声明，这些代码比较底层，先放一放以后再看。<br>
+forward_cpu_gemm:猜测可能是前馈过程计算weight部分，来看看CPP里面的实现吧。</p>
+<p>在BaseConvolutionLayer中的卷积的实现中有一个重要的函数就是<strong>im2col以及col2im，im2colnd以及col2imnd</strong>。前面的两个函数是二维卷积的正向和逆向过程，而后面的两个函数是n维卷积的正向和逆向过程。</p>
+<pre><code class="language-cpp">void BaseConvolutionLayer&lt;Dtype&gt;::forward_cpu_gemm(const Dtype* input,
+    const Dtype* weights, Dtype* output, bool skip_im2col) {
+  const Dtype* col_buff = input;
+  if (!is_1x1_) {
+    if (!skip_im2col) {
+	  // 如果没有1x1卷积，也没有skip_im2col  
+      // 则使用conv_im2col_cpu对使用卷积核滑动过程中的每一个kernel大小的图像块  
+      // 变成一个列向量，形成一个height=kernel_dim_  
+      // width = 卷积后图像heght*卷积后图像width  
+      conv_im2col_cpu(input, col_buffer_.mutable_cpu_data());
+    }
+    col_buff = col_buffer_.cpu_data();
+  }
+  for (int g = 0; g &lt; group_; ++g) {
+    caffe_cpu_gemm&lt;Dtype&gt;(CblasNoTrans, CblasNoTrans, conv_out_channels_ /
+        group_, conv_out_spatial_dim_, kernel_dim_,
+        (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g,
+        (Dtype)0., output + output_offset_ * g);
+  }
+}
+
+
+</code></pre>
+<p><strong>参考资料</strong><br>
+<a href="http://blog.csdn.net/xizero00/article/details/51049858"> caffe代码阅读10：Caffe中卷积的实现细节</a></p>
+<h1 id="数据集">数据集</h1>
+<h2 id="生成数据集的均值文件">生成数据集的均值文件</h2>
+<p>这里计算图像的均值使用的是pper_image_mean方法，在natural images上训练的时候，这种方式比较好，以imagenet数据集为例，caffe在使用imagenet数据集的时候需要计算均值文件，详细见 [python-caffe</p>
+<p>](https://github.com/DragonFive/deep-learning-exercise/blob/master/caffe_python1.ipynb)</p>
+<h2 id="caffe-blob">caffe-blob</h2>
+<p><a href="http://blog.csdn.net/chenriwei2/article/details/46367023">【Caffe代码解析】Blob</a><br>
+<a href="http://blog.csdn.net/lingerlanlan/article/details/24379689">caffe源码分析--Blob类代码研究</a><br>
+<a href="http://www.cnblogs.com/louyihang-loves-baiyan/p/5149628.html">Caffe源码解析1：Blob</a></p>
+<h3 id="结构体分析">结构体分析</h3>
+<p>Blob 是Caffe作为数据传输的媒介，无论是网络权重参数，还是输入数据，都是转化为Blob数据结构来存储，网络，求解器等都是直接与此结构打交道的。</p>
+<p>4纬的结构体（包含数据和梯度)，其4维结构通过shape属性得以计算出来.</p>
+<p><strong>成员变量</strong></p>
+<pre><code class="language-cpp"> protected:
+  shared_ptr&lt;SyncedMemory&gt; data_;// 存放数据
+  shared_ptr&lt;SyncedMemory&gt; diff_;//存放梯度
+  vector&lt;int&gt; shape_; //存放形状
+  int count_; //数据个数
+  int capacity_; //数据容量
+
+</code></pre>
+<p><strong>成员函数</strong></p>
+<pre><code>  const Dtype* cpu_data() const;			 //cpu使用的数据
+  void set_cpu_data(Dtype* data);		//用数据块的值来blob里面的data。
+  const Dtype* gpu_data() const;		//返回不可更改的指针，下同
+  const Dtype* cpu_diff() const;
+  const Dtype* gpu_diff() const;
+  Dtype* mutable_cpu_data();    		//返回可更改的指针，下同
+  Dtype* mutable_gpu_data();
+  Dtype* mutable_cpu_diff();
+  Dtype* mutable_gpu_diff();
+  
+  int offset(const int n, const int c = 0, const int h = 0,const int w = 0) const
+// 通过n,c,h,w 4个参数来计算一维向量的偏移量。
+
+Dtype data_at(const int n, const int c, const int h,const int w) const//通过n,c,h,w 4个参数来来获取该向量位置上的值。
+
+Dtype diff_at(const int n, const int c, const int h,const int w) const//同上
+
+inline const shared_ptr&lt;SyncedMemory&gt;&amp; data() const {
+    CHECK(data_);
+    return data_;			//返回数据，不能修改
+  }
+
+inline const shared_ptr&lt;SyncedMemory&gt;&amp; diff() const {
+    CHECK(diff_);
+    return diff_;			//返回梯度，不能修改
+  }
+
+Reshape(...)//reshape 有多种多态的实现，可以是四个数字，长度为四的vector，其它blob等。
+
+if (count_ &gt; capacity_) {
+    capacity_ = count_;
+    data_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
+    diff_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
+  }//当空间不够的时候，需要扩大容量，reset。
+
+
+</code></pre>
+<p>函数名中带mutable的表示可以对返回的指针内容进行修改。</p>
+<h1 id="caffe学习资料收集">caffe学习资料收集</h1>
+<p><a href="https://absentm.github.io/2016/05/14/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0Caffe%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8B%E9%9B%86%E5%90%88/">深度学习Caffe系列教程集合</a></p>
+<p><a href="http://blog.csdn.net/xizero00/article/details/50886829">caffe代码阅读1：blob的实现细节-2016.3.14</a></p>
+<p><a href="https://yufeigan.github.io/">甘宇飞</a></p>
+<p><a href="https://zhuanlan.zhihu.com/Edison-G">计算机视觉战队</a></p>
+<p><a href="http://blog.163.com/yuyang_tech/blog/static/2160500832015713105052452/">caffe源码简单解析——Layer层  </a></p>
+<p><a href="http://blog.csdn.net/kkk584520/article/details/41681085">Caffe代码导读（0）：路线图</a></p>
+<p><a href="https://www.zhihu.com/question/27982282">知乎问题-深度学习caffe的代码怎么读？</a></p>
+<p><a href="http://www.cnblogs.com/louyihang-loves-baiyan/p/5149628.html">Caffe源码解析1：Blob</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/24343706">深度学习大讲堂——深度学习框架Caffe源码解析</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/24709689">Caffe代码夜话1</a></p>
+<p><a href="http://blog.leanote.com/post/fishing_piggy/Caffe%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B8%80%EF%BC%89">Caffe源码分析（一）</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hello Gridea]]></title>
+        <id>https://DragonFive.github.io//post/hello-gridea</id>
+        <link href="https://DragonFive.github.io//post/hello-gridea">
+        </link>
+        <updated>2012-12-12T16:00:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+<p><a href="https://github.com/getgridea/gridea">Github</a><br>
+<a href="http://hvenotes.fehey.com/">Gridea 主页</a><br>
+<a href="http://fehey.com/">示例网站</a></p>
+<h2 id="特性">特性👇</h2>
+<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
+<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
+<p>🏷️  你可以对文章进行标签分组</p>
+<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
+<p>💻  你可以在 <strong>𝖶𝗂𝗇𝖽𝗈𝗐𝗌</strong> 或 <strong>𝖬𝖺𝖼𝖮𝖲</strong> 设备上使用此客户端</p>
+<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
+<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
+<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
+<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
+<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
+<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前🏃</p>
+<p>未来，它一定会成为你离不开的伙伴</p>
+<p>尽情发挥你的才华吧！</p>
+<p>😘 Enjoy~</p>
+]]></content>
+    </entry>
+</feed>

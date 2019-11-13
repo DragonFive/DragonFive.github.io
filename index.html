@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1556279366881">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573653160214">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1556279366881" class="site-logo">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573653160214" class="site-logo">
         <h1 class="site-title">dragon</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -93,11 +93,44 @@
           
             <article class="post-item">
               <div class="left">
+                <a href="https://DragonFive.github.io//post/caffe-source-code-stud">
+                  <h2 class="post-title">caffe-源码学习——只看一篇就够了</h2>
+                </a>
+                <div class="post-date">
+                  2017-06-12
+                </div>
+                <div class="post-abstract">
+                  <hr>
+<p>title: caffe-源码学习——只看一篇就够了<br>
+date: 2017/6/12 15:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>深度学习</li>
+<li>caffe</li>
+<li>deeplearning</li>
+<li>python</li>
+</ul>
+<hr>
+<h1 id="网络模型">网络模型</h1>
+<p>说caffe代码难懂，其实关键点在于caffe中有很多基础的数学运算代码，如果能够对掌握这些数学运算，剩下的就是推公式了。</p>
+<h2 id="激活函数">激活函数</h2>
+<h2 id="sigmoid">sigmoid</h2>
+<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面。</p>
+
+                </div>
+              </div>
+              
+            </article>
+          
+            <article class="post-item">
+              <div class="left">
                 <a href="https://DragonFive.github.io//post/hello-gridea">
                   <h2 class="post-title">Hello Gridea</h2>
                 </a>
                 <div class="post-date">
-                  2018-12-12
+                  2012-12-13
                 </div>
                 <div class="post-abstract">
                   <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
