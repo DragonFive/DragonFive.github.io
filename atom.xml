@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2019-11-13T13:52:50.152Z</updated>
+    <updated>2019-11-13T13:54:25.722Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io//atom.xml"/>
@@ -16,25 +16,6 @@
         <link href="https://DragonFive.github.io//post/caffe-source-code-stud">
         </link>
         <updated>2017-06-12T13:18:22.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: caffe-源码学习——只看一篇就够了<br>
-date: 2017/6/12 15:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>深度学习</li>
-<li>caffe</li>
-<li>deeplearning</li>
-<li>python</li>
-</ul>
-<hr>
-<h1 id="网络模型">网络模型</h1>
-<p>说caffe代码难懂，其实关键点在于caffe中有很多基础的数学运算代码，如果能够对掌握这些数学运算，剩下的就是推公式了。</p>
-<h2 id="激活函数">激活函数</h2>
-<h2 id="sigmoid">sigmoid</h2>
-<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面。</p>
-]]></summary>
         <content type="html"><![CDATA[<hr>
 <p>title: caffe-源码学习——只看一篇就够了<br>
 date: 2017/6/12 15:04:12</p>
@@ -52,8 +33,7 @@ tags:</li>
 <p>说caffe代码难懂，其实关键点在于caffe中有很多基础的数学运算代码，如果能够对掌握这些数学运算，剩下的就是推公式了。</p>
 <h2 id="激活函数">激活函数</h2>
 <h2 id="sigmoid">sigmoid</h2>
-<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面。</p>
-<!--more-->
+<p>看softmax函数之前先看一下简单的sigmoid, 这个sigmoid layer的cpp实现是非常简洁的。 sigmoid的cpp文件里主要给了三个函数的实现，分别是sigmoid函数，forward_cpu, backward_cpu,在cpp文件里只实现了算法的CPU版本，至于GPU版本的函数实现放在.cu文件里面</p>
 <pre><code class="language-cpp">template &lt;typename Dtype&gt;
 inline Dtype sigmoid(Dtype x) {
   return 0.5 * tanh(0.5 * x) + 0.5;
