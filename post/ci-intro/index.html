@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CI从入门到放弃 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573705081409">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573705081409" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CI从入门到放弃</h2>
+            <div class="post-date">2018-07-13</div>
+            
+              <div class="feature-container" style="background-image: url('https://image.slidesharecdn.com/fosdem2017-gitlabci-170209223337/95/fosdem-2017-gitlab-ci-1-638.jpg?cb=1486679776')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: CI从入门到放弃<br>
+date: 2018/7/13 22:04:12<br>
+tags:</p>
+<ul>
+<li>持续集成</li>
+<li>自动化测试</li>
+<li>虚拟化</li>
+</ul>
+<hr>
+<h1 id="introduce-to-gitlab-ci">Introduce to GitLab CI</h1>
+<p>GitLab CI(Continuous Integration )从GitLab8.0开始就集成于GitLab中，后端的Runner使用.gitlab-ci.yml file 文件来描述对项目进行配置，.gitlab-ci.yml文件告诉GitLab运行器该做什么。 默认情况下，它运行一个包含三个stage的pipeline：构建，测试和部署。 你不需要使用所有三个stage; 没有job的stage会被忽略。</p>
+<blockquote>
+<p>here's a growing trend to use continuous delivery and continuous deployment to automatically deploy tested code to staging and production environments.</p>
+</blockquote>
+<p>运行一个CI需要有两步操作：</p>
+<ol>
+<li>将.gitlab-ci.yml添加到存储库的根目录</li>
+<li>配置一个Runner</li>
+</ol>
+<h1 id="write-a-gitlab-ciyml">Write a .gitlab-ci.yml</h1>
+<p>.gitlab-ci.yml文件是您配置CI对项目执行的操作的位置。 它位于存储库的根目录中。在任何推送到您的存储库时，GitLab将查找.gitlab-ci.yml文件，并根据该文件的内容在Runners上启动该提交的Job。</p>
+<blockquote>
+<p>注意：.gitlab-ci.yml是一个YAML文件，所以你必须特别注意缩进。 始终使用空格，而不是制表符。</p>
+</blockquote>
+<h2 id="jobs">jobs</h2>
+<p>YAML文件定义了一组具有约束的job，说明应该何时运行它们。 您可以将job的顶级元素定义为任意名称，它们至少需要包含script子句。</p>
+<pre><code class="language-bash">job1:
+  script: &quot;execute-script-for-job1&quot;
+
+job2:
+  script: &quot;execute-script-for-job2&quot;
+</code></pre>
+<p><strong>job内的关键字</strong></p>
+<table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>script</td>
+<td>由shell执行的脚本</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>job的stage，默认为test</td>
+</tr>
+<tr>
+<td>variables</td>
+<td>job可见的环境变量</td>
+</tr>
+<tr>
+<td>allow_failure</td>
+<td>是否运行job失败</td>
+</tr>
+<tr>
+<td>when</td>
+<td>什么情况下执行job，可选on_success/on_failure/always/manual</td>
+</tr>
+<tr>
+<td>only/except/tags</td>
+<td>只在某些分支下执行job,指定执行job</td>
+</tr>
+<tr>
+<td>artifacts</td>
+<td>job完成后把文件存在这个目录里</td>
+</tr>
+<tr>
+<td>dependencies</td>
+<td>依赖的job，可以用artifacts进行共享文件</td>
+</tr>
+<tr>
+<td>coverage</td>
+<td>？</td>
+</tr>
+<tr>
+<td>before_script</td>
+<td>覆盖在job之前执行的一组命令</td>
+</tr>
+</tbody>
+</table>
+<h2 id="stages">stages</h2>
+<pre><code class="language-YAML">stages:
+  - build
+  - test
+  - deploy
+</code></pre>
+<p>stages指定了各个stage的执行顺序</p>
+<ol>
+<li>同一stage的job是并行运行的。</li>
+<li>下一stage的job在上一stage的job成功完成后运行。</li>
+</ol>
+<h2 id="artifacts">artifacts</h2>
+<p>artifacts指的是成功后应附加到job的文件和目录列表。job成功完成后，artifact将被发送到GitLab，并可在GitLab UI中下载</p>
+<p>** artifacts:paths**:路径</p>
+<p>**artifacts:expire_in ** 有效时间，默认为30天</p>
+<h2 id="dependencies">dependencies</h2>
+<p>此功能应与artifact结合使用，并允许您定义要在不同job之间传递的artifact。请注意，默认情况下会传递所有先前阶段的artifact。</p>
+<h1 id="在ci中使用docker">在CI中使用docker</h1>
+<p>Docker与GitLab CI一起使用时，使用.gitlab-ci.yml中设置的预定义镜像在单独且隔离的容器中运行每个job。</p>
+<h2 id="register-a-docker-runner">register a docker runner</h2>
+<p>使用sudo权限输入</p>
+<pre><code class="language-bash">sudo gitlab-runner register
+</code></pre>
+<p>接下来会提示输入gitlab仓库位置，tocken，以及使用的执行器，使用docker的话执行器就选择docker，然后选择镜像，这个配置以后可以通过修改配置文件进行修改，如果是通过root权限注册的，那么配置文件在/etc/gitlab-runner/config.toml文件中。</p>
+<p>使用docker镜像的时候，默认是会从docker-hub下载镜像，如果镜像在本地，可以在config文件设置pull的policy：pull_policy = &quot;if-not-present&quot;或者pull_policy = &quot;never&quot;</p>
+<pre><code class="language-YAML">[[runners]]
+  name = &quot;&quot;
+  url = &quot;&quot;
+  token = &quot;&quot;
+  executor = &quot;docker&quot;
+  [runners.docker]
+    tls_verify = false
+    image = &quot;nb-node&quot;
+    privileged = false
+    disable_cache = false
+    volumes = [&quot;/cache&quot;]
++   pull_policy = &quot;if-not-present&quot;
+  [runners.cache]
+</code></pre>
+<h2 id="安装docker-和-nvidia-docker">安装docker 和 nvidia-docker</h2>
+<p><a href="https://blog.csdn.net/a632189007/article/details/78662741">ubuntu安装docker</a><br>
+<a href="https://blog.csdn.net/A632189007/article/details/78801166">Nvidia-Docker安装使用 -- 可使用GPU的Docker容器</a><br>
+具体安装方法参考<a href="https://github.com/NVIDIA/nvidia-docker">官方github文档</a></p>
+<p>值得注意的是上面的教程都是针对 nvidia-docker 1.0版本的，而最近我测试安装时不成功的，所以我安装了最新的nvidia-docker 2.0, nvidia-docker 2.0要求docker 版本为 18.06.0-ce，而这个版本的docker 使用apt-get 是无法安装的，所以我们从官网手动下载deb文件，进行安装。</p>
+<p><a href="https://download.docker.com/linux/ubuntu/dists/trusty/pool/stable/amd64/">docker 各版本下载位置</a></p>
+<p>卸载老版本的docker</p>
+<pre><code class="language-bash">apt-get remove docker-ce
+</code></pre>
+<p>下载安装新版本的docker</p>
+<pre><code class="language-bash">wget https://download.docker.com/linux/ubuntu/dists/trusty/pool/stable/amd64/docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb 
+dpkg -i docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb  
+rm docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb  
+</code></pre>
+<p>然后安装nvidia-docker的github的方式安装nvidia-docker-2.</p>
+<h2 id="docker自定义远端仓库位置">docker自定义远端仓库位置</h2>
+<p><a href="https://blog.csdn.net/xs20691718/article/details/53213870">docker切换默认镜像源</a><br>
+默认安装的 docker 镜像源是在国外，pull 镜像的时候奇慢无比，需要自己手动切换成国内的镜像源。<br>
+docker 默认的配置文件是 <code>/etc/default/docker</code>，如果此目录下不存在 docker 文件，可以自己手动创建一个，将文件中添加内容：</p>
+<pre><code class="language-YAML"> DOCKER_OPTS=&quot; --registry-mirror=https://【xxxxx】.mirror.aliyuncs.com&quot; 
+</code></pre>
+<p>上述代码中的地址替换成自己想要更换的镜像源的地址即可，然后使用 service docker restart命令重启服务。<br>
+自定义的仓库可能需要通过 docker login 进行登录。</p>
+<p>可以参考<a href="https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#define-an-image-from-a-private-container-registry">define-an-image-from-a-private-container-registry</a></p>
+<p>如果要将私有docker仓库用作构建的镜像源，可以在DOCKER_AUTH_CONFIG秘密变量中设置授权配置。 它可以在项目的GitLab变量部分(网页端)和config.toml文件中设置。</p>
+<figure data-type="image" tabindex="1"><img src="./_image/2018-07-18-10-34-34.jpg" alt=""></figure>
+<h2 id="在ci中定义镜像和服务">在CI中定义镜像和服务</h2>
+<pre><code class="language-YAML">before_script:
+  - bundle install
+
+test:2.1:
+  image: ruby:2.1
+  services:
+  - postgres:9.3
+  script:
+  - bundle exec rake spec
+
+test:2.2:
+  image: ruby:2.2
+  services:
+  - postgres:9.4
+  script:
+  - bundle exec rake spec
+</code></pre>
+<p><a href="https://blog.csdn.net/aixiaoyang168/article/details/72168834">gitlabCI runner的结合使用例子</a></p>
+<h2 id="ci-手动调docker回传artifact-的一个例子">CI 手动调docker回传artifact 的一个例子</h2>
+<pre><code class="language-YAML">#image: cicuda8
+
+build_arti:
+  stage: build
+  tags:
+    - manual_docker
+  script: 
+    - hostname
+    - mkdir build &amp;&amp; cd build
+    - touch tmp
+    - echo &quot;cd hostbuild &amp;&amp; echo hello-world &gt; tmp2&quot; &gt; tmp
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - build/
+
+test_arti:
+  stage: test
+  tags:
+    - manual_docker
+  script: 
+    - sudo docker run --name test_manual_docker -i \
+      -v $(pwd)/build:/hostbuild cicuda8 sh /hostbuild/tmp
+    - sudo docker rm test_manual_docker
+  dependencies:
+    - build_arti
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - build/
+    
+deploy_arti:
+  stage: deploy
+  tags:
+    - manual_docker
+  script:
+    - cd build
+    - cat tmp2
+    - echo &quot;end4&quot;
+  dependencies:
+    - test_arti
+
+</code></pre>
+<h2 id="ci通过ssh连接来调docker的例子">CI通过SSH连接来调docker的例子</h2>
+<pre><code class="language-YAML">#image: cicuda8
+
+build_arti:
+  stage: build
+  tags:
+    - manual_docker
+  script: 
+    - hostname
+    - mkdir build &amp;&amp; cd build
+    - touch tmp
+    - echo &quot;cd hostbuild &amp;&amp; echo hello-world &gt; tmp2&quot; &gt; tmp
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - build/
+
+test_arti:
+  stage: test
+  tags:
+    - manual_docker
+  script: 
+    - cp /usr/share/expect_login.sh expect_login.sh
+    - echo &quot;send \&quot;sudo docker run --name test_manual_docker -i -v $(pwd)/build:/hostbuild cicuda8 sh /hostbuild/tmp\r\&quot;&quot; &gt;&gt; expect_login.sh
+    - echo &quot;expect $*&quot; &gt;&gt; expect_login.sh
+    - echo &quot;send \&quot;sudo docker rm test_manual_docker\r\&quot;&quot; &gt;&gt; expect_login.sh
+    - echo &quot;expect $*&quot; &gt;&gt; expect_login.sh
+    - cat expect_login.sh
+    - expect expect_login.sh 10.10.36.34
+    #- sudo docker run --name test_manual_docker -i -v $(pwd)/build:/hostbuild cicuda8 sh /hostbuild/tmp
+    #- sudo docker rm test_manual_docker
+  dependencies:
+    - build_arti
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - build/
+    
+deploy_arti:
+  stage: deploy
+  tags:
+    - manual_docker
+  script:
+    - cd build
+    - cat tmp2
+    - echo &quot;end6&quot;
+  dependencies:
+    - test_arti
+
+
+</code></pre>
+<p>这里使用了expect脚本：expect_login.sh</p>
+<pre><code class="language-YAML">#!/usr/bin/expect
+set timeout 30
+set ip [lindex $argv 0]
+spawn ssh -l maxiaolong 10.0.8.241
+expect &quot;password:&quot;
+send &quot;mxl@lt.776688\r&quot;
+expect &quot;Ip:*&quot;
+send &quot;$ip\r&quot;
+expect &quot;$*&quot;
+send &quot;hostname\r&quot;
+expect $*
+send ifconfig\r
+expect &quot;$*&quot;
+#interact
+
+</code></pre>
+<h2 id="第二个例子-本地执行docker">第二个例子 本地执行docker</h2>
+<pre><code class="language-YAML">stages:
+  - build-default2
+  - lint
+  - test-default
+  - build-more
+  - test-more
+  - build-python-full
+  - test-python-full
+
+build-default2:
+  stage: build-default2
+  variables:
+    CC: &quot;/usr/bin/gcc-4.8&quot;
+    CXX: &quot;/usr/bin/g++-4.8&quot;
+    GTEST_ROOT: &quot;/usr/local/gtest/gtest-4.8&quot;
+  tags:
+    - manual_docker
+  script:
+    - mkdir temp &amp;&amp; cd temp &amp;&amp; touch scripts.sh mylog.log
+    - git clone $CI_REPOSITORY_URL
+    - echo &quot;cd /temp &amp;&amp; export CC=/usr/bin/gcc-4.8 &amp;&amp; export CXX=/usr/bin/g++-4.8 &amp;&amp; export GTEST_ROOT=/usr/local/gtest/gtest-4.8 &quot; &gt;&gt; scripts.sh
+    - echo &quot;cd $CI_PROJECT_NAME	&quot; &gt;&gt; scripts.sh
+    - echo &quot;git checkout $CI_COMMIT_REF_NAME&quot; &gt;&gt; scripts.sh
+    - echo &quot;mkdir build &amp;&amp; cd build/ &amp;&amp; cmake ..  &amp;&amp; make -j8 &quot; &gt;&gt; scripts.sh
+    - echo &quot;cd ../python &amp;&amp; make -j8 &quot; &gt;&gt; scripts.sh
+    - cat scripts.sh
+    - cd -
+    - sudo nvidia-docker run -i --rm  -v $(pwd)/temp:/temp  cicuda8:parrots2 sh /temp/scripts.sh
+    - cat temp/mylog.log
+
+</code></pre>
+<h2 id="第三个例子-上海集群执行docker">第三个例子 上海集群执行docker</h2>
+<pre><code class="language-YAML">stages:
+  - build-default
+  - lint
+  - test-default
+  - build-more
+  - test-more
+  - build-python-full
+  - test-python-full
+
+build-default:
+  stage: build-default
+  variables:
+    CC: &quot;/usr/bin/gcc-4.8&quot;
+    CXX: &quot;/usr/bin/g++-4.8&quot;
+    GTEST_ROOT: &quot;/usr/local/gtest/gtest-4.8&quot;
+  tags:
+    - ssh_docker
+  script:
+    - hostname
+    - who -m
+    - mkdir temp &amp;&amp; cd temp &amp;&amp; touch scripts.sh
+    - echo &quot;cd /$CI_PROJECT_NAME &amp;&amp; export CC=/usr/bin/gcc-4.8 &amp;&amp; export CXX=/usr/bin/g++-4.8 &amp;&amp; export GTEST_ROOT=/usr/local/gtest/gtest-4.8 &quot; &gt;&gt; scripts.sh
+    - echo &quot;cd $CI_PROJECT_NAME	&amp;&amp; hostname &amp;&amp; pwd &quot; &gt;&gt; scripts.sh
+    - echo &quot;mkdir build &amp;&amp; cd build/ &amp;&amp; cmake ..  &amp;&amp; make -j8 &quot; &gt;&gt; scripts.sh
+    - echo &quot;cd ../python &amp;&amp; make -j8 &quot; &gt;&gt; scripts.sh
+    - cat scripts.sh
+    - cd -
+    - nvidia-docker run -i --rm  -v $(pwd):/$CI_PROJECT_NAME  registry.sensetime.com/platform/cicuda8:parrots2 sh /$CI_PROJECT_NAME/temp/scripts.sh
+
+
+</code></pre>
+<h1 id="configure-a-runner">Configure a Runner</h1>
+<p>在GitLab中，Runners运行您在.gitlab-ci.yml中定义的作业。 Runner可以是虚拟机，VPS，裸机，docker容器甚至是容器集群。<br>
+get more information at <a href="https://docs.gitlab.com/runner/">GitLab Runner</a>.</p>
+<h1 id="reference">reference</h1>
+<p><a href="https://blog.csdn.net/sahusoft/article/details/7388617">&quot;error while loading shared libraries: xxx.so.x&quot; 错误的原因和解决办法</a><br>
+<a href="https://docs.gitlab.com/runner/executors/docker.html#workflow">the docker excutor</a><br>
+<a href="https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#define-image-and-services-from-gitlab-ciyml">Using Docker images</a><br>
+<a href="https://docs.gitlab.com/ee/ci/quick_start/README.html">Getting started with GitLab CI/CD</a><br>
+[Configuration of your jobs with .gitlab-ci.yml](</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/jEAcmIy-d" class="tag">
+                    ci
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/networker-thransfer">
+                  <h3 class="post-title">
+                    基于知识迁移的深度神经网络压缩方法研究
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

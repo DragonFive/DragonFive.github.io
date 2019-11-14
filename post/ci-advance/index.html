@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>基于知识迁移的深度神经网络压缩方法研究 | dragon</title>
+<title>CI进阶 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -91,36 +91,56 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">基于知识迁移的深度神经网络压缩方法研究</h2>
-            <div class="post-date">2018-05-20</div>
+            <h2 class="post-title">CI进阶</h2>
+            <div class="post-date">2018-08-10</div>
             
-              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.pb3Mrihz10VXUc_FG2eCfQAAAA&amp;pid=Api&amp;rs=1')">
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.nSyTwTR-Fncij55bfICOlQHaE8&amp;pid=Api&amp;rs=1')">
               </div>
             
             <div class="post-content">
               <hr>
-<p>title: 基于知识迁移的深度神经网络压缩方法研究<br>
-date: 2018/5/20 12:04:12<br>
+<p>title: CI进阶<br>
+date: 2018/8/9 22:04:12<br>
 tags:</p>
 <ul>
-<li>神经网络压缩</li>
-<li>深度学习</li>
-<li>神经网络</li>
+<li>持续集成</li>
+<li>自动化测试</li>
+<li>虚拟化</li>
 </ul>
 <hr>
-<p>我的毕设题目是基于知识迁移的深度神经网络压缩方法研究，由于本文涉及实验室的后续研究与项目开发，暂时删除该内容，等待时机合适再公开</p>
-<p>——待续</p>
+<h1 id="ci好用的一些runner">CI好用的一些runner</h1>
+<p>ssh ： runner中指定远端机器，传artifacts需要在远端安装gitlab-runner<br>
+docker：runner中指定image</p>
+<h1 id="ci好用的一些variable">CI好用的一些variable</h1>
+<p>CI_PROJECT_NAME: 项目名称<br>
+CI_PROJECT_PATH: 项目在本地的相对路径</p>
+<h1 id="ci的触发条件">CI的触发条件</h1>
+<pre><code class="language-YAML">when always
+only
+  - master
+</code></pre>
+<h1 id="ci的并行化">CI的并行化</h1>
+<h2 id="ci-runner-基于docker的安装">CI-runner 基于docker的安装</h2>
+<pre><code class="language-bash">docker run -d --name gitlab-runner --restart always \
+-v $(pwd)/config:/etc/gitlab-runner \
+gitlab/gitlab-runner:latest
+</code></pre>
+<h1 id="ci的监控与可视化">CI的监控与可视化</h1>
+<h1 id="reference">reference</h1>
+<p><a href="https://docs.gitlab.com/runner/install/docker.html">gitlab-ci docker installation</a></p>
+<p><a href="https://docs.gitlab.com/runner/configuration/advanced-configuration.html">advanced-configuration</a></p>
+<p><a href="https://docs.gitlab.com/runner/monitoring/">GitLab Runner monitoring</a></p>
+<p><a href="https://docs.gitlab.com/ee/user/project/integrations/prometheus.html">Prometheus integration</a></p>
+<p><a href="https://about.gitlab.com/2017/01/05/prometheus-and-gitlab/">prometheus-and-gitla</a></p>
+<p><a href="https://docs.gitlab.com/ee/user/project/integrations/prometheus_library/metrics.html">Prometheus Metrics library</a></p>
+<p>[Project services](</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://DragonFive.github.io//tag/LI4Uk3FeTa" class="tag">
-                    网络压缩
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
+                  <a href="https://DragonFive.github.io//tag/jEAcmIy-d" class="tag">
+                    ci
                   </a>
                 
               </div>
@@ -128,9 +148,9 @@ tags:</p>
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/gluon-study">
+                <a href="https://DragonFive.github.io//post/ci-intro">
                   <h3 class="post-title">
-                    gluon学习笔记
+                    CI从入门到放弃
                   </h3>
                 </a>
               </div>

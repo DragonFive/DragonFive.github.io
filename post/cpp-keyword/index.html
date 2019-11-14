@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>c++ 的关键字回顾 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573705081409">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573705081409" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">c++ 的关键字回顾</h2>
+            <div class="post-date">2018-09-03</div>
+            
+              <div class="feature-container" style="background-image: url('https://cdn-images-1.medium.com/max/1200/1*YU6BvZKvxivoEnvqxeG5rw.png')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>Title: c++ 的关键字回顾<br>
+date: 2018/9/03 17:38:58<br>
+categories:</p>
+<ul>
+<li>编程<br>
+tags:</li>
+<li>cpp</li>
+<li>关键字</li>
+</ul>
+<hr>
+<p>2013年的时候写了一些学c++时候的经验<a href="https://blog.csdn.net/zhzz2012/article/details/46346115">由底层和逻辑深入剖析c++系列</a>，<br>
+两年前写了一篇<a href="https://zhuanlan.zhihu.com/p/21930436">c++11新特性详解</a>，<br>
+去年总结了一些c++的一些使用技巧 <a href="https://mxl.bitcron.com/post/engineering/cpp_new_feature">c++使用7年后的经验总结</a>。<br>
+现在看来需要经常复习使用，才能更好地掌握c++这门编程语言。</p>
+<h1 id="关键字">关键字</h1>
+<h2 id="static与extern-c">static与extern &quot;C&quot;</h2>
+<p><strong>区别</strong><br>
+这两个是不能同时使用的一对词。</p>
+<ol>
+<li>
+<p>static 修饰的名字只能在当前模块中使用，且不能被extern所修饰</p>
+</li>
+<li>
+<p>extern &quot;C&quot; 表示修饰的名字来自其它模块，且要按C语言的方式进行编译和链接<br>
+<strong>extern &quot;C&quot;从问题中学习</strong></p>
+</li>
+<li>
+<p>既然c++是C的超集，为什么还要用C语言的方式编译和链接？<br>
+&gt; 因为可能编写c语言的人给你的不是源代码。而是编译之后的.so文件</p>
+</li>
+<li>
+<p>extern &quot;C&quot; 与 extern 是什么关系</p>
+<blockquote>
+<p>extern &quot;C&quot;包含双重含义，从字面上可以知道，首先，被它修饰的目标是&quot;extern&quot;的；其次，被它修饰的目标代码是&quot;C&quot;的。extern 告诉编译器，其申明的函数和变量可以在本模块或其他模块中使用。</p>
+</blockquote>
+</li>
+<li>
+<p>什么是按C语言的方式进行编译和链接</p>
+<blockquote>
+<p>函数被C++编译后在符号库中的名字是与C语言不同的；C++编译后的函数需要加上参数的类型才能唯一标定重载后的函数，而加上extern &quot;C&quot;后，是为了向编译器指明这段代码按照C语言的方式进行编译和链接。比如对于<code>int foo(int x, int y)</code>C++会编译为类似<code>__foo_int_int_</code>的形式，而c语言则会编译为<code>__foo__</code>的形式。</p>
+</blockquote>
+</li>
+<li>
+<p>在c语言中想要C++类里面的东西怎么办</p>
+<blockquote>
+<p><a href="https://www.cnblogs.com/Yogurshine/p/3913073.html">C代码中如何调用C++ C++中如何调用C</a><br>
+<a href="https://blog.csdn.net/caspiansea/article/details/9676153">如何用C语言封装 C++的类，在 C里面使用</a></p>
+</blockquote>
+</li>
+</ol>
+<p><strong>extern &quot;C&quot;从例子中学</strong><br>
+1.修饰单个句子</p>
+<pre><code class="language-CPP">extern &quot;C&quot; double sqrt(double);
+</code></pre>
+<ol start="2">
+<li>修饰复合句子</li>
+</ol>
+<pre><code class="language-C">extern &quot;C&quot;
+ {
+      double sqrt(double);
+      int min(int, int);
+  }
+</code></pre>
+<p>3.包含include头文件，相当于头文件中的声明都加了 extern &quot;C&quot;</p>
+<pre><code class="language-C">extern &quot;C&quot;
+{
+     #include &lt;cmath&gt;
+}
+</code></pre>
+<p>4.在C语言的一些标准头文件里经常有这样的表示</p>
+<pre><code class="language-CPP">#ifdef  __cplusplus
+extern &quot;C&quot; {
+#endif
+……// (C函数声明)
+#ifdef  __cplusplus
+}
+#endif
+</code></pre>
+<p><strong>参考资料</strong><br>
+<a href="https://blog.csdn.net/jiqiren007/article/details/5933599">extern C的作用详解</a></p>
+<h2 id="const关键字">const关键字</h2>
+<p><strong>常量指针与指针常量</strong></p>
+<ol>
+<li>区分方法：从右向左读 <code>char * const A</code>, A是一个不可变的指针，指向的是char数据，<code>char const * B</code> , 表示B是一个指针，这个指针指向char常量；</li>
+<li>对于常量指针，不能通过该指针来改变所指的内容(可以通过其它方式修改)<br>
+<strong>常量对象与常量成员函数</strong><br>
+一个类的常量对象只能调用该类的常量成员函数，因为常量成员函数不能修改对象的成员变量，当然可以在一个成员变量前加上mutable关键字，这样常量成员函数就能修改它了。 <code>void func() const</code></li>
+</ol>
+<p><strong>常量成员变量与类常量</strong><br>
+常量成员变量是说，它是属于对象的不可变的变量，所以初始化只能在构造函数的初始化列表里。const数据成员只在某个对象生存期内是常量，而对于整个类而言却是可变的。因为类可以创建多个对象，不同的对象其const数据成员的值可以不同。所以不能在类声明中初始化const数据成员，因为类的对象未被创建时，编译器不知道const 数据成员的值是什么。</p>
+<p>要想建立在整个类中都恒定的常量，应该用类中的枚举常量来实现。</p>
+<pre><code class="language-CPP">class A
+{
+ enum {size1=100, size2 = 200 };
+ int array1[size1];
+ int array2[size2];
+}
+</code></pre>
+<p><strong>const修饰函数返回值</strong><br>
+一般用const修饰返回值为对象本身（非引用和指针）的情况多用于二目操作符重载函数并产生新对象的时候。 防止产生的临时对象被赋值。<br>
+比如两个复数的乘法</p>
+<pre><code class="language-CPP">const Rational operator*(const Rational&amp; lhs, const Rational&amp; rhs) 
+{ 
+ return Rational(lhs.numerator() * rhs.numerator(), 
+ lhs.denominator() * rhs.denominator()); 
+}
+</code></pre>
+<p>这样做可以预防出现<code>(a*b) = c</code>的情况。<br>
+<strong>引用传递的返回值不要用const修饰</strong><br>
+在类的本地操作符（=，&lt;&lt;等）重载函数中，函数返回值常采用“引用传递”，目的是为了实现链式表达。</p>
+<pre><code class="language-CPP">class A
+{
+ A &amp;operate = (const A &amp;other);  //赋值函数
+}
+A a,b,c;              //a,b,c为A的对象
+a=b=c;            //正常
+(a=b)=c;          //不正常，但是合法
+</code></pre>
+<p>若赋值函数的返回值加const修饰，那么该返回值的内容不允许修改。所以一般赋值函数都不会这样设置。<br>
+<strong>C语言与CPP中const的区别</strong></p>
+<ol>
+<li>C++中的const正常情况下是看成编译期的常量,编译器并不为const分配空间,只是在编译的时候将期值保存在名字表中,并在适当的时候折合在代码中，而c语言认为是不变的变量，在编译期不知道值。</li>
+</ol>
+<p>C++中,是否为const分配空间要看具体情况.如果加上关键字extern或者取const变量地址,则编译器就要为const分配存储空间，下面的代码在c++中会通过，而c语言不会通过</p>
+<pre><code class="language-CPP">const int a=10;
+int b[a];
+</code></pre>
+<p>2.C++中,const默认使用内部连接，定义时必须初始化(类中的成员变量除外)，或者使用extern修饰. 而C中使用外部连接，可以只声明不初始化<code>const int size;</code></p>
+<p><strong>顶层const与底层const</strong><br>
+是用const修饰时，如果修饰的是定义的变量就是顶层const，如果修饰的是定义的变量指向的对象那就是底层const。<br>
+值得注意的是顶层const在初始化和赋值的时候，等号左右两边的对象是否const并无影响。<br>
+而底层const赋值的时候，可以把非常量赋值给指向常量对象的地址，却不可以把常量初始化给指向非常量对象的地址。</p>
+<p><strong>constexpr变量</strong><br>
+c++11标准规定，允许将变量声明为constexpr类型，以便由编译器来验证变量的值是否是一个常量表达式</p>
+<p><strong>使用const的建议</strong></p>
+<ol>
+<li>要大胆的使用const，这将给你带来无尽的益处，但前提是你必须搞清楚原委；</li>
+<li>在参数中使用const应该使用引用或指针，而不是一般的对象实例；</li>
+<li>不要轻易的将函数的返回值类型定为const;</li>
+<li>除了重载操作符外一般不要将返回值类型定为对某个对象的const引用;</li>
+</ol>
+<blockquote>
+<p>非 const 变量默认为 extern。要使 const 变量能够在其他的文件中访问，必须地指定它为 extern——《cpp primer》</p>
+</blockquote>
+<p><strong>参考资料</strong><br>
+<a href="https://www.cnblogs.com/yc_sunniwell/archive/2010/07/14/1777416.html">c/c++中的const关键字</a><br>
+《c++ primer 第五版》</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/Tl2aOZ6vP" class="tag">
+                    cpp
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/kcZ7gT9amr" class="tag">
+                    编程
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/ci-advance">
+                  <h3 class="post-title">
+                    CI进阶
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

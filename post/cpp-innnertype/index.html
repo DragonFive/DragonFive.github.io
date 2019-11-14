@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>c++ 的类型回顾 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573705081409">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573705081409" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">c++ 的类型回顾</h2>
+            <div class="post-date">2018-09-10</div>
+            
+              <div class="feature-container" style="background-image: url('https://cdn-images-1.medium.com/max/1200/1*YU6BvZKvxivoEnvqxeG5rw.png')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>Title: c++ 的类型回顾<br>
+date: 2018/9/10 17:38:58<br>
+categories:</p>
+<ul>
+<li>编程<br>
+tags:</li>
+<li>cpp</li>
+<li>类型</li>
+</ul>
+<hr>
+<p>C++标准规定了每个算术类型的最小存储空间，但它并不阻止编译器使用更大的存储空间。事实上，对于 int 类型，几乎所有的编译器使用的存储空间都比所要求的(16字节)大。</p>
+<h1 id="c语言和c的内存管理">c语言和c++的内存管理</h1>
+<p><a href="https://www.cnblogs.com/JCSU/articles/1051579.html">c语言和c++的内存管理 </a></p>
+<ul>
+<li>c语言分四个区：堆，栈，全局区和常量区</li>
+<li>c++分五个区: 堆、栈、全局区、常量区和自由存储区<br>
+c++的自由存取区类似于c语言的堆，存放的是malloc创建的内存，</li>
+</ul>
+<h1 id="基本类型">基本类型</h1>
+<p><strong>字符类型</strong><br>
+字符类型有两种：char 和 wchar_t。char 类型保证了有足够的空间，能够存储机器基本字符集中任何字符相应的数值，因此，char 类型通常是单个机器字节（byte）。wchar_t 类型用于扩展字符集，比如汉字和日语，这些字符集中的一些字符不能用单个 char 表示。<br>
+<strong>整数型</strong><br>
+short、int 和 long 类型都表示整型值，存储空间的大小不同。一般， short类型为半个机器字长，int 类型为一个机器字长，而 long 类型为一个或两个机器字长（在 32 位机器中 int 类型和 long 类型通常字长是相同的）。<br>
+<strong>浮点型</strong><br>
+对于实际的程序来说，float 类型精度通常是不够的——float 型只能保证 6 位有效数字，而 double 型至少可以保证 10 位有效数字，能满足大多数计算的需要。</p>
+<h1 id="字面量">字面量</h1>
+<p>只有<strong>内置类型存在字面值</strong>，没有类类型的字面值。因此，也没有任何标准库类型的字面值。<br>
+<strong>整型字面值</strong><br>
+整型字面量可以有三种进制的表示：十进制、八进制和十六进制。以 0（零）开头的字面值整数常量表示八进制，以 0x 或 0X 开头的表示十六进制。</p>
+<p>字面值整数常量的类型默认为 int 或 long 类型。其精度类型决定于字面值——其值适合 int 就是 int 类型，比 int 大的值就是 long 类型。通过<strong>增加后缀</strong>，能够强制将字面值整数常量转换，在数值后面加 L 或者 l（字母“l”大写或小写）指定常量为 long 类型。在数值后面加 U 或 u 定义 unsigned 类型。同时加 L 和 U就能够得到 unsigned long 类型的字面值常量 。</p>
+<p>用十进制或者科学计数法来表示浮点字面值常量。使用科学计数法时，指数用 E 或者 e 表示。默认的浮点字面值常量为 double 类型。在数值的后面加上 F 或 f 表示单精度。同样加上 L 或者 l 表示扩展精度.  1e-3f  表示的是0.001.<br>
+<strong>字符型字面量</strong><br>
+在字符字面值前加 L 就能够得到 wchar_t类型的宽字符字面值。L'a'<br>
+<strong>字符串字面值</strong><br>
+字符串字面值常量用双引号括起来的零个或者多个字符表示。为了兼容 C 语言，C++ 中所有的字符串字面值都由<em>编译器</em>自动在末尾添加一个空字符。&quot;A&quot; 表示包含字母 A 和空字符两个字符的字符串。 也存在宽字符串字面值，一样在前面加“L”，如 L&quot;a wide string literal&quot;宽字符串字面值是一串常量宽字符，同样以一个宽空字符结束。</p>
+<p>两个相邻的仅由空格、制表符或换行符分开的字符串字面值（或宽字符串字面值），可连接成一个新字符串字面值。这使得多行书写长字符串字面值变得简单：</p>
+<pre><code class="language-CPP">string a = &quot;123&quot;
+           &quot;456&quot;;
+</code></pre>
+<h1 id="变量">变量</h1>
+<p><strong>变量名规则</strong><br>
+变量名必须以字母或下划线开头，并且区分大小写字母。<code>char _；</code><br>
+<strong>初始化多个变量</strong><br>
+当一个定义中定义了两个以上变量的时候，每个变量都可能有自己的初始化式。 对象的名字立即变成可见，所以可以用同一个定义中前面已定义变量的值初始化后面的变量。</p>
+<pre><code class="language-CPP">double salary = 9999.99, wage(salary + 0.01); 
+</code></pre>
+<p>内置类型的变量只有在全局定义时才会被自动初始化为0， 而类的对象定义时如果没有指定构造函数，不管是全局定义还是局部定义都会调用默认构造函数。</p>
+<h1 id="引用类型">引用类型</h1>
+<p>引用(非const型)必须用与该引用同类型的对象初始化。<br>
+<strong>定义多个引用</strong><br>
+在一行中定义多个引用时，每个名字签名前都必须带&amp;，这一点与指针相似，因为它们都是复合类型</p>
+<pre><code class="language-CPP">int i=1024, j=2048;
+int &amp;a=i, &amp;b=j;
+</code></pre>
+<p><strong>const引用</strong><br>
+const引用是指向const对象的引用，不能用非const引用指向const对象，const引用当然也可以指向非const对象的引用。</p>
+<blockquote>
+<p>非const引用只能绑定到与该引用同类型的对象。const引用则可以绑定到不同但相关类型的对象（多态或支持隐式类型转换）或绑定到字面值常量上（这就是有限的两个引用不同类型的例子）。</p>
+</blockquote>
+<pre><code class="language-cpp">const int a = 1;
+int b = 2;
+int &amp;c=a; //会报错
+const int &amp;d=b ; //正确
+const int &amp;e = a; //正确
+const int &amp;f = 1; // 正确
+int &amp;g = 1; // 错误
+auto &amp;h=a; //正确 auto会保留底层const 
+auto &amp;i=b; // 正确
+auto &amp;j=1; //错误，字面值需要指明const
+const auto &amp;k=1; //正确
+</code></pre>
+<p>对比，最后两个表达式，我们知道编译器可以从右值的对象中推断出底层const，却无法从字面量中推出，所以字面量必须显式指出const auto；</p>
+<p>当指向不同类型的对象时，会临时创建一个对象进行类型转换。</p>
+<h1 id="指针类型">指针类型</h1>
+<p><strong>指针与引用的区别</strong></p>
+<ol>
+<li>指针是一个对象，所以可以有赋值、取地址等操作，所以可以有指向指针的引用。</li>
+<li>不强制必须初始化</li>
+</ol>
+<p>除了两种例外情况外，其它所有指针的类型都要和它所指向的对象严格匹配<br>
+例外1. const对象的指针指向同类型的非const对象（比引用严格，引用可以不同类型）<br>
+例外2. 多态的场合</p>
+<p><strong>空指针</strong><br>
+c++11建议 使用字面值常量nullptr来将一个指针初始化为空指针</p>
+<pre><code class="language-cpp">int *a=nullptr;
+</code></pre>
+<p>等价于 int *a=0;<br>
+以前的程序用的NULL其实是一个预处理变量，这个变量定义在头文件cstdlib中，<br>
+c++建议初始化所有的指针，而常量指针在定义的时候必须初始化。</p>
+<h1 id="class与-struct">class与 struct</h1>
+<blockquote>
+<p>用class和struct关键字定义类的唯一差别在于默认访问级别：默认情况下，struct的成员为public，而class的成员为private——《c++ primer》</p>
+</blockquote>
+<p><strong>类的定义</strong><br>
+类的定义可以放在头文件里面。</p>
+<blockquote>
+<p>头文件一般不包含定义，只包含extern 变量的声明和函数的声明。有三个例外：类的定义、值在编译时就知道的const对象和inline函数——《c++ primer》</p>
+</blockquote>
+<p>当我们在头文件中定义了const变量后，每个包含这个头文件的源文件都有了自己的const变量，当该const变量是用常量表达式初始化时，编译器在编译时会用常量表达式替换这些const变量，所以不会为每个源文件创建const对象的存储空间。而当是用函数返回值或其它内容对const变量进行初始化时，编译期间并不知道其值，所以就必须为其分配存储空间，同时该const变量也不能定义在头文件中。</p>
+<h1 id="类型别名">类型别名</h1>
+<p>typedef和using都能定义类型别名</p>
+<pre><code class="language-CPP">typedef double wages;
+using wages=double;
+</code></pre>
+<p>如果某个类型别名指代的是符合类型或常量，那么把它用到声明语句中就会产生意想不到的后果。</p>
+<pre><code class="language-CPP">char tmp='a';
+typedef char *  pstring;
+const pstring cstr=&amp;tmp;
+*cstr='b';
+cstr=nullptr;
+pstring const cstr2=&amp;tmp;
+*cstr2='b';
+cstr2=nullptr;
+</code></pre>
+<p>其实cstr1和cstr2是同样类型的对象。</p>
+<h1 id="auto">auto</h1>
+<blockquote>
+<p>C++ 是静态类型（statically typed）语言，在编译时执行类型检查。结果是程序中使用某个名字之前，必须先告知编译器该名字的类型——《c++ primer》</p>
+</blockquote>
+<p>auto的对象必须初始化，auto能在一条语句中，声明多个变量。一条声明语句只能由一个基本数据类型。auto可以推断出指针，却推不出引用，必须用auto &amp;来定义一个引用。</p>
+<pre><code class="language-cpp">auto i = 0, *p = &amp;i;
+</code></pre>
+<p>auto的对象的类型有时候会和初始值的类型不完全一致<br>
+<strong>auto与引用</strong><br>
+当用来为auto对象初始化的值是引用类型的时候，auto对象的类型是真正参与初始化的对象的值。<br>
+设置一个类型为auto的引用时，初始值终点顶层常量属性仍然保留</p>
+<pre><code class="language-cpp">const int a = 0;
+int b = 0;
+auto &amp;b = a; // b是const int 类型的引用
+auto c = a;   // c是int类型
+auto *d = &amp;a, &amp;e = b; // 编译出出错，因为&amp;a是const int的地址，而b是int
+
+</code></pre>
+<p><strong>auto与const</strong><br>
+auto一般会忽略掉顶层const，同时底层const会被保留，比如当初始值是一个指向常量的指针时。</p>
+<pre><code class="language-cpp">const int ci = 0, &amp;cr = ci; 
+auto a = &amp;ci; // 这时候a是const int * 类型的
+auto b = cr; // b是int类型的 
+auto &amp;c = ci; // c是const int &amp; 类型的，因为是底层const 
+
+</code></pre>
+<p>如果希望推断出的auto类型是一个顶层const，则需要明确指出。</p>
+<pre><code class="language-cpp">const auto f = ci;
+
+</code></pre>
+<h1 id="decltype">decltype</h1>
+<p>c++11 引入了第二种类型说明符 decltype，它的作用是返回表达式返回值的类型，但是不会实际计算表达式的值。</p>
+<p>decltype 遇到解引用操作将返回引用类型，引用类型的变量定义的时候必须初始化</p>
+<pre><code class="language-cpp">int a;
+int *p=&amp;a;
+decltype(*p) c=a; //注意这里必须初始化
+
+</code></pre>
+<p>decltype与变量，decltype((var))返回的是引用类型，decltype(var)返回的是正常类型。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/Tl2aOZ6vP" class="tag">
+                    cpp
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/kcZ7gT9amr" class="tag">
+                    编程
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/cpp-keyword">
+                  <h3 class="post-title">
+                    c++ 的关键字回顾
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

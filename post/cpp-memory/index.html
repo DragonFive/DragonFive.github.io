@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>从编译器的辅助信息看c++对象内存布局 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573705081409">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573705081409" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">从编译器的辅助信息看c++对象内存布局</h2>
+            <div class="post-date">2019-02-17</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.KVGXagrT1mkzd_ujcz5EEwHaLH&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>Title: 从编译器的辅助信息看c++对象内存布局<br>
+date: 2019/02/17 14:28:58<br>
+categories:</p>
+<ul>
+<li>编程<br>
+tags:</li>
+<li>cpp</li>
+</ul>
+<hr>
+<h1 id="预知识">预知识</h1>
+<p>本文的内容使用的是32位的编译器编译出的结果，可以打印出类的内存布局信息</p>
+<h2 id="devcpp-ide">DevCPP IDE</h2>
+<p>这个IDE是我比较喜欢的windows下的cpp的IDE之一，它有一个工具-&gt;编译选项，可以选择编译器类型，也可以在编译选项中加入一些信息，为了能够输出内存布局信息，我在编译时加入以下命令</p>
+<pre><code class="language-cpp">--std=c++11  -fdump-class-hierarchy 
+</code></pre>
+<p>-fdump-class-hierarchy 这个选项能够在gcc编译时生成类的布局信息，生成的文件名类似为6.cpp.002t.class</p>
+<h2 id="vs2017">vs2017</h2>
+<p>vs使用的编译器是cl，它的命令为<br>
+/d1reportAllClassLayout： 输出所有类相关布局</p>
+<h2 id="clang">clang</h2>
+<p>clang -Xclang -fdump-record-layouts</p>
+<h2 id="理解内存布局信息">理解内存布局信息</h2>
+<p>测试代码如下</p>
+<pre><code class="language-cpp">class father{
+	int a;
+	int b;
+};
+
+class child: public father{
+};
+
+int main(){
+	return 0;
+}
+</code></pre>
+<p>使用 g++ -fdump-class-hierarchy test.cpp 生成了 test.cpp.002t.class内容如下</p>
+<pre><code>Class father
+   size=8 align=4
+   base size=8 base align=4
+father (0x0x16662d8) 0
+
+Class child
+   size=8 align=4
+   base size=8 base align=4
+child (0x0x3984e00) 0
+  father (0x0x1666310) 0
+</code></pre>
+<p>显示了类的大小和对齐信息。</p>
+<h2 id="题话外-理解内存对齐">题话外: 理解内存对齐</h2>
+<ol>
+<li>结构体第一个成员的偏移量（offset）为0，以后每个成员相对于结构体首地址的 offset 都是该成员大小与有效对齐值中较小那个的整数倍，如有需要编译器会在成员之间加上填充字节。</li>
+<li>结构体的总大小为 有效对齐值 的整数倍，如有需要编译器会在最末一个成员之后加上填充字节。</li>
+</ol>
+<h1 id="多态与虚表">多态与虚表</h1>
+<p>多态，简单来说，是指在继承层次中，父类的指针可以具有多种形态——当它指向某个子类对象时，通过它能够调用到子类的函数，而非父类的函数。</p>
+<p>虚函数指针一般都放在对象内存布局的第一个位置上，这是为了保证在多层继承或多重继承的情况下能以最高效率取到虚函数表。当vprt位于对象内存最前面时，<strong>对象的地址即为虚函数指针地址</strong>。我们可以取得<strong>虚函数指针的地址</strong>。</p>
+<p>下面的方式取得虚函数指针的地址（而非虚函数指针指向的地址）</p>
+<pre><code class="language-cpp">Base b(1000);
+int * vptrAdree = (int *)(&amp;b);
+</code></pre>
+<p>vptrAdree指向了虚函数指针（指向虚函数表），</p>
+<p>而我们可以通过如下的方式获得第一个虚函数的地址</p>
+<pre><code class="language-cpp">Base b(1000);
+using fun=void(*) ();
+fun fun1 = (fun)*((int *)*(int *)(&amp;b));
+fun fun2 = (fun)*((int *)*(int *)(&amp;c)+1);
+</code></pre>
+<h2 id="简单的情况单层继承与虚函数全覆盖">简单的情况，单层继承与虚函数全覆盖</h2>
+<p>通过查看编译器生成的内存布局信息来具体地看：</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+class Base{
+	int a;
+	virtual int print(){
+		cout&lt;&lt;&quot; i am base&quot;&lt;&lt;endl;
+	}
+	virtual int print2(){
+		cout&lt;&lt;&quot; i am base2&quot; &lt;&lt;endl;
+	}
+}; 
+
+class child: public Base{
+	int print(){
+		cout&lt;&lt; &quot; i am the child&quot; &lt;&lt;endl;	
+	}
+	int print2(){
+		cout&lt;&lt;&quot; i am the child2&quot; &lt;&lt;endl;
+	}
+};
+
+
+
+int  main(){
+	Base testBase;
+	//using fun=int(*)();
+	typedef int(*fun) (void);
+	fun print=(fun)*((int *)*(int *)(&amp;testBase));
+	print();
+	cout&lt;&lt;(int *)*(int *)(&amp;testBase)&lt;&lt;endl;
+	cout&lt;&lt;((int *)*(int *)(&amp;testBase))+1&lt;&lt;endl;
+	fun pprint2 = (fun)*((int *)*(int *)(&amp;testBase)+1);
+	pprint2();
+	return 0;
+} 
+</code></pre>
+<p>g++编译后生成的内存布局信息为：</p>
+<pre><code class="language-cpp">Vtable for Base
+Base::_ZTV4Base: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI4Base)
+8     (int (*)(...))Base::print
+12    (int (*)(...))Base::print2
+
+Class Base
+   size=8 align=4
+   base size=8 base align=4
+Base (0x0x4e057a8) 0
+    vptr=((&amp; Base::_ZTV4Base) + 8u)
+
+Vtable for child
+child::_ZTV5child: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI5child)
+8     (int (*)(...))child::print
+12    (int (*)(...))child::print2
+
+Class child
+   size=8 align=4
+   base size=8 base align=4
+child (0x0x4e4b280) 0
+    vptr=((&amp; child::_ZTV5child) + 8u)
+  Base (0x0x4e057e0) 0
+      primary-for child (0x0x4e4b280)
+</code></pre>
+<p>Vtable表示的是虚函数表，可以发现Vtable for Base里面保存了vptr， 而且位置是vptr=((&amp; Base::_ZTV4Base) + 8u)（注意这里加了8的偏移），这个位置的第一个内容就是(int (*)(...))Base::print。</p>
+<h2 id="复杂的情况多重继承与部分虚函数覆盖">复杂的情况：多重继承与部分虚函数覆盖</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+class Parent {
+public:
+    int iparent;
+    Parent ():iparent (10) {}
+    virtual void g() { cout &lt;&lt; &quot; Parent::g()&quot; &lt;&lt; endl; }
+    virtual void f() { cout &lt;&lt; &quot; Parent::f()&quot; &lt;&lt; endl; }
+    virtual void h() { cout &lt;&lt; &quot; Parent::h()&quot; &lt;&lt; endl; }
+ 
+};
+ 
+class Child : public Parent {
+public:
+    int ichild;
+    Child():ichild(100) {}
+    virtual void g_child() { cout &lt;&lt; &quot;Child::g_child()&quot; &lt;&lt; endl; }
+    virtual void h_child() { cout &lt;&lt; &quot;Child::h_child()&quot; &lt;&lt; endl; }
+    virtual void f() { cout &lt;&lt; &quot;Child::f()&quot; &lt;&lt; endl; }
+};
+ 
+class GrandChild : public Child{
+public:
+    int igrandchild;
+    GrandChild():igrandchild(1000) {}
+    virtual void g_child() { cout &lt;&lt; &quot;GrandChild::g_child()&quot; &lt;&lt; endl; }
+    virtual void f() { cout &lt;&lt; &quot;GrandChild::f()&quot; &lt;&lt; endl; }
+    virtual void h_grandchild() { cout &lt;&lt; &quot;GrandChild::h_grandchild()&quot; &lt;&lt; endl; }
+};
+int main(){
+	typedef void(*Fun)(void);
+	GrandChild gc;	 
+	int** pVtab = (int**)&amp;gc;
+	 
+	cout &lt;&lt; &quot;[0] GrandChild::_vptr-&gt;&quot; &lt;&lt; endl;
+	for (int i=0; (Fun)pVtab[0][i]!=NULL; i++){
+	    Fun pFun = (Fun)pVtab[0][i];
+	    cout &lt;&lt; &quot;    [&quot;&lt;&lt;i&lt;&lt;&quot;] &quot;;
+	    pFun();
+	}
+	cout &lt;&lt; &quot;[1] Parent.iparent = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[2] Child.ichild = &quot; &lt;&lt; (int)pVtab[2] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[3] GrandChild.igrandchild = &quot; &lt;&lt; (int)pVtab[3] &lt;&lt; endl;
+} 
+</code></pre>
+<p>内存布局信息如下</p>
+<pre><code class="language-cpp">Vtable for Parent
+Parent::_ZTV6Parent: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI6Parent)
+8     (int (*)(...))Parent::g
+12    (int (*)(...))Parent::f
+16    (int (*)(...))Parent::h
+
+Class Parent
+   size=8 align=4
+   base size=8 base align=4
+Parent (0x0x4de37a8) 0
+    vptr=((&amp; Parent::_ZTV6Parent) + 8u)
+
+Vtable for Child
+Child::_ZTV5Child: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI5Child)
+8     (int (*)(...))Parent::g
+12    (int (*)(...))Child::f
+16    (int (*)(...))Parent::h
+20    (int (*)(...))Child::g_child
+24    (int (*)(...))Child::h_child
+
+Class Child
+   size=12 align=4
+   base size=12 base align=4
+Child (0x0x4e2a5c0) 0
+    vptr=((&amp; Child::_ZTV5Child) + 8u)
+  Parent (0x0x4de37e0) 0
+      primary-for Child (0x0x4e2a5c0)
+
+Vtable for GrandChild
+GrandChild::_ZTV10GrandChild: 8u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI10GrandChild)
+8     (int (*)(...))Parent::g
+12    (int (*)(...))GrandChild::f
+16    (int (*)(...))Parent::h
+20    (int (*)(...))GrandChild::g_child
+24    (int (*)(...))Child::h_child
+28    (int (*)(...))GrandChild::h_grandchild
+
+Class GrandChild
+   size=16 align=4
+   base size=16 base align=4
+GrandChild (0x0x4e2aa80) 0
+    vptr=((&amp; GrandChild::_ZTV10GrandChild) + 8u)
+  Child (0x0x4e2aac0) 0
+      primary-for GrandChild (0x0x4e2aa80)
+    Parent (0x0x4de3818) 0
+        primary-for Child (0x0x4e2aac0)
+
+
+</code></pre>
+<p>通过查看可以发现，子类的虚函数表里面的优先级是先父类，再子类再孙类，同一优先级按照声明顺序排地址，即使父类的虚函数被覆盖了，也要写在原来的位置，这样能够保证，父类的指针能按照函数名找到那个地址。</p>
+<p>程序的执行结果为：</p>
+<pre><code class="language-cpp">[0] GrandChild::_vptr-&gt;
+&lt;pre&gt;    [0] GrandChild::f()
+    [1] Parent::g()
+    [2] Parent::h()
+    [3] GrandChild::g_child()
+    [4] Child::h1()
+    [5] GrandChild::h_grandchild()
+[1] Parent.iparent = 10
+[2] Child.ichild = 100
+[3] GrandChild.igrandchild = 1000
+
+</code></pre>
+<p>可知</p>
+<ol>
+<li>虚函数表在最前面的位置。</li>
+<li>成员变量根据其继承和声明顺序依次放在后面。</li>
+<li>在单一的继承中，被overwrite的虚函数在虚函数表中得到了更新。</li>
+</ol>
+<h2 id="多重继承">多重继承</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+class Base1 {
+public:
+    int ibase1;
+    Base1():ibase1(10) {}
+    virtual void f() { cout &lt;&lt; &quot;Base1::f()&quot; &lt;&lt; endl; }
+    virtual void g() { cout &lt;&lt; &quot;Base1::g()&quot; &lt;&lt; endl; }
+    virtual void h() { cout &lt;&lt; &quot;Base1::h()&quot; &lt;&lt; endl; }
+ 
+};
+ 
+class Base2 {
+public:
+    int ibase2;
+    Base2():ibase2(20) {}
+    virtual void f() { cout &lt;&lt; &quot;Base2::f()&quot; &lt;&lt; endl; }
+    virtual void g() { cout &lt;&lt; &quot;Base2::g()&quot; &lt;&lt; endl; }
+    virtual void h() { cout &lt;&lt; &quot;Base2::h()&quot; &lt;&lt; endl; }
+};
+ 
+class Base3 {
+public:
+    int ibase3;
+    Base3():ibase3(30) {}
+    virtual void f() { cout &lt;&lt; &quot;Base3::f()&quot; &lt;&lt; endl; }
+    virtual void g() { cout &lt;&lt; &quot;Base3::g()&quot; &lt;&lt; endl; }
+    virtual void h() { cout &lt;&lt; &quot;Base3::h()&quot; &lt;&lt; endl; }
+};
+ 
+class Derive : public Base1, public Base2, public Base3 {
+public:
+    int iderive;
+    Derive():iderive(100) {}
+    virtual void f() { cout &lt;&lt; &quot;Derive::f()&quot; &lt;&lt; endl; }
+    virtual void g1() { cout &lt;&lt; &quot;Derive::g1()&quot; &lt;&lt; endl; }
+};
+int main(){
+	typedef void(*Fun)(void);
+	 
+	Derive d;
+	 
+	int** pVtab = (int**)&amp;d;
+	 
+	cout &lt;&lt; &quot;[0] Base1::_vptr-&gt;&quot; &lt;&lt; endl;
+	Fun pFun = (Fun)pVtab[0][0];
+	cout &lt;&lt; &quot;     [0] &quot;;
+	pFun();
+	 
+	pFun = (Fun)pVtab[0][1];
+	cout &lt;&lt; &quot;     [1] &quot;;pFun();
+	 
+	pFun = (Fun)pVtab[0][2];
+	cout &lt;&lt; &quot;     [2] &quot;;pFun();
+	 
+	pFun = (Fun)pVtab[0][3];
+	cout &lt;&lt; &quot;     [3] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[0][4];
+	cout &lt;&lt; &quot;     [4] &quot;; cout&lt;&lt;pFun&lt;&lt;endl;
+	 
+	cout &lt;&lt; &quot;[1] Base1.ibase1 = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
+	 
+	int s = sizeof(Base1)/4;
+	 
+	cout &lt;&lt; &quot;[&quot; &lt;&lt; s &lt;&lt; &quot;] Base2::_vptr-&gt;&quot;&lt;&lt;endl;
+	pFun = (Fun)pVtab[s][0];
+	cout &lt;&lt; &quot;     [0] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][1];
+	cout &lt;&lt; &quot;     [1] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][2];
+	cout &lt;&lt; &quot;     [2] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][3];
+	cout &lt;&lt; &quot;     [3] &quot;;
+	cout&lt;&lt;pFun&lt;&lt;endl;
+	 
+	cout &lt;&lt; &quot;[&quot;&lt;&lt; s+1 &lt;&lt;&quot;] Base2.ibase2 = &quot; &lt;&lt; (int)pVtab[s+1] &lt;&lt; endl;
+	 
+	s = s + sizeof(Base2)/4;
+	 
+	cout &lt;&lt; &quot;[&quot; &lt;&lt; s &lt;&lt; &quot;] Base3::_vptr-&gt;&quot;&lt;&lt;endl;
+	pFun = (Fun)pVtab[s][0];
+	cout &lt;&lt; &quot;     [0] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][1];
+	cout &lt;&lt; &quot;     [1] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][2];
+	cout &lt;&lt; &quot;     [2] &quot;; pFun();
+	 
+	pFun = (Fun)pVtab[s][3];
+	cout &lt;&lt; &quot;     [3] &quot;;
+	cout&lt;&lt;pFun&lt;&lt;endl;
+	 
+	s++;
+	cout &lt;&lt; &quot;[&quot;&lt;&lt; s &lt;&lt;&quot;] Base3.ibase3 = &quot; &lt;&lt; (int)pVtab[s] &lt;&lt; endl;
+	s++;
+	cout &lt;&lt; &quot;[&quot;&lt;&lt; s &lt;&lt;&quot;] Derive.iderive = &quot; &lt;&lt; (int)pVtab[s] &lt;&lt; endl;
+	return 0; 
+} 
+
+</code></pre>
+<p>内存分布情况如下</p>
+<pre><code class="language-cpp">Vtable for Base1
+Base1::_ZTV5Base1: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI5Base1)
+8     (int (*)(...))Base1::f
+12    (int (*)(...))Base1::g
+16    (int (*)(...))Base1::h
+
+Class Base1
+   size=8 align=4
+   base size=8 base align=4
+Base1 (0x0x4d907a8) 0
+    vptr=((&amp; Base1::_ZTV5Base1) + 8u)
+
+Vtable for Base2
+Base2::_ZTV5Base2: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI5Base2)
+8     (int (*)(...))Base2::f
+12    (int (*)(...))Base2::g
+16    (int (*)(...))Base2::h
+
+Class Base2
+   size=8 align=4
+   base size=8 base align=4
+Base2 (0x0x4d907e0) 0
+    vptr=((&amp; Base2::_ZTV5Base2) + 8u)
+
+Vtable for Base3
+Base3::_ZTV5Base3: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI5Base3)
+8     (int (*)(...))Base3::f
+12    (int (*)(...))Base3::g
+16    (int (*)(...))Base3::h
+
+Class Base3
+   size=8 align=4
+   base size=8 base align=4
+Base3 (0x0x4d90818) 0
+    vptr=((&amp; Base3::_ZTV5Base3) + 8u)
+
+Vtable for Derive
+Derive::_ZTV6Derive: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI6Derive)
+8     (int (*)(...))Derive::f
+12    (int (*)(...))Base1::g
+16    (int (*)(...))Base1::h
+20    (int (*)(...))Derive::g1
+24    (int (*)(...))-8
+28    (int (*)(...))(&amp; _ZTI6Derive)
+32    (int (*)(...))Derive::_ZThn8_N6Derive1fEv
+36    (int (*)(...))Base2::g
+40    (int (*)(...))Base2::h
+44    (int (*)(...))-16
+48    (int (*)(...))(&amp; _ZTI6Derive)
+52    (int (*)(...))Derive::_ZThn16_N6Derive1fEv
+56    (int (*)(...))Base3::g
+60    (int (*)(...))Base3::h
+
+Class Derive
+   size=28 align=4
+   base size=28 base align=4
+Derive (0x0x4ddeb40) 0
+    vptr=((&amp; Derive::_ZTV6Derive) + 8u)
+  Base1 (0x0x4d90850) 0
+      primary-for Derive (0x0x4ddeb40)
+  Base2 (0x0x4d90888) 8
+      vptr=((&amp; Derive::_ZTV6Derive) + 32u)
+  Base3 (0x0x4d908c0) 16
+      vptr=((&amp; Derive::_ZTV6Derive) + 52u)
+
+</code></pre>
+<p>程序的输出结果为</p>
+<pre><code class="language-cpp">[0] Base1::_vptr-&gt;
+     [0] Derive::f()
+     [1] Base1::g()
+     [2] Base1::h()
+     [3] Derive::g1()
+     [4] 1
+[1] Base1.ibase1 = 10
+[2] Base2::_vptr-&gt;
+     [0] Derive::f()
+     [1] Base2::g()
+     [2] Base2::h()
+     [3] 1
+[3] Base2.ibase2 = 20
+[4] Base3::_vptr-&gt;
+     [0] Derive::f()
+     [1] Base3::g()
+     [2] Base3::h()
+     [3] 0
+[5] Base3.ibase3 = 30
+[6] Derive.iderive = 100
+
+</code></pre>
+<p>结论：</p>
+<ol>
+<li>每个父类都有自己的虚表。</li>
+<li>子类的成员函数被放到了第一个父类的表中。</li>
+<li>内存布局中，其父类布局依次按声明顺序排列。</li>
+<li>每个父类的虚表中的f()函数都被overwrite成了子类的f()。这样做就是为了解决不同的父类类型的指针指向同一个子类实例，而能够调用到实际的函数。</li>
+</ol>
+<h2 id="多重继承-2">多重继承</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+class B
+{
+    public:
+        int ib;
+        char cb;
+    public:
+        B():ib(0),cb('B') {}
+ 
+        virtual void f() { cout &lt;&lt; &quot;B::f()&quot; &lt;&lt; endl;}
+        virtual void Bf() { cout &lt;&lt; &quot;B::Bf()&quot; &lt;&lt; endl;}
+};
+class B1 :  public B
+{
+    public:
+        int ib1;
+        char cb1;
+    public:
+        B1():ib1(11),cb1('1') {}
+ 
+        virtual void f() { cout &lt;&lt; &quot;B1::f()&quot; &lt;&lt; endl;}
+        virtual void f1() { cout &lt;&lt; &quot;B1::f1()&quot; &lt;&lt; endl;}
+        virtual void Bf1() { cout &lt;&lt; &quot;B1::Bf1()&quot; &lt;&lt; endl;}
+ 
+};
+class B2:  public B
+{
+    public:
+        int ib2;
+        char cb2;
+    public:
+        B2():ib2(12),cb2('2') {}
+ 
+        virtual void f() { cout &lt;&lt; &quot;B2::f()&quot; &lt;&lt; endl;}
+        virtual void f2() { cout &lt;&lt; &quot;B2::f2()&quot; &lt;&lt; endl;}
+        virtual void Bf2() { cout &lt;&lt; &quot;B2::Bf2()&quot; &lt;&lt; endl;}
+ 
+};
+ 
+class D : public B1, public B2
+{
+    public:
+        int id;
+        char cd;
+    public:
+        D():id(100),cd('D') {}
+ 
+        virtual void f() { cout &lt;&lt; &quot;D::f()&quot; &lt;&lt; endl;}
+        virtual void f1() { cout &lt;&lt; &quot;D::f1()&quot; &lt;&lt; endl;}
+        virtual void f2() { cout &lt;&lt; &quot;D::f2()&quot; &lt;&lt; endl;}
+        virtual void Df() { cout &lt;&lt; &quot;D::Df()&quot; &lt;&lt; endl;}
+ 
+};
+int main(){
+	typedef void(*Fun)(void);
+	int** pVtab = NULL;
+	Fun pFun = NULL;
+	 
+	D d;
+	pVtab = (int**)&amp;d;
+	cout &lt;&lt; &quot;[0] D::B1::_vptr-&gt;&quot; &lt;&lt; endl;
+	pFun = (Fun)pVtab[0][0];
+	cout &lt;&lt; &quot;     [0] &quot;;    pFun();
+	pFun = (Fun)pVtab[0][1];
+	cout &lt;&lt; &quot;     [1] &quot;;    pFun();
+	pFun = (Fun)pVtab[0][2];
+	cout &lt;&lt; &quot;     [2] &quot;;    pFun();
+	pFun = (Fun)pVtab[0][3];
+	cout &lt;&lt; &quot;     [3] &quot;;    pFun();
+	pFun = (Fun)pVtab[0][4];
+	cout &lt;&lt; &quot;     [4] &quot;;    pFun();
+	pFun = (Fun)pVtab[0][5];
+	cout &lt;&lt; &quot;     [5] 0x&quot; &lt;&lt; pFun &lt;&lt; endl;
+	 
+	cout &lt;&lt; &quot;[1] B::ib = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[2] B::cb = &quot; &lt;&lt; static_cast&lt;char&gt;((int)(pVtab[2]))&lt;&lt; endl;
+	cout &lt;&lt; &quot;[3] B1::ib1 = &quot; &lt;&lt; (int)pVtab[3] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[4] B1::cb1 = &quot; &lt;&lt; (char)(int)pVtab[4] &lt;&lt; endl;
+	 
+	cout &lt;&lt; &quot;[5] D::B2::_vptr-&gt;&quot; &lt;&lt; endl;
+	pFun = (Fun)pVtab[5][0];
+	cout &lt;&lt; &quot;     [0] &quot;;    pFun();
+	pFun = (Fun)pVtab[5][1];
+	cout &lt;&lt; &quot;     [1] &quot;;    pFun();
+	pFun = (Fun)pVtab[5][2];
+	cout &lt;&lt; &quot;     [2] &quot;;    pFun();
+	pFun = (Fun)pVtab[5][3];
+	cout &lt;&lt; &quot;     [3] &quot;;    pFun();
+	pFun = (Fun)pVtab[5][4];
+	cout &lt;&lt; &quot;     [4] 0x&quot; &lt;&lt; pFun &lt;&lt; endl;
+	 
+	cout &lt;&lt; &quot;[6] B::ib = &quot; &lt;&lt; (int)pVtab[6] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[7] B::cb = &quot; &lt;&lt; (char)(int)pVtab[7] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[8] B2::ib2 = &quot; &lt;&lt; (int)pVtab[8] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[9] B2::cb2 = &quot; &lt;&lt; (char)(int)pVtab[9] &lt;&lt; endl;
+	 
+	cout &lt;&lt; &quot;[10] D::id = &quot; &lt;&lt; (int)pVtab[10] &lt;&lt; endl;
+	cout &lt;&lt; &quot;[11] D::cd = &quot; &lt;&lt; (char)(int)pVtab[11] &lt;&lt; endl;
+	return 0; 
+} 
+
+
+</code></pre>
+<p>内存分布情况如下</p>
+<pre><code class="language-cpp">Vtable for B
+B::_ZTV1B: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI1B)
+8     (int (*)(...))B::f
+12    (int (*)(...))B::Bf
+
+Class B
+   size=12 align=4
+   base size=9 base align=4
+B (0x0x4dc27a8) 0
+    vptr=((&amp; B::_ZTV1B) + 8u)
+
+Vtable for B1
+B1::_ZTV2B1: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI2B1)
+8     (int (*)(...))B1::f
+12    (int (*)(...))B::Bf
+16    (int (*)(...))B1::f1
+20    (int (*)(...))B1::Bf1
+
+Class B1
+   size=20 align=4
+   base size=17 base align=4
+B1 (0x0x4e09780) 0
+    vptr=((&amp; B1::_ZTV2B1) + 8u)
+  B (0x0x4dc27e0) 0
+      primary-for B1 (0x0x4e09780)
+
+Vtable for B2
+B2::_ZTV2B2: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI2B2)
+8     (int (*)(...))B2::f
+12    (int (*)(...))B::Bf
+16    (int (*)(...))B2::f2
+20    (int (*)(...))B2::Bf2
+
+Class B2
+   size=20 align=4
+   base size=17 base align=4
+B2 (0x0x4e09c40) 0
+    vptr=((&amp; B2::_ZTV2B2) + 8u)
+  B (0x0x4dc2818) 0
+      primary-for B2 (0x0x4e09c40)
+
+Vtable for D
+D::_ZTV1D: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI1D)
+8     (int (*)(...))D::f
+12    (int (*)(...))B::Bf
+16    (int (*)(...))D::f1
+20    (int (*)(...))B1::Bf1
+24    (int (*)(...))D::f2
+28    (int (*)(...))D::Df
+32    (int (*)(...))-20
+36    (int (*)(...))(&amp; _ZTI1D)
+40    (int (*)(...))D::_ZThn20_N1D1fEv
+44    (int (*)(...))B::Bf
+48    (int (*)(...))D::_ZThn20_N1D2f2Ev
+52    (int (*)(...))B2::Bf2
+
+Class D
+   size=48 align=4
+   base size=45 base align=4
+D (0x0x4e27040) 0
+    vptr=((&amp; D::_ZTV1D) + 8u)
+  B1 (0x0x4e27080) 0
+      primary-for D (0x0x4e27040)
+    B (0x0x4dc2850) 0
+        primary-for B1 (0x0x4e27080)
+  B2 (0x0x4e270c0) 20
+      vptr=((&amp; D::_ZTV1D) + 40u)
+    B (0x0x4dc2888) 20
+        primary-for B2 (0x0x4e270c0)
+
+
+</code></pre>
+<p>输出结果为</p>
+<pre><code class="language-bash">[0] D::B1::_vptr-&gt;
+     [0] D::f()
+     [1] B::Bf()
+     [2] D::f1()
+     [3] B1::Bf1()
+     [4] D::f2()
+     [5] 0x1
+[1] B::ib = 0
+[2] B::cb = B
+[3] B1::ib1 = 11
+[4] B1::cb1 = 1
+[5] D::B2::_vptr-&gt;
+     [0] D::f()
+     [1] B::Bf()
+     [2] D::f2()
+     [3] B2::Bf2()
+     [4] 0x0
+[6] B::ib = 0
+[7] B::cb = B
+[8] B2::ib2 = 12
+[9] B2::cb2 = 2
+[10] D::id = 100
+[11] D::cd = D
+
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="language-cpp">
+</code></pre>
+<p>发现最顶端的父类B其成员变量和虚函数存在于B1和B2中，并被D给继承下去了。而在D中，其有B1和B2的实例，于是B的成员在D的实例中存在两份，一份是B1继承而来的，另一份是B2继承而来的，因此就会浪费内存。</p>
+<p>尽管我们可以通过明确指明调用路径以消除二义性，但二义性的潜在性还没有消除，我们可以通过虚继承来使D类只拥有一个ib实体。</p>
+<h1 id="虚继承">虚继承</h1>
+<p>虚继承解决了菱形继承中最派生类拥有多个间接父类实例的情况。虚继承的派生类的内存布局与普通继承很多不同，主要体现在：</p>
+<ol>
+<li>虚继承的子类，如果本身定义了新的虚函数，则编译器为其生成一个虚函数指针（vptr）以及一张虚函数表。该vptr位于对象内存最前面。vs非虚继承：直接扩展父类虚函数表。</li>
+<li>虚继承的子类也单独保留了父类的vprt与虚函数表。这部分内容接与子类内容以一个四字节的0来分界。</li>
+<li>虚继承的子类对象中，含有四字节的虚表指针偏移值。</li>
+</ol>
+<h2 id="简单虚继承">简单虚继承</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+class B
+{
+public:
+    int ib;
+public:
+    B(int i=1) :ib(i){}
+    virtual void f() { cout &lt;&lt; &quot;B::f()&quot; &lt;&lt; endl; }
+    virtual void Bf() { cout &lt;&lt; &quot;B::Bf()&quot; &lt;&lt; endl; }
+};
+ 
+class B1 : virtual public B
+{
+public:
+    int ib1;
+public:
+    B1(int i = 100 ) :ib1(i) {}
+    virtual void f() { cout &lt;&lt; &quot;B1::f()&quot; &lt;&lt; endl; }
+    virtual void f1() { cout &lt;&lt; &quot;B1::f1()&quot; &lt;&lt; endl; }
+    virtual void Bf1() { cout &lt;&lt; &quot;B1::Bf1()&quot; &lt;&lt; endl; }
+};
+int main(){
+	B1 b;
+	using Fun=void(*)();
+	Fun pFun = NULL;
+	int ** pvtable = (int**)&amp;b;
+	for (int i=0; i&lt;9; i++){
+		if (pvtable[0][i]==NULL) {
+			cout&lt;&lt;&quot;here:&quot;&lt;&lt;(int)pvtable[0][i]&lt;&lt;endl;
+			i+=4;
+			continue;
+		}
+		pFun = (Fun)pvtable[0][i];
+		pFun();
+	}
+	cout&lt;&lt;&quot;size == &quot;&lt;&lt;sizeof(b)&lt;&lt;endl;
+	cout&lt;&lt;&quot;[1]:B1::ib1=&quot;&lt;&lt;(int)pvtable[1]&lt;&lt;endl;
+	cout&lt;&lt;&quot;[3]:B::ib=&quot;&lt;&lt;(int)pvtable[3]&lt;&lt;endl;
+	cout&lt;&lt;&quot;[2]:B::ib=&quot;&lt;&lt;(int)pvtable[2]&lt;&lt;endl;
+//	pFun = (Fun)pvtable[2];
+//	pFun();
+//	for (int i=1; pvtable[1][i]!=NULL; i++){
+//		pFun = (Fun)pvtable[1][i];
+//		pFun();
+//	}
+	
+	return 0; 
+} 
+
+
+
+</code></pre>
+<p>内存布局</p>
+<pre><code class="language-cpp">Vtable for B
+B::_ZTV1B: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(&amp; _ZTI1B)
+8     (int (*)(...))B::f
+12    (int (*)(...))B::Bf
+
+Class B
+   size=8 align=4
+   base size=8 base align=4
+B (0x0x4f527a8) 0
+    vptr=((&amp; B::_ZTV1B) + 8u)
+
+Vtable for B1
+B1::_ZTV2B1: 12u entries
+0     8u
+4     (int (*)(...))0
+8     (int (*)(...))(&amp; _ZTI2B1)
+12    (int (*)(...))B1::f
+16    (int (*)(...))B1::f1
+20    (int (*)(...))B1::Bf1
+24    0u
+28    4294967288u
+32    (int (*)(...))-8
+36    (int (*)(...))(&amp; _ZTI2B1)
+40    (int (*)(...))B1::_ZTv0_n12_N2B11fEv
+44    (int (*)(...))B::Bf
+
+VTT for B1
+B1::_ZTT2B1: 2u entries
+0     ((&amp; B1::_ZTV2B1) + 12u)
+4     ((&amp; B1::_ZTV2B1) + 40u)
+
+Class B1
+   size=16 align=4
+   base size=8 base align=4
+B1 (0x0x4f9a540) 0
+    vptridx=0u vptr=((&amp; B1::_ZTV2B1) + 12u)
+  B (0x0x4f527e0) 8 virtual
+      vptridx=4u vbaseoffset=-12 vptr=((&amp; B1::_ZTV2B1) + 40u)
+
+</code></pre>
+<p>程序运行结果</p>
+<pre><code class="language-cpp">B1::f()
+B1::f1()
+B1::Bf1()
+here:0
+B::Bf()
+size == 16
+[1]:B1::ib1=100
+[3]:B::ib=1
+[2]:B::ib=4781096
+
+</code></pre>
+<p>这里的内存分布比较奇怪，与vc++的结果不一样。</p>
+<p>但是这里size是16 说明有两个指针；</p>
+<h2 id="多重虚继承">多重虚继承</h2>
+<p>菱形虚拟继承下，最派生类D类的对象模型又有不同的构成了。在D类对象的内存构成上，有以下几点：</p>
+<ol>
+<li>在D类对象内存中，基类出现的顺序是：先是B1（最左父类），然后是B2（次左父类），最后是B（虚祖父类）</li>
+<li>D类对象的数据成员id放在B类前面，两部分数据依旧以0来分隔。</li>
+<li>编译器没有为D类生成一个它自己的vptr，而是覆盖并扩展了最左父类的虚基类表，与简单继承的对象模型相同。</li>
+<li>超类B的内容放到了D类对象内存布局的最后。</li>
+</ol>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://zhuanlan.zhihu.com/p/30007037">C/C++内存对齐详解</a></p>
+<p><a href="https://coolshell.cn/articles/12176.html">C++ 对象的内存布局——coolshell</a></p>
+<p><a href="https://www.cnblogs.com/QG-whz/p/4909359.html">图说C++对象模型：对象内存布局详解</a></p>
+<p>[各编译器显示内存布局](</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/Tl2aOZ6vP" class="tag">
+                    cpp
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/kcZ7gT9amr" class="tag">
+                    编程
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/cpp-innnertype">
+                  <h3 class="post-title">
+                    c++ 的类型回顾
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
