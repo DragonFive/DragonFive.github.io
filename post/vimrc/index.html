@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>简洁的vim配置 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573719680481">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573719680481" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">简洁的vim配置</h2>
+            <div class="post-date">2017-06-09</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.3FdItXkvycrBBNClTdTUFgHaHa&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>Title: 简洁的vim配置<br>
+date: 2017/6/9 22:04:12<br>
+tags:</p>
+<ul>
+<li>工具</li>
+<li>linux</li>
+</ul>
+<hr>
+<p>vim配置好了是可以很高效的，但是现在一些vim配置文件写得很复杂，导致拖慢了vim的执行速度，因此我自己写了一个精简的vimrc，里面只包含我真正需要的东西。</p>
+<h1 id="vim好用的插件">vim好用的插件</h1>
+<p>使用vundle管理插件，所以在使用该配置之前执行</p>
+<pre><code class="language-BASH">git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+</code></pre>
+<p><strong>vim 升级</strong></p>
+<pre><code class="language-bash">sudo add-apt-repository ppa:jonathonf/vim
+sudo apt-get update
+sudo apt-get install vim-nox-py2
+sudo mv /usr/local/bin/vim /usr/local/bin/vim.old
+sudo ln -s /usr/bin/vim.nox-py2 /usr/local/bin/vim
+</code></pre>
+<p><a href="https://blog.csdn.net/yanjiee/article/details/76066936">ubuntu16.04下VIM升级、配置插件YouCompleteMe</a></p>
+<p><strong>vim 配置文件</strong><br>
+以下是我的.vimrc文件，应放在 ~ 目录下。然后在vim中执行PluginInstall。</p>
+<pre><code class="language-BASH">&quot;vundle 环境设置
+                                                                                                                                                                                                                                                     filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+&quot; vundle 管理的插件列表必须位于 vundle#begin() 和 vundle#end() 之间
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'altercation/vim-colors-solarized'
+&quot; Plugin 'Valloric/YouCompleteMe’
+&quot; 插件列表结束
+call vundle#end()
+filetype plugin indent on
+ 
+&quot; 定义快捷键的前缀，即&lt;Leader&gt;
+let mapleader=&quot;;&quot;
+&quot; 开启文件类型侦测
+filetype on
+&quot; 根据侦测到的不同类型加载对应的插件
+filetype plugin on
+&quot; 定义快捷键到行首和行尾
+nmap LB 0
+nmap LE $
+&quot; 将H映射为到行首
+nnoremap H &lt;S-^&gt;
+&quot; 将L映射为到行尾
+nnoremap L $
+&quot; 将esc映射为control + c
+nmap &lt;C&gt;c esc
+&quot; 设置快捷键将选中文本块复制至系统剪贴板
+vnoremap &lt;Leader&gt;y &quot;+y
+&quot; 设置快捷键将系统剪贴板内容粘贴至 vim
+nmap &lt;Leader&gt;p &quot;+p
+&quot; 定义快捷键关闭当前分割窗口
+nmap &lt;Leader&gt;q :q&lt;CR&gt;
+&quot; 定义快捷键保存当前窗口内容
+nmap &lt;Leader&gt;w :w&lt;CR&gt;
+&quot; 定义快捷键保存所有窗口内容并退出 vim
+nmap &lt;Leader&gt;WQ :wa&lt;CR&gt;:q&lt;CR&gt;
+&quot; 不做任何保存，直接退出 vim
+nmap &lt;Leader&gt;Q :qa!&lt;CR&gt;
+&quot; 依次遍历子窗口
+&quot; nnoremap nw &lt;C-W&gt;&lt;C-W&gt;
+&quot; 跳转至右方的窗口
+nnoremap &lt;Leader&gt;lw &lt;C-W&gt;l
+&quot; 跳转至左方的窗口
+nnoremap &lt;Leader&gt;hw &lt;C-W&gt;h
+&quot; 跳转至上方的子窗口
+nnoremap &lt;Leader&gt;kw &lt;C-W&gt;k
+&quot; 跳转至下方的子窗口
+nnoremap &lt;Leader&gt;jw &lt;C-W&gt;j
+&quot; 定义快捷键在结对符之间跳转
+nmap &lt;Leader&gt;M %
+ 
+&quot; 让配置变更立即生效
+autocmd BufWritePost $MYVIMRC source $MYVIMRC
+ 
+&quot; 开启实时搜索功能
+set incsearch
+&quot; 搜索时大小写不敏感
+set ignorecase
+&quot; &quot; 关闭兼容模式
+set nocompatible
+&quot; &quot; vim 自身命令行模式智能补全                                                                                                                                                                                                                                                
+set wildmenu
+ 
+&quot; 设置显示行号和相对行号, 向上移动到某行，行数-
+set number
+set relativenumber
+&quot; 设置智能缩进
+set smartindent
+&quot; 下一行自动复制本行的缩进
+set autoindent
+&quot; 设置缩进的空格数
+set shiftwidth=4
+&quot; 设置tab键对应的空格数
+set tabstop=4
+&quot; 自动替换tab键为空格
+set expandtab
+&quot; 设置光标在屏幕中的位置
+set scrolloff=3
+
+ &quot; 启用鼠标
+set mouse=a
+set selection=exclusive
+set selectmode=mouse,key
+
+&quot; 以下是高亮搜索项
+set hlsearch
+set display=lastline
+&quot; 高亮光标所在行列
+set cursorcolumn
+set cursorline
+&quot; highlight CursorLine   cterm=NONE ctermbg=black ctermfg=green guibg=NONE guifg=NONE
+&quot; highlight CursorColumn cterm=NONE ctermbg=black ctermfg=NONE guibg=NONE guifg=NONE
+&quot; 总是显示状态栏
+set laststatus=2
+&quot; 自动匹配括号
+set showmatch
+ 
+&quot; 打开文件默认不折叠代码
+set foldlevelstart=99
+&quot; &quot; 代码可折叠
+set foldmethod=indent
+set foldlevel=99
+&quot; 所有python语法高亮功能生效
+let python_highlight_all=1
+ 
+set term=screen
+ 
+&quot; 显示执行的命令
+set showcmd
+&quot; 设置自动保存
+set autowrite
+ 
+&quot; 括号自动补全
+inoremap ( ()&lt;ESC&gt;i
+inoremap ) &lt;c-r&gt;=ClosePair(')')&lt;CR&gt;
+inoremap [ []&lt;ESC&gt;i
+&quot; inoremap } &lt;c-r&gt;=ClosePair('}')&lt;CR&gt;
+ 
+&quot; 为python文件自动添加文件头
+autocmd BufNewFile *.py execute &quot;:call NewPy(&quot;
+function! NewPy() 
+    &quot; call setline(1,&quot;#!/usr/bin/env python&quot;   
+    call setline(1,&quot;# -*- encoding: utf-8 -*-&quot;)
+endfunction
+ 
+&quot; 记录上次关闭vim光标所在的位置
+autocmd BufReadPost *
+            \ if line(&quot;'\&quot;&quot;)&gt;0&amp;&amp;line(&quot;'\&quot;&quot;)&lt;=line(&quot;$&quot;) |
+            \   exe &quot;normal g'\&quot;&quot; |
+                        \ endif
+&quot; 设置背景色
+syntax enable
+let g:solarized_termtrans = 1
+set background=dark
+&quot; set background=light
+colorscheme solarized
+ 
+&quot; 高亮行列的配色方
+&quot; 深色
+highlight CursorLine   cterm=NONE ctermbg=black ctermfg=white guibg=red guifg=white
+highlight CursorColumn cterm=NONE ctermbg=black ctermfg=white guibg=red guifg=white
+&quot; 浅色
+&quot; highlight CursorLine   cterm=NONE ctermbg=lightgray ctermfg=black guibg=red guifg=white
+&quot; highlight CursorColumn cterm=NONE ctermbg=lightgray ctermfg=black guibg=red guifg=white
+&quot; 修改高亮的背景色
+highlight SyntasticErrorSign guifg=white guibg=black
+ 
+&quot;自动补全结束函数
+function! ClosePair(char)
+    if getline('.')[col('.') - 1] == a:char
+        return &quot;\&lt;Right&gt;&quot;
+    else
+        return a:char
+    endif
+endfunction
+
+</code></pre>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://github.com/xinxingzhao/myconfig/blob/master/vimrc">vim配置</a><br>
+[像使用IDE一样使用VIM](</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/q862sw3DI" class="tag">
+                    vim
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/LoClL4RQ1" class="tag">
+                    linux
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/caffe-docker">
+                  <h3 class="post-title">
+                    零门槛玩坏caffe
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>零门槛玩坏caffe | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573719680481">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573719680481" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">零门槛玩坏caffe</h2>
+            <div class="post-date">2017-05-26</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.rxZDDDwhClqbkfdJrGaoJgHaE8&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: 零门槛玩坏caffe<br>
+date: 2017/5/26 15:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习</li>
+<li>虚拟化<br>
+tags:</li>
+<li>nvidia驱动</li>
+<li>深度学习</li>
+<li>caffe</li>
+<li>docker</li>
+<li>deeplearning</li>
+<li>python</li>
+</ul>
+<hr>
+<p>DL如今已经快成为全民玄学了，感觉离民科入侵不远了。唯一的门槛可能是环境不好配，特别是caffe这种依赖数10种其它软件打框架。不过有了docker之后，小学生也能站撸DL了。</p>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1496650170493.jpg" alt="enter description here"></figure>
+<!--more-->
+<h1 id="从nvidia-docker到docker需要有这样的操作">从nvidia-docker到docker，需要有这样的操作</h1>
+<p>大致流程如下，入门版通过docker pull一个GPU版本的caffe 的image,然后安装nvidia-docker 和 nvidia-docker-plugin 来映射宿主机的nvidia-driver并通过共享volume的方式来支持容器里面能“看到”宿主机的GPU。进阶版通过curl -s命令列出宿主机的配置显卡配置，并通过docker run的方式来启动。总结完成。纸上得来终觉浅，绝知此事要躬行，光说不练空把式，唯有实践出真知。<br>
+<a href="https://xuxinkun.github.io/2016/10/08/tensorflow-kubernetes/">tensorflow gpu in docker</a></p>
+<p>使用nvidia-docker</p>
+<pre><code>sudo nohup nvidia-docker-plugin &gt;/tmp/nvidia-docker.log &amp;  
+然后nvidia-docker run
+</code></pre>
+<p>使用docker来代替 nvidia-docker</p>
+<pre><code>curl -s http://localhost:3476/docker/cli
+</code></pre>
+<p>下面应该是输出：</p>
+<pre><code>--device=/dev/nvidiactl --device=/dev/nvidia-uvm --device=/dev/nvidia7 --devic/dev/nvidia6 --device=/dev/nvidia5 --device=/dev/nvidia4 --device=/dev/nvidia3 --device=/dev/nvidia2 --device=/dev/nvidia1 --device=/dev/nvidia0 --volume-driver=nvidia-docker --volume=nvidia_driver_375.39:/usr/local/nvidia:ro
+</code></pre>
+<p>这样其实</p>
+<pre><code>sudo docker run -ti `curl -s http://localhost:3476/v1.0/docker/cli` -v /mnt/share:/mnt/share -v /mnt/lustre:/mnt/lustre  -v /lib64:/lib64 镜像名 bash
+</code></pre>
+<p>所以如果你想用docker的方式来运行GPU版本 那么你就需要指明你的所有的device信息，如果卸载rc文件里，那么只能这样</p>
+<pre><code>sudo docker run -ti --device=/dev/nvidiactl --device=/dev/nvidia-uvm --device=/dev/nvidia7 --device=/dev/nvidia6 --device=/dev/nvidia5 \
+--device=/dev/nvidia4 --device=/dev/nvidia3 --device=/dev/nvidia2 --device=/dev/nvidia1 --device=/dev/nvidia0 \
+--volume-driver=nvidia-docker --volume=nvidia_driver_375.39:/usr/local/nvidia:ro \
+ -v /mnt/share:/mnt/share -v /mnt/lustre:/mnt/lustre  -v /lib64:/lib64  镜像名  bash
+</code></pre>
+<p>当前你也可以有这样风骚的走位</p>
+<pre><code>sudo docker run -ti  $(ls /dev/nvidia* | xargs -I{} echo '--device={}')   -v /mnt/share:/mnt/share -v /mnt/lustre:/mnt/lustre  -v /lib64:/lib64  镜像名  bash
+</code></pre>
+<h1 id="在镜像里安装ipython-notebook需要这样做">在镜像里安装ipython notebook，需要这样做</h1>
+<p>把大象装进冰箱分四步，映射端口，开通open-ssh服务器，安装jupyter,配置密码<br>
+在镜像中执行</p>
+<ol start="0">
+<li>映射端口<br>
+在dock run的时候加-p参数</li>
+<li>开通ssh</li>
+</ol>
+<pre><code>sudo apt-get install openssh-server
+</code></pre>
+<ol start="2">
+<li>安装jupyter</li>
+</ol>
+<pre><code>apt-get update
+#安装python dev包
+apt-get install python-dev
+#安装jupyter
+pip install jupyter
+</code></pre>
+<ol start="3">
+<li>设置密码<br>
+分三小步<br>
+a. 生成jupyter配置文件，这个会生成配置文件.jupyter/jupyter_notebook_config.py</li>
+</ol>
+<pre><code>jupyter notebook --generate-config
+</code></pre>
+<p>b. 从密码到ssa密文<br>
+在命令行输入ipython，进入ipython命令行</p>
+<pre><code>#使用ipython生成密码
+In [1]: from notebook.auth import passwd
+In [2]: passwd()
+Enter password: 
+Verify password: 
+Out[2]: 'sha1:38a5ecdf288b:c82dace8d3c7a212ec0bd49bbb99c9af3bae076e'
+</code></pre>
+<p>c. 改配置</p>
+<pre><code>#去配置文件.jupyter/jupyter_notebook_config.py中修改以下参数
+c.NotebookApp.ip='*'                          #绑定所有地址
+c.NotebookApp.password = u'刚才生成的密文也就是sha1:38a5ecdf288b:c82dace8d3c7a212ec0bd49bbb99c9af3bae076e'
+c.NotebookApp.open_browser = False            #启动后是否在浏览器中自动打开，注意F大写
+c.NotebookApp.port =8888                      #指定一个访问端口，默认8888，注意和映射的docker端口对应
+</code></pre>
+<p>然后执行ipython notebook --allow-root就可以在宿主机上用docker里面的环境了，爽歪歪。</p>
+<p><a href="https://segmentfault.com/a/1190000007448177">把jupyter-notebook装进docker里</a></p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://segmentfault.com/a/1190000007448177">把jupyter-notebook装进docker里</a><br>
+<a href="https://xuxinkun.github.io/2016/10/08/tensorflow-kubernetes/">tensorflow gpu in docker</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/uCHl6QLvI" class="tag">
+                    docker
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
+                    神经网络
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
+                    深度学习
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/584K3DWjv" class="tag">
+                    caffe
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/deeplearning_book">
+                  <h3 class="post-title">
+                    深度学习中译本-节选
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

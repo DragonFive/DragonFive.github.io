@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>docker 用 dockerfile 制作镜像 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573719680481">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573719680481" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">docker 用 dockerfile 制作镜像</h2>
+            <div class="post-date">2018-07-23</div>
+            
+              <div class="feature-container" style="background-image: url('https://cdn-images-1.medium.com/max/1600/1*9hGvYE5jegHm1r_97gH-jQ.png')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: docker 用 dockerfile 制作镜像<br>
+date: 2018/7/23 22:04:12<br>
+tags:</p>
+<ul>
+<li>虚拟化</li>
+<li>容器</li>
+</ul>
+<hr>
+<p>Docker 是近年来非常火的容器技术，而且Docker不仅仅是红帽和Canonical等Linux巨头眼里的宠儿，微软等专有软件公司也在热烈拥抱 Docker，可想而知 Docker技术有多么火了。</p>
+<h1 id="docker与nvidia-docker的安装">docker与nvidia-docker的安装</h1>
+<p><a href="https://blog.csdn.net/a632189007/article/details/78662741">ubuntu安装docker</a><br>
+<a href="https://blog.csdn.net/A632189007/article/details/78801166">Nvidia-Docker安装使用 -- 可使用GPU的Docker容器</a><br>
+具体安装方法参考<a href="https://github.com/NVIDIA/nvidia-docker">官方github文档</a><br>
+值得注意的是上面的教程都是针对 nvidia-docker 1.0版本的，而最近我测试安装时不成功的，所以我安装了最新的nvidia-docker 2.0, nvidia-docker 2.0要求docker 版本为 18.06.0-ce，而这个版本的docker 使用apt-get 是无法安装的，所以我们从官网手动下载deb文件，进行安装。</p>
+<p><a href="https://download.docker.com/linux/ubuntu/dists/trusty/pool/stable/amd64/">docker 各版本下载位置</a></p>
+<p>卸载老版本的docker</p>
+<pre><code class="language-bash">apt-get remove docker-ce
+</code></pre>
+<p>下载安装新版本的docker</p>
+<pre><code class="language-bash">wget https://download.docker.com/linux/ubuntu/dists/trusty/pool/stable/amd64/docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb 
+dpkg -i docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb  
+rm docker-ce_18.06.0~ce~3-0~ubuntu_amd64.deb  
+</code></pre>
+<p>然后安装nvidia-docker的github的方式安装nvidia-docker-2.</p>
+<h1 id="使用dockerfile制作docker镜像">使用dockerfile制作docker镜像</h1>
+<p>Dockerfile的指令根据作用可以分为两种，<strong>构建指令和设置指令</strong>。</p>
+<ul>
+<li>构建指令用于构建image，其指定的操作不会在运行image的容器上执行；</li>
+<li>设置指令用于设置image的属性，其指定的操作将在运行image的容器中执行。</li>
+</ul>
+<h2 id="构建指令">构建指令</h2>
+<p><strong>FROM（指定基础image）</strong><br>
+必须指定且需要在Dockerfile其他指令的前面。</p>
+<pre><code class="language-YAML">FROM 镜像名:标签名
+</code></pre>
+<p><strong>MAINTAINER（用来指定镜像创建者信息）</strong></p>
+<pre><code class="language-YAML">MAINTAINER 作者名
+</code></pre>
+<p><strong>RUN（安装软件用）</strong><br>
+RUN可以运行任何被基础image支持的命令。如基础image选择了ubuntu，那么软件管理部分只能使用ubuntu的命令。</p>
+<pre><code class="language-YAML">RUN &lt;command&gt; (the command is run in a shell - /bin/sh -c)
+RUN [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot; ... ] 
+</code></pre>
+<p>** CMD（设置container启动时执行的操作）**</p>
+<pre><code class="language-YAML">CMD [&quot;executable&quot;,&quot;param1&quot;,&quot;param2&quot;]
+</code></pre>
+<p><strong>ENV（用于设置环境变量）</strong><br>
+ENV指令可以用于为docker容器设置环境变量,ENV设置的环境变量，可以使用docker inspect命令来查看。同时还可以使用docker run --env <key>=<value>来修改环境变量。</p>
+<pre><code class="language-YAML">ENV &lt;key&gt; &lt;value&gt;
+</code></pre>
+<p>** ADD（从src复制文件到container的dest路径）**<br>
+如果是一个目录，那么会将该目录下的所有文件添加到container中，不包括目录；如果文件是可识别的压缩格式，则docker会帮忙解压缩（注意压缩格式）；如果<src>是文件且<dest>中不使用斜杠结束，则会将<dest>视为文件，<src>的内容会写入<dest>；如果<src>是文件且<dest>中使用斜杠结束，则会<src>文件拷贝到<dest>目录下。</p>
+<pre><code class="language-YAML">ADD &lt;src&gt; &lt;dest&gt;
+</code></pre>
+<ul>
+<li><src> 是相对被构建的源目录的相对路径，可以是文件或目录的路径，也可以是一个远程的文件url;</li>
+<li><dest> 是container中的绝对路径</li>
+</ul>
+<p>** COPY(复制本地主机的src文件为container的dest) **<br>
+复制本地主机的src文件（为Dockerfile所在目录的相对路径、文件或目录 ）到container的dest。目标路径不存在时，会自动创建。</p>
+<pre><code class="language-YAML">COPY &lt;src&gt; &lt;dest&gt;
+</code></pre>
+<p>当使用本地目录为源<strong>目录</strong>时，推荐使用COPY</p>
+<h2 id="构建镜像">构建镜像</h2>
+<p>使用当前目录的 Dockerfile 创建镜像，标签为 runoob/ubuntu:v1。</p>
+<pre><code class="language-YAML">docker build -t runoob/ubuntu:v1 .
+</code></pre>
+<h2 id="安装脚本">安装脚本</h2>
+<pre><code class="language-YAML">echo &quot;install gfortran&quot;
+apt-get install -y gfortran
+export LDFLAGS=-L/usr/lib/gcc/x86_64-linux-gnu/4.7/
+echo &quot;install open blas&quot;
+git clone git://github.com/xianyi/OpenBLAS
+cd OpenBLAS &amp;&amp; make FC=gfortran &gt;/dev/null &amp;&amp; make PREFIX=/usr/local install ; cd -
+apt-get install -y libopenblas-base
+#apt-get install libgtest-dev
+#cd /usr/src/gtest &amp;&amp; cmake . &amp;&amp; cmake --build . &amp;&amp; mv libg* /usr/local/lib/ ; cd -
+
+</code></pre>
+<p><a href="https://www.jianshu.com/p/af1731a6d033">安装gtest</a></p>
+<p><a href="https://mirror.tuna.tsinghua.edu.cn/help/pypi/">清华pypi镜像站</a><br>
+<a href="https://blog.csdn.net/aBlueMouse/article/details/78145802">ubuntu安装gcc5.4</a></p>
+<p><a href="https://blog.csdn.net/greenlight_74110/article/details/78350196">编译glibc(gcc)以及过程中遇到的一些错误</a></p>
+<p><a href="https://blog.csdn.net/u010900574/article/details/52201808">安装cudnn</a></p>
+<h2 id="dockerfile-例子">dockerfile 例子</h2>
+<pre><code class="language-YAML">FROM gitlabci/cuda8.0_gcc4.9:latest
+MAINTAINER maxiaolong maxiaolong@sensetime.com
+
+# install gfortran
+ADD sources.list /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get install -y gfortran
+RUN export LDFLAGS=-L/usr/lib/gcc/x86_64-linux-gnu/4.7/
+RUN echo &quot;install open blas&quot;
+RUN git clone git://github.com/xianyi/OpenBLAS
+#RUN cd /OpenBLAS &amp;&amp; make FC=gfortran &gt;/dev/null &amp;&amp; make PREFIX=/usr/local install &amp;&amp; cd -
+RUN apt-get install -y libopenblas-base
+# set gcc4.8
+RUN rm /usr/bin/gcc &amp;&amp; ln -s /usr/bin/gcc-4.8 /usr/bin/gcc
+# install GTest
+RUN apt-get install -y cmake wget unzip
+RUN git clone https://github.com/google/googletest.git
+RUN cd googletest/googletest &amp;&amp;  cmake . &amp;&amp;  make
+RUN mkdir /usr/local/gtest &amp;&amp; cp -r googletest/googletest /usr/local/gtest/gtest-4.8
+# install nccl
+RUN git clone https://github.com/NVIDIA/nccl.git
+RUN cd nccl  &amp;&amp; make install -j4
+
+# install cudnn
+COPY cudnn-8.0-linux-x64-v6.0.tgz cudnn-8.0-linux-x64-v6.0.tgz
+RUN tar zxvf cudnn-8.0-linux-x64-v6.0.tgz &amp;&amp; cp cuda/include/cudnn.h /usr/local/cuda/include &amp;&amp; cp cuda/lib64/libcudnn* /usr/local/cuda/lib64 &amp;&amp; chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
+
+# install gcc5.4
+RUN wget http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz  &amp;&amp; gunzip m4-1.4.18.tar.gz &amp;&amp; tar -xvf m4-1.4.18.tar &amp;&amp; cd m4-1.4.18/ &amp;&amp;  ./configure &amp;&amp; make &amp;&amp; make install
+
+RUN wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz &amp;&amp; tar -Jxvf gmp-6.1.2.tar.xz &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../gmp-6.1.2/configure --prefix=/usr/local/gmp-6.1.2  &amp;&amp; make &amp;&amp; make install
+
+Run wget https://www.mpfr.org/mpfr-3.1.6/mpfr-3.1.6.zip &amp;&amp;  unzip mpfr-3.1.6.zip &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../mpfr-3.1.6/configure --prefix=/usr/local/mpfr-3.1.6 --with-gmp=/usr/local/gmp-6.1.2 &amp;&amp; make &amp;&amp; make install
+
+
+RUN wget https://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz &amp;&amp; tar -zxvf mpc-1.0.3.tar.gz &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../mpc-1.0.3/configure --prefix=/usr/local/mpc-1.0.3 --with-gmp=/usr/local/gmp-6.1.2 --with-mpfr=/usr/local/mp
+fr-3.1.6 &amp;&amp; make &amp;&amp; make install
+
+RUN unset LIBRARY_PATH &amp;&amp; wget ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-5.4.0/gcc-5.4.0.tar.gz &amp;&amp;  tar -zxvf gcc-5.4.0.tar.gz &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../gcc-5.4.0/configure --prefix=/usr/lo
+cal/gcc-5.4 --enable-threads=posix --disable-checking --disable-multilib --enable-languages=c,c++ --with-gmp=/usr/local/gmp-6.1.2 --with-mpfr=/usr/local/mpfr-3.1.6 --with-mpc=/usr/local/mpc-1.0.3 &amp;&amp; make &amp;&amp; make install
+
+RUN rm -rf /temp/
+# set the gcc
+
+
+# install python and pip
+RUN apt-get install -y python2.7 python-pip python3.5 python3-pip python-dev python3-dev python3.5-dev cython libhdf5-dev python-numpy python3-numpy build-essential
+RUN cd /usr/bin &amp;&amp; rm python3 &amp;&amp; ln -s python3.5 python3
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pytest-runner flake8 colorlog pyyaml numpy
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cython requests setuptools --upgrade
+RUN pip install h5py
+
+RUN pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pytest-runner flake8 colorlog pyyaml
+RUN pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple numpy cython requests setuptools --upgrade
+RUN pip3 install h5py
+
+
+RUN cd /OpenBLAS &amp;&amp; make FC=gfortran &gt;/dev/null &amp;&amp; make PREFIX=/usr/local install &amp;&amp; cd -
+# make the gtest for gcc5.4
+
+RUN rm /usr/bin/gcc &amp;&amp; ln -s /usr/local/gcc-5.4/bin/gcc /usr/bin/gcc
+
+RUN mkdir temp &amp;&amp; cd temp &amp;&amp;  git clone https://github.com/google/googletest.git &amp;&amp; cd googletest/googletest &amp;&amp; cmake . &amp;&amp; make &amp;&amp; cd .. &amp;&amp; cp -r googletest /usr/local/gtest/gtest-5.4
+
+RUN rm -rf temp &amp;&amp; rm /usr/bin/gcc &amp;&amp; ln -s /usr/bin/gcc-4.8 /usr/bin/gcc
+</code></pre>
+<h2 id="cuda9-cudnn-7">cuda9 + cudnn 7</h2>
+<pre><code class="language-YAML">FROM registry.sensetime.com/jiangbo/cuda9_ubuntu16.04:opencv
+MAINTAINER maxiaolong maxiaolong@sensetime.com
+
+# install gfortran
+ADD sources.list /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get install -y gfortran
+RUN export LDFLAGS=-L/usr/lib/gcc/x86_64-linux-gnu/4.7/
+RUN echo &quot;install open blas&quot;
+RUN git clone git://github.com/xianyi/OpenBLAS
+#RUN cd /OpenBLAS &amp;&amp; make FC=gfortran &gt;/dev/null &amp;&amp; make PREFIX=/usr/local install &amp;&amp; cd -
+RUN apt-get install -y libopenblas-base
+# set gcc4.8
+RUN rm /usr/bin/gcc &amp;&amp; ln -s /usr/bin/gcc-4.8 /usr/bin/gcc
+# install GTest
+RUN apt-get install -y cmake wget unzip
+RUN git clone https://github.com/google/googletest.git
+RUN cd googletest/googletest &amp;&amp;  cmake . &amp;&amp;  make
+RUN mkdir /usr/local/gtest &amp;&amp; cp -r googletest/googletest /usr/local/gtest/gtest-4.8
+# install nccl
+RUN git clone https://github.com/NVIDIA/nccl.git
+RUN cd nccl  &amp;&amp; make install -j4
+
+# install cudnn
+COPY cudnn-7.0.tgz cudnn-7.0.tgz
+RUN tar zxvf cudnn-7.0.tgz &amp;&amp; cp cuda/include/cudnn.h /usr/local/cuda/include &amp;&amp; cp cuda/lib64/libcudnn* /usr/local/cuda/lib64 &amp;&amp; chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
+
+# install gcc5.4
+RUN wget http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz  &amp;&amp; gunzip m4-1.4.18.tar.gz &amp;&amp; tar -xvf m4-1.4.18.tar &amp;&amp; cd m4-1.4.18/ &amp;&amp;  ./configure &amp;&amp; make &amp;&amp; make install
+
+RUN wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz &amp;&amp; tar -Jxvf gmp-6.1.2.tar.xz &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../gmp-6.1.2/configure --prefix=/usr/local/gmp-6.1.2  &amp;&amp; make &amp;&amp; make install
+
+Run wget https://www.mpfr.org/mpfr-3.1.6/mpfr-3.1.6.zip &amp;&amp;  unzip mpfr-3.1.6.zip &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../mpfr-3.1.6/configure --prefix=/usr/local/mpfr-3.1.6 --with-gmp=/usr/local/gmp-6.1.2 &amp;&amp; make &amp;&amp; make install
+
+
+RUN wget https://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz &amp;&amp; tar -zxvf mpc-1.0.3.tar.gz &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../mpc-1.0.3/configure --prefix=/usr/local/mpc-1.0.3 --with-gmp=/usr/local/gmp-6.1.2 --with-mpfr=/usr/local/mp
+fr-3.1.6 &amp;&amp; make &amp;&amp; make install
+
+RUN unset LIBRARY_PATH &amp;&amp; wget ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-5.4.0/gcc-5.4.0.tar.gz &amp;&amp;  tar -zxvf gcc-5.4.0.tar.gz &amp;&amp; rm -rf temp &amp;&amp; mkdir temp &amp;&amp; cd temp &amp;&amp; ../gcc-5.4.0/configure --prefix=/usr/lo
+cal/gcc-5.4 --enable-threads=posix --disable-checking --disable-multilib --enable-languages=c,c++ --with-gmp=/usr/local/gmp-6.1.2 --with-mpfr=/usr/local/mpfr-3.1.6 --with-mpc=/usr/local/mpc-1.0.3 &amp;&amp; make &amp;&amp; make install
+
+RUN rm -rf /temp/
+# set the gcc
+
+
+# install python and pip
+RUN apt-get install -y python2.7 python-pip python3.5 python3-pip python-dev python3-dev python3.5-dev cython libhdf5-dev python-numpy python3-numpy build-essential
+RUN cd /usr/bin &amp;&amp; rm python3 &amp;&amp; ln -s python3.5 python3
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pytest-runner flake8 colorlog pyyaml numpy
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cython requests setuptools --upgrade
+RUN pip install h5py
+
+RUN pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pytest-runner flake8 colorlog pyyaml
+RUN pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple numpy cython requests setuptools --upgrade
+RUN pip3 install h5py
+
+RUN cd /OpenBLAS &amp;&amp; make FC=gfortran &gt;/dev/null &amp;&amp; make PREFIX=/usr/local install &amp;&amp; cd -
+
+# make the gtest for gcc5.4
+RUN rm /usr/bin/gcc &amp;&amp; ln -s /usr/local/gcc-5.4/bin/gcc /usr/bin/gcc
+RUN mkdir temp &amp;&amp; cd temp &amp;&amp;  git clone https://github.com/google/googletest.git &amp;&amp; cd googletest/googletest &amp;&amp; cmake . &amp;&amp; make &amp;&amp; cd .. &amp;&amp; cp -r googletest /usr/local/gtest/gtest-5.4
+RUN rm -rf temp &amp;&amp; rm /usr/bin/gcc &amp;&amp; ln -s /usr/bin/gcc-4.8 /usr/bin/gcc
+
+</code></pre>
+<h1 id="reference">reference</h1>
+<p><a href="https://www.jianshu.com/p/cbce69c7a52f">使用Dockerfile构建Docker镜像</a></p>
+<p>[Docker build 命令](</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/uCHl6QLvI" class="tag">
+                    docker
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/ci-intro">
+                  <h3 class="post-title">
+                    CI从入门到放弃
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

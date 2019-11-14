@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>tensorflow学习笔记 | dragon</title>
+<title>linux常用脚本 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -91,54 +91,62 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">tensorflow学习笔记</h2>
-            <div class="post-date">2017-11-20</div>
+            <h2 class="post-title">linux常用脚本</h2>
+            <div class="post-date">2018-02-13</div>
             
-              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.l3IsbJb0oeZxrLbgAEy6DgHaGL&amp;pid=Api&amp;rs=1')">
+              <div class="feature-container" style="background-image: url('https://www.skinatech.com/portal/wp-content/uploads/2017/05/original.png')">
               </div>
             
             <div class="post-content">
               <hr>
-<p>title: tensorflow学习笔记</p>
-<p>date: 2017/11/20 12:04:12</p>
-<p>categories:</p>
+<p>title: linux常用工具<br>
+date: 2018/2/13 22:04:12<br>
+tags:</p>
 <ul>
-<li>深度学习<br>
-tags:</li>
-<li>目标检测</li>
-<li>深度学习</li>
-<li>神经网络</li>
+<li>linux</li>
 </ul>
 <hr>
-<p>matplotlib.pyplot 的使用：</p>
-<pre><code class="language-python">import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt 
-fig = plt.figure()
-...
-...
-plt.plot()
-fig.savefig(&quot;&quot;)
+<p><strong>Expect脚本</strong><br>
+安装方法：</p>
+<pre><code class="language-bash">sudo apt-get install tcl tk expect
 
 </code></pre>
-<h1 id="reference">reference</h1>
-<p><a href="https://groups.google.com/a/tensorflow.org/forum/#!topic/discuss/TX32t7NHkpA">google group, kl 散度 讨论</a></p>
-<p><a href="https://stackoverflow.com/questions/41863814/kl-divergence-in-tensorflow">KL Divergence in TensorFlow</a></p>
+<p>脚本例子自动SSH连接：</p>
+<pre><code class="language-YAML">#!/usr/bin/expect
+set timeout 30
+set ip [lindex $argv 0]
+spawn ssh -l maxiaolong 10.0.8.241
+expect &quot;password:&quot;
+send &quot;mxl@lt.776688\r&quot;
+expect &quot;Ip:*&quot;
+send &quot;$ip\r&quot;
+expect &quot;$*&quot;
+send &quot;hostname\r&quot;
+expect &quot;$*&quot;
+interact
+</code></pre>
+<h1 id="gcc升级完整不留遗憾的方法">gcc升级完整不留遗憾的方法</h1>
+<p>自己编译安装gcc4.9——&gt;替换软链接——&gt;替换libstdc++.so的软链接</p>
+<p>通过下面的命令可以查看Glibcxx的版本</p>
+<pre><code class="language-bash"> strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+</code></pre>
+<p>nvidia-docker run -it --rm -v /usr/local/cuda:/usr/local/cuda -v /usr/local/cuda-8.0:/usr/local/cuda-8.0 -v /home/maxiaolong/:/workdir centos:cuda8_gcc4.9.4 bash</p>
+<h1 id="linux-使用方法">linux 使用方法</h1>
+<p><a href="https://blog.csdn.net/fdipzone/article/details/24329523">生成随机数和随机字符串</a></p>
+<p><a href="https://blog.csdn.net/StephenLu0422/article/details/78471551">docker 后台运行</a><br>
+<a href="http://blog.sina.com.cn/s/blog_17b46b5e40102xilj.html">docker 非root运行| linux新建用户</a></p>
+<p><a href="https://blog.csdn.net/Apollon_krj/article/details/70148022">shell环境变量</a></p>
+<p><a href="https://stackoverflow.com/questions/9639103/is-there-a-goto-statement-in-bash">bash实现goto</a><br>
+<a href="https://blog.csdn.net/train006l/article/details/79007483">linux 修改用户uid</a></p>
+<p><a href="http://daizj.iteye.com/blog/2212559">shell 脚本切换用户执行命令</a></p>
+<p>[centos安装gcc4.9.4](</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://DragonFive.github.io//tag/ufT52llrR" class="tag">
-                    tensorflow
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/o-bbnxhfM8" class="tag">
-                    python
+                  <a href="https://DragonFive.github.io//tag/LoClL4RQ1" class="tag">
+                    linux
                   </a>
                 
               </div>
@@ -146,9 +154,9 @@ fig.savefig(&quot;&quot;)
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/cnn-improve">
+                <a href="https://DragonFive.github.io//post/tensorflow-note">
                   <h3 class="post-title">
-                    CNN中卷积计算的内存和速度优化
+                    tensorflow学习笔记
                   </h3>
                 </a>
               </div>
