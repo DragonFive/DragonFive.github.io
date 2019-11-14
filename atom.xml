@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2019-11-14T02:37:09.324Z</updated>
+    <updated>2019-11-14T02:38:51.011Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io//atom.xml"/>
@@ -16,21 +16,6 @@
         <link href="https://DragonFive.github.io//post/cnn-improve">
         </link>
         <updated>2017-09-20T02:31:37.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: CNN中卷积计算的内存和速度优化</p>
-<p>date: 2017/9/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
-<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
-]]></summary>
         <content type="html"><![CDATA[<hr>
 <p>title: CNN中卷积计算的内存和速度优化</p>
 <p>date: 2017/9/20 12:04:12</p>
@@ -45,7 +30,6 @@ tags:</li>
 <hr>
 <p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
 <p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
-<!--more-->
 <h1 id="以往的卷积计算方法">以往的卷积计算方法</h1>
 <h2 id="sum循环法">sum循环法</h2>
 <p>时间复杂度最高，为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>H</mi><mi>W</mi><mi>M</mi><mi>K</mi><mi>K</mi><mi>C</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(HWMKKC)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span> 最笨的方法，只是用来理解。</p>
@@ -89,21 +73,6 @@ for h in 1 to H do
         <link href="https://DragonFive.github.io//post/network_compression">
         </link>
         <updated>2017-08-05T02:15:50.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: 神经网络的压缩优化方法总结</p>
-<p>date: 2017/8/5 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>这里回顾一下几个经典模型，我们主要看看深度和caffe模型大小，<a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a>。并总结一些模型压缩优化的方法。</p>
-<p>![各种CNN模型][1]</p>
-]]></summary>
         <content type="html"><![CDATA[<hr>
 <p>title: 神经网络的压缩优化方法总结</p>
 <p>date: 2017/8/5 12:04:12</p>
@@ -118,7 +87,6 @@ tags:</li>
 <hr>
 <p>这里回顾一下几个经典模型，我们主要看看深度和caffe模型大小，<a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a>。并总结一些模型压缩优化的方法。</p>
 <figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502693251377.jpg" alt="各种CNN模型"></figure>
-<!--more-->
 <p>模型大小(参数量)和模型的深浅并非是正相关。</p>
 <h1 id="一些经典的模型-修改网络架构">一些经典的模型-修改网络架构</h1>
 <h2 id="fully-connect-to-local-connect-全连接到卷积神经网络-1x1卷积">fully connect to local connect 全连接到卷积神经网络  1x1卷积</h2>
@@ -217,29 +185,6 @@ SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的�
         <link href="https://DragonFive.github.io//post/cnn_history">
         </link>
         <updated>2017-07-05T02:34:51.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: 神经网络模型演化<br>
-date: 2017/7/5 17:38:58</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>alexnet</li>
-<li>googlenet</li>
-<li>caffenet</li>
-<li>caffe</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<ol>
-<li>Lenet，1986年</li>
-<li>Alexnet，2012年</li>
-<li>GoogleNet，2014年</li>
-<li>VGG，2014年</li>
-<li>Deep Residual Learning，2015年</li>
-</ol>
-]]></summary>
         <content type="html"><![CDATA[<hr>
 <p>title: 神经网络模型演化<br>
 date: 2017/7/5 17:38:58</p>
@@ -262,8 +207,6 @@ tags:</li>
 <li>VGG，2014年</li>
 <li>Deep Residual Learning，2015年</li>
 </ol>
-<!--more-->
-<div class="github-widget" data-repo="DragonFive/python_cv_AI_ML"></div>
 <figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1503832736486.jpg" alt="caffe model"></figure>
 <h1 id="网络结构的基础知识">网络结构的基础知识</h1>
 <ol>
