@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>mobile_net的模型优化 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573703744475">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573703744475" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">mobile_net的模型优化</h2>
+            <div class="post-date">2017-07-23</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.KuTvstHE-apHqHjy9jXHUAHaFV&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: mobile_net的模型优化</p>
+<p>date: 2017/7/23 12:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>网络优化</li>
+<li>神经网络</li>
+</ul>
+<hr>
+<p>[TOC]</p>
+<p>论文出自google的 MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications。<br>
+源代码和训练好的模型: <a href="https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.md">tensorflow版本</a></p>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1500434910512.jpg" alt="enter description here"></figure>
+<p>mobilenet 对于alexnet运行速度提高了10倍，参数量降低了50倍！而squeezenet虽然参数量也降低了50倍，但是速度提升很小。</p>
+<!--more-->
+<p>在建立小型和有效的神经网络上，已经有了一些工作，比如SqueezeNet，Google Inception，Flattened network等等。大概分为压缩预训练模型和直接训练小型网络两种。MobileNets主要关注优化延迟，同时兼顾模型大小。</p>
+<h1 id="mobilenets模型结构">mobileNets模型结构</h1>
+<p>只有一个avg pooling层，用来替换fc层，少用fc和pooling层就能减少参数量。</p>
+<h2 id="深度可分解卷积">深度可分解卷积</h2>
+<p>MobileNets模型基于<strong>深度可分解的卷积</strong>，它可以<strong>将标准卷积分解成一个深度卷积和一个点卷积（1 × 1卷积核）</strong>。标准卷积核为：a × a × c，其中a是卷积核大小，c是卷积核的通道数，本文将其一分为二，一个卷积核是a × a × 1，一个卷积核是1 ×1 × c。简单说，就是标准卷积同时完成了<strong>2维卷积计算和改变特征数量</strong>两件事，本文把这两件事分开做了。后文证明，这种分解可以有效减少计算量，降低模型大小。</p>
+<p>标准的卷积核是一步到位，直接计算输出，跨通道的意思是：包含了图征途之间的加权混合。而可分离卷积层把标准卷积层分成两个步骤：</p>
+<ol>
+<li>各个卷积层单独卷积</li>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mi>x</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">1x1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord mathdefault">x</span><span class="mord">1</span></span></span></span>卷积核心(1,1,M,N)跨通道结合</li>
+</ol>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502675769608.jpg" alt="深度可分解的卷积"></figure>
+<p>首先是标准卷积，假定输入F的维度是 DF×DF×M ，经过标准卷积核K得到输出G的维度 DG×DG×N ，卷积核参数量表示为 DK×DK×M×N 。如果计算代价也用数量表示，应该为 DK×DK×M×N×DF×DF 。</p>
+<p>现在将卷积核进行分解，那么按照上述计算公式，可得深度卷积的计算代价为 DK×DK×M×DF×DF ，点卷积的计算代价为 M×N×DF×DF 。</p>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502676514289.jpg" alt="参数量"></figure>
+<h2 id="模型结构和训练">模型结构和训练</h2>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677244854.jpg" alt="模型"></figure>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677189961.jpg" alt="mobilenet架构"></figure>
+<p>MobileNet将95％的计算时间用于有75％的参数的1×1卷积。</p>
+<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677324886.jpg" alt="1x1卷积计算量大"></figure>
+<h2 id="宽度参数-width-multiplier">宽度参数  Width Multiplier</h2>
+<p>宽度乘数 α ，作用是改变输入输出通道数，减少<strong>特征图数量，让网络变瘦</strong>。α 取值是0~1，应用宽度乘数可以进一步减少计算量，大约有 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>α</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">α^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 的优化空间。在 α 参数作用下，MobileNets某一层的计算量为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><mi>α</mi><mi>M</mi><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>+</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>α</mi><mi>N</mi><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub></mrow><annotation encoding="application/x-tex">D_K×D_K×αM×D_F×D_F+αM×αN×D_F×D_F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<h2 id="分辨率参数-resolution-multiplier">分辨率参数 Resolution Multiplier</h2>
+<p>分辨率乘数用来改变输入数据层的分辨率，同样也能减少参数。在 α 和 ρ 共同作用下，MobileNets某一层的计算量为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>+</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>α</mi><mi>N</mi><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub></mrow><annotation encoding="application/x-tex">D_K×D_K×αM×ρD_F×ρD_F+αM×αN×ρD_F×ρD_F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p>ρ 是隐式参数，ρ 如果为{1，6/7，5/7，4/7}，则对应输入分辨率为{224，192，160，128}，ρ 参数的优化空间同样是 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>ρ</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">ρ^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.008548em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">ρ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 左右.</p>
+<p>没有使用这两个参数的mobilenet是vGG的1/30<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502695710122.jpg" alt="mobilenet参数量"></p>
+<p>,<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.5</mn><mo separator="true">,</mo><mi>ρ</mi><mo>=</mo><mfrac><mn>5</mn><mn>7</mn></mfrac></mrow><annotation encoding="application/x-tex">\alpha = 0.5, \rho = \frac{5}{7}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8388800000000001em;vertical-align:-0.19444em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">ρ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">7</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>时是alexnet的1/50,精度提升了0.3%</p>
+<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502696170111.jpg" alt="与alexnet对比"></figure>
+<p><a href="https://www.tensorflow.org/mobile/">tensorflow官网</a>给出了部署方式，支持android,ios,raspberry Pi等。</p>
+<p><strong>持续更新中。。。。。。。。。。。</strong></p>
+<h1 id="reference">reference</h1>
+<p><a href="https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.md">github源码</a></p>
+<p><a href="https://www.tensorflow.org/mobile/">官方的部署方式</a></p>
+<p><a href="http://blog.csdn.net/hjimce/article/details/72831171"> 深度学习（六十五）移动端网络MobileNets</a></p>
+<p><a href="http://blog.csdn.net/Jesse_Mx/article/details/70766871">MobileNets 论文笔记</a></p>
+<p><a href="http://www.jianshu.com/p/2fd0c007a560">MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications 论文理解</a></p>
+<p><a href="https://www.zhihu.com/question/58287577">tensorflow训练好的模型怎么调用？</a></p>
+<p><a href="https://www.ctolib.com/topics-101544.html">如何用TensorFlow和TF-Slim实现图像分类与分割</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/LI4Uk3FeTa" class="tag">
+                    网络压缩
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
+                    神经网络
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/squeeze_net">
+                  <h3 class="post-title">
+                    squeeze_net的模型优化
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

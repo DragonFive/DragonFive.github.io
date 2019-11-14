@@ -1,528 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://DragonFive.github.io/</id>
-    <title>dragon</title>
-    <updated>2019-11-14T03:55:47.542Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://DragonFive.github.io/"/>
-    <link rel="self" href="https://DragonFive.github.io//atom.xml"/>
-    <subtitle>Code is cheap, show me the theory</subtitle>
-    <logo>https://DragonFive.github.io//images/avatar.png</logo>
-    <icon>https://DragonFive.github.io//favicon.ico</icon>
-    <rights>All rights reserved 2019, dragon</rights>
-    <entry>
-        <title type="html"><![CDATA[基于知识迁移的深度神经网络压缩方法研究]]></title>
-        <id>https://DragonFive.github.io//post/networker-thransfer</id>
-        <link href="https://DragonFive.github.io//post/networker-thransfer">
-        </link>
-        <updated>2018-05-20T03:40:48.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: 基于知识迁移的深度神经网络压缩方法研究<br>
-date: 2018/5/20 12:04:12<br>
-tags:</p>
-<ul>
-<li>神经网络压缩</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>我的毕设题目是基于知识迁移的深度神经网络压缩方法研究，由于本文涉及实验室的后续研究与项目开发，暂时删除该内容，等待时机合适再公开</p>
-<p>——待续</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[gluon学习笔记]]></title>
-        <id>https://DragonFive.github.io//post/gluon-study</id>
-        <link href="https://DragonFive.github.io//post/gluon-study">
-        </link>
-        <updated>2018-03-20T03:39:08.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: gluon学习笔记<br>
-date: 2018/3/20 12:04:12<br>
-categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>目标检测</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<h1 id="学到的新知识">学到的新知识</h1>
-<h2 id="bn放在relu后面">bn放在relu后面</h2>
-<p><a href="http://minibatch.net/2017/06/11/%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87-Batch-Normalization/">BN应该放在relu后</a></p>
-<p><a href="https://mp.weixin.qq.com/s/xJromD5Q30KlRhB_kM4kfA">用于分类、检测和分割的移动网络 MobileNetV2</a></p>
-<p><a href="https://www.zhihu.com/question/265709710">如何评价MobileNetV2</a></p>
-<h2 id="卷积核的数量">卷积核的数量</h2>
-<p><a href="http://zh.gluon.ai/chapter_convolutional-neural-networks/cnn-scratch.html">卷积神经网络 — 从0开始</a></p>
-<p>当输入数据有多个通道的时候，每个通道会有对应的权重，然后会对每个通道做卷积之后在通道之间求和。所以当输出只有一个的时候，卷积的channel数目和data的channel数目是一样的。</p>
-<p>当输出需要多通道时，每个输出通道有对应权重，然后每个通道上做卷积。所以当输入有n个channel，输出有h个channel时，卷积核channel数目为n * h，每个输出channel对应一个bias ,卷积核的维度为(h,n,w,h)</p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi><mi>o</mi><mi>n</mi><mi>v</mi><mo>(</mo><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo separator="true">,</mo><mi>w</mi><mo separator="true">,</mo><mi>b</mi><mo>)</mo><mo>[</mo><mo>:</mo><mo separator="true">,</mo><mi>i</mi><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo>]</mo><mo>=</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>v</mi><mo>(</mo><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo separator="true">,</mo><mi>w</mi><mo>[</mo><mi>i</mi><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo>]</mo><mo separator="true">,</mo><mi>b</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">conv(data, w, b)[:,i,:,:] = conv(data, w[i,:,:,:], b[i])
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mclose">)</span><span class="mopen">[</span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">i</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mclose">)</span></span></span></span></span></p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Γ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi mathvariant="normal">∞</mi></msubsup><msup><mi>t</mi><mrow><mi>z</mi><mo>−</mo><mn>1</mn></mrow></msup><msup><mi>e</mi><mrow><mo>−</mo><mi>t</mi></mrow></msup><mi>d</mi><mi>t</mi><mtext> </mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Γ</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.326242em;vertical-align:-0.9119499999999999em;"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.44445em;position:relative;top:-0.0011249999999999316em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.414292em;"><span style="top:-1.7880500000000001em;margin-left:-0.44445em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span><span style="top:-3.8129000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">∞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9119499999999999em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.864108em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.04398em;">z</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.843556em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathdefault mtight">t</span></span></span></span></span></span></span></span></span><span class="mord mathdefault">d</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">.</span></span></span></span></span></p>
-<p>123</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1513949196873.jpg" alt="inception v1"></figure>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1514013854016.jpg" alt="residual"></figure>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1514012389756.jpg" alt="resnet各种结构"></figure>
-<h1 id="gluon语法">gluon语法</h1>
-<h2 id="nnblock与nnsequential的嵌套使用">nn.Block与nn.sequential的嵌套使用</h2>
-<pre><code class="language-python">class RecMLP(nn.Block):
-    def __init__(self, **kwargs):
-        super(RecMLP, self).__init__(**kwargs)
-        self.net = nn.Sequential()
-        with self.name_scope():
-            self.net.add(nn.Dense(256, activation=&quot;relu&quot;))
-            self.net.add(nn.Dense(128, activation=&quot;relu&quot;))
-            self.dense = nn.Dense(64)
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
 
-    def forward(self, x):
-        return nd.relu(self.dense(self.net(x)))
+<title>机器学习算法小结与对比  | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
 
-rec_mlp = nn.Sequential()
-rec_mlp.add(RecMLP())
-rec_mlp.add(nn.Dense(10))
-print(rec_mlp)
-</code></pre>
-<h2 id="初始化与参数访问">初始化与参数访问</h2>
-<pre><code class="language-python">from mxnet import init
-params.initialize(init=init.Normal(sigma=0.02), force_reinit=True)
-print(net[0].weight.data(), net[0].bias.data())
-</code></pre>
-<p>我们也可以通过collect_params来访问Block里面所有的参数（这个会包括所有的子Block）。它会返回一个名字到对应Parameter的dict。</p>
-<p>也可以自定义各层的初始化方法，没有自定义的按照net.initialize里面的方法进行定义</p>
-<pre><code class="language-python">from mxnet.gluon import nn
-from mxnet import nd
-from mxnet import init
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-def get_net():
-    net = nn.Sequential()
-    with net.name_scope():
-        net.add(nn.Dense(4,activation=&quot;relu&quot;))#,weight_initializer=init.Xavier()))
-        net.add(nn.Dense(2,weight_initializer=init.Zero(),bias_initializer=init.Zero()) )
-    return net
-
-x = nd.random.uniform(shape=(3,5))
-net = get_net()
-net.initialize(init.One())
-net(x)
-print(net[1].weight.data
-</code></pre>
-<h2 id="gpu访问">GPU访问</h2>
-<ol>
-<li>删除cpu版本mxnet</li>
-</ol>
-<pre><code class="language-bash">pip uninstall mxnet
-</code></pre>
-<ol start="2">
-<li>更新GPU版本mxnet</li>
-</ol>
-<pre><code class="language-bash">pip install -U --pre mxnet-cu80
-</code></pre>
-<ol start="3">
-<li>查看版本号</li>
-</ol>
-<pre><code class="language-python">import pip
-for pkg in ['mxnet', 'mxnet-cu75', 'mxnet-cu80']:
-    pip.main(['show', pkg])
-</code></pre>
-<h2 id="使用jupyter的相关插件">使用jupyter的相关插件</h2>
-<ol>
-<li>notedown插件<br>
-可以在jupyter 中查看markdown文件</li>
-<li>nb_conda<br>
-是conda的插件，可以在jupyter里面修改python内核版本</li>
-</ol>
-<h2 id="优化方法">优化方法</h2>
-<p><strong>momentum</strong><br>
-gluon.Trainer的learning_rate属性和set_learning_rate函数可以随意调整学习率。</p>
-<pre><code class="language-python">trainer = gluon.Trainer(net.collect_params(), 'sgd',
-                            {'learning_rate': lr, 'momentum': mom})
-</code></pre>
-<p><strong>adagrad</strong><br>
-Adagrad是一个在迭代过程中不断自我调整学习率，并让模型参数中每个元素都使用不同学习率的优化算法。</p>
-<pre><code class="language-python">    trainer = gluon.Trainer(net.collect_params(), 'adagrad',
-                            {'learning_rate': lr})
-</code></pre>
-<p><strong>Adam</strong></p>
-<pre><code class="language-python">trainer = gluon.Trainer(net.collect_params(), 'adam',
-                            {'learning_rate': lr})
-
-</code></pre>
-<p>通过以上分析, 理论上可以说, 在数据比较稀疏的时候, adaptive 的方法能得到更好的效果, 例如, adagrad, adadelta, rmsprop, adam 等. 在数据稀疏的情况下, adam 方法也会比 rmsprop 方法收敛的结果要好一些, 所以, 通常在没有其它更好的理由的前框下, 我会选用 adam 方法, 可以比较快地得到一个预估结果. 但是, 在论文中, 我们看到的大部分还是最原始的 mini-batch 的 SGD 方法. 因为马鞍面的存在等问题, SGD 方法有时候较难收敛. 另外, SGD 对于参数的初始化要求也比较高. 所以, 如果要是想快速收敛的话, 建议使用 adam 这类 adaptive 的方法</p>
-<h2 id="延迟执行">延迟执行</h2>
-<p>延后执行使得系统有更多空间来做性能优化。但我们推荐每个批量里至少有一个同步函数，例如对损失函数进行评估，来避免将过多任务同时丢进后端系统。</p>
-<pre><code class="language-python">from mxnet import autograd
-
-mem = get_mem()
-
-total_loss = 0
-for x, y in get_data():
-    with autograd.record():
-        L = loss(y, net(x))
-    total_loss += L.sum().asscalar()
-    L.backward()
-    trainer.step(x.shape[0])
-
-nd.waitall()
-print('Increased memory %f MB' % (get_mem() - mem))
-
-</code></pre>
-<h2 id="多gpu训练">多GPU训练</h2>
-<pre><code class="language-python">ctx = [gpu(i) for i in range(num_gpus)]
-data_list = gluon.utils.split_and_load(data, ctx)
-label_list = gluon.utils.split_and_load(label, ctx)
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573703744475">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
 
-</code></pre>
-<h2 id="fintune-微调">fintune 微调</h2>
-<p><a href="https://fiercex.github.io/post/gluon_features_fine/">gluon微调</a></p>
-<h1 id="一些可以重复使用的代码">一些可以重复使用的代码</h1>
-<h2 id="读取数据">读取数据</h2>
-<pre><code class="language-python">from mxnet import gluon
-from mxnet import ndarray as nd
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-def transform(data, label):
-    return data.astype('float32')/255, label.astype('float32')
-mnist_train = gluon.data.vision.FashionMNIST(train=True, transform=transform)
-mnist_test = gluon.data.vision.FashionMNIST(train=False, transform=transform)
-
-</code></pre>
-<h2 id="计算精度">计算精度</h2>
-<pre><code class="language-python">def accuracy(output, label):
-    return nd.mean(output.argmax(axis=1)==label).asscalar()
-
-
-</code></pre>
-<p>我们先使用Flatten层将输入数据转成 batch_size x ? 的矩阵，然后输入到10个输出节点的全连接层。照例我们不需要制定每层输入的大小，gluon会做自动推导。</p>
-<h2 id="激活函数">激活函数</h2>
-<p><strong>sigmoid</strong></p>
-<pre><code class="language-python">from mxnet import nd
-def softmax(X):
-    exp = nd.exp(X)
-    # 假设exp是矩阵，这里对行进行求和，并要求保留axis 1，
-    # 就是返回 (nrows, 1) 形状的矩阵
-    partition = exp.sum(axis=1, keepdims=True)
-    return exp / partition
-
-
-</code></pre>
-<p><strong>relu</strong></p>
-<pre><code class="language-python">def relu(X):
-    return nd.maximum(X, 0)
-
-</code></pre>
-<h2 id="损失函数">损失函数</h2>
-<p><strong>平方误差</strong></p>
-<pre><code class="language-python">square_loss = gluon.loss.L2Loss()
-
-
-</code></pre>
-<pre><code class="language-python">def square_loss(yhat, y):
-    # 注意这里我们把y变形成yhat的形状来避免矩阵形状的自动转换
-    return (yhat - y.reshape(yhat.shape)) ** 2
- 
-
-</code></pre>
-<p><strong>交叉熵损失</strong></p>
-<pre><code class="language-python">def cross_entropy(yhat, y):
-    return - nd.pick(nd.log(yhat), y)
-
-</code></pre>
-<pre><code class="language-python">softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
-
-</code></pre>
-<h2 id="取一个batch_size的代码">取一个batch_size的代码</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">import random
-batch_size = 1
-def data_iter(num_examples):
-    idx = list(range(num_examples))
-    random.shuffle(idx)
-    for i in range(0, num_examples, batch_size):
-        j = nd.array(idx[i:min(i+batch_size,num_examples)])
-        yield X.take(j), y.take(j)
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">batch_size = 1
-dataset_train = gluon.data.ArrayDataset(X_train, y_train)
-data_iter_train = gluon.data.DataLoader(dataset_train, batch_size, shuffle=True)
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 
 
 
-</code></pre>
-<h2 id="初始化权值">初始化权值</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">def get_params():
-    w = nd.random.normal(shape=(num_inputs, 1))*0.1
-    b = nd.zeros((1,))
-    for param in (w, b):
-        param.attach_grad()
-    return (w, b)
+  </head>
+  <body>
+    <div id="app" class="main">
 
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">net.initialize()
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573703744475" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
 
 
-net.collect_params().initialize(mx.init.Normal(sigma=1))
-
-</code></pre>
-<h2 id="sgd">SGD</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">def SGD(params, lr):
-    for param in params:
-        param[:] = param - lr * param.grad
-
-
-</code></pre>
-<p>L2正则</p>
-<pre><code class="language-python">def L2_penalty(w, b):
-    return ((w**2).sum() + b**2) / 2
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code>    trainer = gluon.Trainer(net.collect_params(), 'sgd', {
-        'learning_rate': learning_rate, 'wd': weight_decay})
-
-</code></pre>
-<p>这里的weight_decay表明这里添加了L2正则，正则化<br>
-w = w -lr * grad - wd * w</p>
-<h2 id="训练过程">训练过程</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">    for e in range(epochs):        
-        for data, label in data_iter(num_train):
-            with autograd.record():
-                output = net(data, lambd, *params)
-                loss = square_loss(
-                    output, label) + lambd * L2_penalty(*params)
-            loss.backward()
-            SGD(params, learning_rate)
-        train_loss.append(test(params, X_train, y_train))
-        test_loss.append(test(params, X_test, y_test))
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">    for e in range(epochs):        
-        for data, label in data_iter_train:
-            with autograd.record():
-                output = net(data)
-                loss = square_loss(output, label)
-            loss.backward()
-            trainer.step(batch_size)            
-        train_loss.append(test(net, X_train, y_train))
-        test_loss.append(test(net, X_test, y_test))
-
-
-</code></pre>
-<pre><code class="language-python">%matplotlib inline
-import matplotlib as mpl
-mpl.rcParams['figure.dpi']= 120
-import matplotlib.pyplot as plt
-
-def train(X_train, X_test, y_train, y_test):
-    # 线性回归模型
-    net = gluon.nn.Sequential()
-    with net.name_scope():
-        net.add(gluon.nn.Dense(1))
-    net.initialize()
-    # 设一些默认参数
-    learning_rate = 0.01
-    epochs = 100
-    batch_size = min(10, y_train.shape[0])
-    dataset_train = gluon.data.ArrayDataset(X_train, y_train)
-    data_iter_train = gluon.data.DataLoader(
-        dataset_train, batch_size, shuffle=True)
-    # 默认SGD和均方误差
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {
-        'learning_rate': learning_rate})
-    square_loss = gluon.loss.L2Loss()
-    # 保存训练和测试损失
-    train_loss = []
-    test_loss = []
-    for e in range(epochs):
-        for data, label in data_iter_train:
-            with autograd.record():
-                output = net(data)
-                loss = square_loss(output, label)
-            loss.backward()
-            trainer.step(batch_size)
-        train_loss.append(square_loss(
-            net(X_train), y_train).mean().asscalar())
-        test_loss.append(square_loss(
-            net(X_test), y_test).mean().asscalar())
-    # 打印结果
-    plt.plot(train_loss)
-    plt.plot(test_loss)
-    plt.legend(['train','test'])
-    plt.show()
-    return ('learned weight', net[0].weight.data(),
-            'learned bias', net[0].bias.data())
-
-</code></pre>
-<p>最终版</p>
-<pre><code class="language-python">def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batches=None):
-    &quot;&quot;&quot;Train a network&quot;&quot;&quot;
-    print(&quot;Start training on &quot;, ctx)
-    if isinstance(ctx, mx.Context):
-        ctx = [ctx]
-    for epoch in range(num_epochs):
-        train_loss, train_acc, n, m = 0.0, 0.0, 0.0, 0.0
-        if isinstance(train_data, mx.io.MXDataIter):
-            train_data.reset()
-        start = time()
-        for i, batch in enumerate(train_data):
-            data, label, batch_size = _get_batch(batch, ctx)
-            losses = []
-            with autograd.record():
-                outputs = [net(X) for X in data]
-                losses = [loss(yhat, y) for yhat, y in zip(outputs, label)]
-            for l in losses:
-                l.backward()
-            train_acc += sum([(yhat.argmax(axis=1)==y).sum().asscalar()
-                              for yhat, y in zip(outputs, label)])
-            train_loss += sum([l.sum().asscalar() for l in losses])
-            trainer.step(batch_size)
-            n += batch_size
-            m += sum([y.size for y in label])
-            if print_batches and (i+1) % print_batches == 0:
-                print(&quot;Batch %d. Loss: %f, Train acc %f&quot; % (
-                    n, train_loss/n, train_acc/m
-                ))
-
-        test_acc = evaluate_accuracy(test_data, net, ctx)
-        print(&quot;Epoch %d. Loss: %.3f, Train acc %.2f, Test acc %.2f, Time %.1f sec&quot; % (
-            epoch, train_loss/n, train_acc/m, test_acc, time() - start
-        ))
-
-</code></pre>
-<h1 id="reference">reference</h1>
-<p><a href="https://zhuanlan.zhihu.com/p/28867241">从零开始码一个皮卡丘检测器</a></p>
-<p><a href="http://blog.csdn.net/jesse_mx/article/details/53606897">图片标注工具</a></p>
-<p><a href="http://blog.csdn.net/u014696921/article/details/56877979"> mxnet 使用自己的图片数据训练CNN模型</a></p>
-<p><a href="https://mxnet.incubator.apache.org/api/python/image.html#Image">mxnet image API</a></p>
-<p><a href="https://mxnet.incubator.apache.org/how_to/recordio.html?highlight=recordio">Create a Dataset Using RecordIO</a></p>
-<p><a href="http://blog.csdn.net/muyouhang/article/details/77727381">基于MXNet gluon 的SSD模型训练</a></p>
-<p><a href="https://groups.google.com/a/continuum.io/forum/m/#!topic/anaconda/RuSpZVPEio8">解决conda与ipython notebook的python版本问题</a></p>
-<p><a href="http://blog.csdn.net/sunshine_in_moon/article/details/51434908">神经网络计算参数量的方法</a></p>
-<p><a href="https://www.jianshu.com/p/c56a37093cfa">神经网络计算特征图的大小的方法</a></p>
-<p><a href="http://minibatch.net/2017/06/11/%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87-Batch-Normalization/">BN应该放在relu后</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[tensorflow学习笔记]]></title>
-        <id>https://DragonFive.github.io//post/tensorflow-note</id>
-        <link href="https://DragonFive.github.io//post/tensorflow-note">
-        </link>
-        <updated>2017-11-20T03:54:27.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: tensorflow学习笔记</p>
-<p>date: 2017/11/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>目标检测</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>matplotlib.pyplot 的使用：</p>
-<pre><code class="language-python">import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt 
-fig = plt.figure()
-...
-...
-plt.plot()
-fig.savefig(&quot;&quot;)
-
-</code></pre>
-<h1 id="reference">reference</h1>
-<p><a href="https://groups.google.com/a/tensorflow.org/forum/#!topic/discuss/TX32t7NHkpA">google group, kl 散度 讨论</a></p>
-<p><a href="https://stackoverflow.com/questions/41863814/kl-divergence-in-tensorflow">KL Divergence in TensorFlow</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CNN中卷积计算的内存和速度优化]]></title>
-        <id>https://DragonFive.github.io//post/cnn-improve</id>
-        <link href="https://DragonFive.github.io//post/cnn-improve">
-        </link>
-        <updated>2017-09-20T02:31:37.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: CNN中卷积计算的内存和速度优化</p>
-<p>date: 2017/9/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
-<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
-<h1 id="以往的卷积计算方法">以往的卷积计算方法</h1>
-<h2 id="sum循环法">sum循环法</h2>
-<p>时间复杂度最高，为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>H</mi><mi>W</mi><mi>M</mi><mi>K</mi><mi>K</mi><mi>C</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(HWMKKC)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span> 最笨的方法，只是用来理解。</p>
-<pre><code>input[C][H][W];
-kernels[M][K][K][C];
-output[M][H][W];
-for h in 1 to H do
-	for w in 1 to W do
-		for o in 1 to M do
-			sum = 0;
-			for x in 1 to K do
-				for y in 1 to K do
-					for i in 1 to C do
-						sum += input[i][h+y][w+x]
-						*kernels[o][x][y][i];
-			output[o][w][h] = sum;
-</code></pre>
-<h2 id="patch-building-dnn-convolution-algorithms">patch-building DNN convolution algorithms</h2>
-<p>based on gemm convolution algorithm</p>
-<p>优点是：比较简单，方便理解和计算</p>
-<p>缺点是：需要大量的内存做中间存储</p>
-<h3 id="im2col过程">im2col过程</h3>
-<p>图片来自 ：贾扬清的demo convolution in caffe<br>
-<a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1"><br>
-把卷积的第一个感受野里的矩阵转化成一个vector，并把各个channel的feature连接起来。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2"><br>
-随着划窗的进行，把接下来的窗口都转化乘vector,并排放在下面<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3"></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4"><br>
-最后把有Cout个卷积核，每个卷积核有C个channel,那么转化乘Cout行的vector组。最后卷积就编程矩阵乘法了。</p>
-<h2 id="各种方法占用内存量">各种方法占用内存量</h2>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here"></figure>
-<h1 id="reference">reference</h1>
-<p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[机器学习算法小结与对比 ]]></title>
-        <id>https://DragonFive.github.io//post/machinelearning</id>
-        <link href="https://DragonFive.github.io//post/machinelearning">
-        </link>
-        <updated>2017-09-10T03:43:24.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: 机器学习算法小结与对比</p>
-<p>date: 2017/9/10 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>机器学习<br>
-tags:</li>
-<li>机器学习</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>![机器学习][1]</p>
-]]></summary>
-        <content type="html"><![CDATA[<hr>
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">机器学习算法小结与对比 </h2>
+            <div class="post-date">2017-09-10</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.uokrFEs3KvSXmsbIDACzggHaEQ&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
 <p>title: 机器学习算法小结与对比</p>
 <p>date: 2017/9/10 12:04:12</p>
 <p>categories:</p>
@@ -1184,532 +760,59 @@ SMO是用于快速求解SVM的<br>
 <p><a href="http://blog.csdn.net/q383700092/article/details/58605715">机器学习面试问题汇总</a></p>
 <p><a href="http://memoiry.me/2017/02/22/cs229/">cs229机器学习笔记及代码</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/27813121">腾讯17届校招面经合集</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[神经网络的压缩优化方法总结]]></title>
-        <id>https://DragonFive.github.io//post/network_compression</id>
-        <link href="https://DragonFive.github.io//post/network_compression">
-        </link>
-        <updated>2017-08-05T02:15:50.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: 神经网络的压缩优化方法总结</p>
-<p>date: 2017/8/5 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>这里回顾一下几个经典模型，我们主要看看深度和caffe模型大小，<a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a>。并总结一些模型压缩优化的方法。</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502693251377.jpg" alt="各种CNN模型"></figure>
-<p>模型大小(参数量)和模型的深浅并非是正相关。</p>
-<h1 id="一些经典的模型-修改网络架构">一些经典的模型-修改网络架构</h1>
-<h2 id="fully-connect-to-local-connect-全连接到卷积神经网络-1x1卷积">fully connect to local connect 全连接到卷积神经网络  1x1卷积</h2>
-<p>Alexnet<a href="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502693251377.jpg">1</a>是一个8层的卷积神经网络，有约<strong>60M个参数</strong>，如果采用<strong>32bit float存下来有200M</strong>。值得一提的是，AlexNet中仍然有3个全连接层，其参数量占比参数总量超过了90%。</p>
-<p>下面举一个例子，假如输入为28×28×192，输出feature map通道数为128。那么，直接接3×3卷积，参数量为3×3×192×128=221184。</p>
-<p>如果先用<strong>1×1卷积进行降维到96个通道</strong>，然后再用3×3升维到128，则参数量为：1×1×192×96+3×3×96×128=129024，参数量减少一半。虽然参数量减少不是很明显，但是如果1×1输出维度降低到48呢？则参数量又减少一半。对于上千层的大网络来说，效果还是很明显了。</p>
-<p>移动端对模型大小很敏感。下载一个100M的app与50M的app，首先用户心理接受程度就不一样。</p>
-<p>原则上降低通道数是会降低性能的，这里为什么却可以降维呢？我们可以从很多embedding技术，比如PCA等中得到思考，<strong>降低一定的维度可以去除冗余数据</strong>，损失的精度其实很多情况下都不会对我们解决问题有很大影响。</p>
-<p>1×1卷积，在 GoogLeNet Inception v1以及后续版本，ResNet中都大量得到应用，<strong>有减少模型参数</strong>的作用。</p>
-<h2 id="卷积拆分">卷积拆分</h2>
-<p>(1) VGG</p>
-<p>VGG可以认为是AlexNet的增强版，<strong>两倍的深度，两倍的参数量</strong>。不过，也提出了一个模型压缩的trick，后来也被广泛借鉴。</p>
-<p>那就是，<strong>对于5×5的卷积，使用两个3×3的卷积串联</strong>，可以得到同样的感受野，但参数量却有所降低，为3×3×2/(5×5)=0.72，同样的道理3个3×3卷积代替一个7×7，则参数压缩比3×3×3/(7×7)=0.55，降低一倍的参数量，也是很可观的。</p>
-<p>(2) GoogLeNet</p>
-<p>GoogleLet Inception v2就借鉴了VGG上面的思想。而到了Inception V3网络，则更进一步，将大卷积分解(Factorization)为小卷积。</p>
-<p>比如<strong>7×7的卷积，拆分成1×7和7×1</strong>的卷积后。参数量压缩比为1×7×2/(7×7)=0.29，比上面拆分成3个3×3的卷积，更加节省参数了。</p>
-<p>问题是这种<strong>非对称的拆分</strong>，居然比对称地拆分成几个小卷积核改进效果更明显，<strong>增加了特征多样性</strong>。</p>
-<p>后来的Resnet就不说了，也是上面这些trick。到现在，基本上网络中都是3×3卷积和1×1卷积，5×5很少见，7×7几乎不可见。</p>
-<p>(3) SqueezeNet</p>
-<p>squeezenet将上面1×1降维的思想进一步拓展。通过减少3×3的filter数量，将其一部分替换为1×1来实现压缩。</p>
-<p>具体的一个子结构如下：一个squeeze模块加上一个expand模块，使squeeze中的通道数量，少于expand通道数量就行。</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694686047.jpg" alt="squeezenet网络的expand模块"></figure>
-<p>假如输入为M维，如果直接接3×3卷积，输出为7个通道，则参数量：M×3×3×7。</p>
-<p>如果按上图的做法，则参数量为M×1×1×3+3×4×1×1+3×4×3×3，压缩比为：(40+M)/21M，当M比较大时，约0.05。</p>
-<p>文章最终<strong>将AlexNet压缩到原来1/50</strong>，而性能几乎不变。</p>
-<hr>
-<p>SqueezeNet的核心指导思想是——在保证精度的同时使用最少的参数。而这也是所有模型压缩方法的一个终极目标。</p>
-<p>基于这个思想，SqueezeNet提出了3点网络结构设计策略：</p>
-<p>策略 1. 将3x3卷积核替换为1x1卷积核。</p>
-<p>这一策略很好理解，因为1个1x1卷积核的参数是3x3卷积核参数的1/9，这一改动理论上可以将模型尺寸压缩9倍。</p>
-<p>策略 2. 减小输入到3x3卷积核的输入通道数。</p>
-<p>我们知道，对于一个采用3x3卷积核的卷积层，该层所有卷积参数的数量（不考虑偏置）为：<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507038803077.jpg" alt="enter description here"></p>
-<p>N是卷积核的数量，也即输出通道数，C是输入通道数。因此，为了保证减小网络参数，<strong>不仅仅需要减少3x3卷积核的数量，还需减少输入到3x3卷积核的输入通道数量</strong>，即式中C的数量。</p>
-<p>策略 3.尽可能的将降采样放在网络后面的层中。</p>
-<p>分辨率越大的特征图（延迟降采样）可以带来更高的分类精度，而这一观点从直觉上也可以很好理解，因为分辨率越大的输入能够提供的信息就越多。</p>
-<p>上述三个策略中，前两个策略都是针对如何降低参数数量而设计的，最后一个旨在最大化网络精度。</p>
-<p><strong>squeeze层</strong>借鉴了inception的思想，利用1x1卷积核来降低输入到expand层中3x3卷积核的输入通道数。</p>
-<p>定义squeeze层中1x1卷积核的数量是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>s</mi><mrow><mn>1</mn><mo>∗</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">s_{1*1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mbin mtight">∗</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，类似的，expand层中1x1卷积核的数量是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>e</mi><mrow><mn>1</mn><mo>∗</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">e_{1*1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mbin mtight">∗</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>， 3x3卷积核的数量是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>e</mi><mn>3</mn></msub><mo>∗</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">e_3*3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61528em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">3</span></span></span></span>。令<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>s</mi><mrow><mn>1</mn><mo>∗</mo><mn>1</mn></mrow></msub><mo>&lt;</mo><msub><mi>e</mi><mrow><mn>1</mn><mo>∗</mo><mn>1</mn></mrow></msub><mo>+</mo><msub><mi>e</mi><mrow><mn>3</mn><mo>∗</mo><mn>3</mn></mrow></msub></mrow><annotation encoding="application/x-tex">s_{1*1} &lt; e_{1*1}+ e_{3*3}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6891em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mbin mtight">∗</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mbin mtight">∗</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3</span><span class="mbin mtight">∗</span><span class="mord mtight">3</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>从而保证输入到3x3的输入通道数减小。SqueezeNet的网络结构由若干个 fire module 组成</p>
-<p><strong>速度考量</strong><br>
-SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的提升的，对于类似caffe这样的深度学习框架，在卷积层的前向计算中，采用1x1卷积核可避免额外的im2col操作，而直接利用gemm进行矩阵加速运算，因此对速度的优化是有一定的作用的。</p>
-<p>(4) mobilenet</p>
-<p>mobilenet也是用卷积拆分的方法</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694868072.jpg" alt="mobilenet"></figure>
-<p>作出更多共享的是有一个width Multiplier宽度参数和resolution Multiplier 分辨率参数 ，可以降低更多的参数。</p>
-<p>没使用这两个参数的mobilenet是VGGNet的1/30.<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502695760857.jpg" alt="mobilenet"></p>
-<h1 id="权重参数量化与剪枝">权重参数量化与剪枝</h1>
-<p>主要是通过权重剪枝，量化编码等方法来实现模型压缩。deep compression是float到uint的压缩,Binarized Neural Networks是 uint 到bool的压缩。</p>
-<p>一些技巧：</p>
-<ol>
-<li>网络修剪<br>
-采用当网络权重非常小的时候(小于某个设定的阈值),把它置0,就像二值网络一般；然后屏蔽被设置为0的权重更新，继续进行训练；以此循环，每隔训练几轮过后，继续进行修剪。</li>
-<li>权重共享<br>
-对于每一层的参数,我们进行k-means聚类,进行量化,对于归属于同一个聚类中心的权重,采用共享一个权重,进行重新训练.需要注意的是这个权重共享并不是层之间的权重共享,这是对于每一层的单独共享</li>
-<li>增加L2权重<br>
-增加L2权重可以让更多的权重，靠近0，这样每次修剪的比例大大增加。</li>
-</ol>
-<h2 id="deepcompresion">DeepCompresion</h2>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507039484844.jpg" alt="deep compression pipeline"></figure>
-<p>文章早期的工作，是Network Pruning，就是去除网络中权重低于一定阈值的参数后，重新<strong>finetune一个稀疏网络</strong>。在这篇文章中，则进一步添加了量化和编码，思路很清晰简单如下。</p>
-<h3 id="网络剪枝移除不重要的连接">网络剪枝：移除不重要的连接</h3>
-<p>（1） 普通网络训练；</p>
-<p>（2） 删除权重小于一定阈值的连接得到<strong>稀疏网络</strong>；</p>
-<p>（3） 对稀疏网络再训练；</p>
-<h3 id="权重量化与共享">权重量化与共享</h3>
-<p>此处的权值量化基于<strong>权值聚类</strong>，将连续分布的权值<strong>离散化</strong>，从而减小需要存储的权值数量。</p>
-<p>让许多连接共享同一权重，使原始存储整个网络权重变为只需要存储码本(有效的权重)和索引；</p>
-<p>对于一个4×4的权值矩阵，量化权重为4阶（-1.0，0，1.5，2.0）。</p>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698285109.jpg" alt="量化过程"></figure>
-<p>对weights采用<strong>cluster index进行存储</strong>后，原来需要16个32bit float，现在只需要4个32bit float码字，与16个2bit uint索引，参数量为原来的(16×2+4×32)/(16×32)=0.31。</p>
-<p>存储是没问题了，那如何对量化值进行更新呢？事实上，文中仅对码字进行更新。如上图：<strong>将索引相同的地方梯度求和乘以学习率</strong>，叠加到码字。</p>
-<p>这样的效果，就等价于不断求取weights的聚类中心。原来有成千上万个weights，现在经过一个有效的聚类后，每一个weights都用其<strong>聚类中心进行替代</strong>.</p>
-<p>看下表就知道最终的压缩效率非常可观，把500M的VGG压缩到到了11M，1/50。</p>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698400878.jpg" alt="压缩VGG"></figure>
-<h3 id="霍夫曼编码更高效利用了权重的有偏分布">霍夫曼编码：更高效利用了权重的有偏分布；</h3>
-<h2 id="binarized-neural-networks">Binarized Neural Networks</h2>
-<ul>
-<li>提出了一个BWN（Binary-Weight-Network）和XNOR-Network，前者只对网络参数做二值化，带来约32x的存储压缩和2x的速度提升，而后者对网络输入和参数都做了二值化，在实现32x存储压缩的同时带了58x的速度提升；</li>
-<li>提出了一个新型二值化权值的算法；</li>
-<li>第一个在大规模数据集如ImageNet上提交二值化网络结果的工作；</li>
-<li>无需预训练，可实现training from scratch。</li>
-</ul>
-<h1 id="reference">reference</h1>
-<p><a href="https://cloud.tencent.com/community/article/678192">CNN 模型压缩与加速算法综述</a></p>
-<p><a href="https://zhuanlan.zhihu.com/p/25797790">知乎:为了压榨CNN模型，这几年大家都干了什么</a></p>
-<p><a href="http://blog.csdn.net/hjimce/article/details/51564774"> 深度学习（六十）网络压缩简单总结</a></p>
-<p><a href="https://dragonfive.github.io/2017-07-17/mobilenets/">mobile_net的模型优化</a></p>
-<p><a href="https://dragonfive.github.io/2017-07-20/squeeze_net/">squeeze_net的模型优化</a></p>
-<p><a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[mobile_net的模型优化]]></title>
-        <id>https://DragonFive.github.io//post/mobile_net</id>
-        <link href="https://DragonFive.github.io//post/mobile_net">
-        </link>
-        <updated>2017-07-23T03:44:58.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: mobile_net的模型优化</p>
-<p>date: 2017/7/23 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<p>论文出自google的 MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications。<br>
-源代码和训练好的模型: <a href="https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.md">tensorflow版本</a></p>
-<p>![enter description here][1]</p>
-<p>mobilenet 对于alexnet运行速度提高了10倍，参数量降低了50倍！而squeezenet虽然参数量也降低了50倍，但是速度提升很小。</p>
-]]></summary>
-        <content type="html"><![CDATA[<hr>
-<p>title: mobile_net的模型优化</p>
-<p>date: 2017/7/23 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<p>论文出自google的 MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications。<br>
-源代码和训练好的模型: <a href="https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.md">tensorflow版本</a></p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1500434910512.jpg" alt="enter description here"></figure>
-<p>mobilenet 对于alexnet运行速度提高了10倍，参数量降低了50倍！而squeezenet虽然参数量也降低了50倍，但是速度提升很小。</p>
-<!--more-->
-<p>在建立小型和有效的神经网络上，已经有了一些工作，比如SqueezeNet，Google Inception，Flattened network等等。大概分为压缩预训练模型和直接训练小型网络两种。MobileNets主要关注优化延迟，同时兼顾模型大小。</p>
-<h1 id="mobilenets模型结构">mobileNets模型结构</h1>
-<p>只有一个avg pooling层，用来替换fc层，少用fc和pooling层就能减少参数量。</p>
-<h2 id="深度可分解卷积">深度可分解卷积</h2>
-<p>MobileNets模型基于<strong>深度可分解的卷积</strong>，它可以<strong>将标准卷积分解成一个深度卷积和一个点卷积（1 × 1卷积核）</strong>。标准卷积核为：a × a × c，其中a是卷积核大小，c是卷积核的通道数，本文将其一分为二，一个卷积核是a × a × 1，一个卷积核是1 ×1 × c。简单说，就是标准卷积同时完成了<strong>2维卷积计算和改变特征数量</strong>两件事，本文把这两件事分开做了。后文证明，这种分解可以有效减少计算量，降低模型大小。</p>
-<p>标准的卷积核是一步到位，直接计算输出，跨通道的意思是：包含了图征途之间的加权混合。而可分离卷积层把标准卷积层分成两个步骤：</p>
-<ol>
-<li>各个卷积层单独卷积</li>
-<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mi>x</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">1x1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord mathdefault">x</span><span class="mord">1</span></span></span></span>卷积核心(1,1,M,N)跨通道结合</li>
-</ol>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502675769608.jpg" alt="深度可分解的卷积"></figure>
-<p>首先是标准卷积，假定输入F的维度是 DF×DF×M ，经过标准卷积核K得到输出G的维度 DG×DG×N ，卷积核参数量表示为 DK×DK×M×N 。如果计算代价也用数量表示，应该为 DK×DK×M×N×DF×DF 。</p>
-<p>现在将卷积核进行分解，那么按照上述计算公式，可得深度卷积的计算代价为 DK×DK×M×DF×DF ，点卷积的计算代价为 M×N×DF×DF 。</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502676514289.jpg" alt="参数量"></figure>
-<h2 id="模型结构和训练">模型结构和训练</h2>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677244854.jpg" alt="模型"></figure>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677189961.jpg" alt="mobilenet架构"></figure>
-<p>MobileNet将95％的计算时间用于有75％的参数的1×1卷积。</p>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502677324886.jpg" alt="1x1卷积计算量大"></figure>
-<h2 id="宽度参数-width-multiplier">宽度参数  Width Multiplier</h2>
-<p>宽度乘数 α ，作用是改变输入输出通道数，减少<strong>特征图数量，让网络变瘦</strong>。α 取值是0~1，应用宽度乘数可以进一步减少计算量，大约有 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>α</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">α^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 的优化空间。在 α 参数作用下，MobileNets某一层的计算量为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><mi>α</mi><mi>M</mi><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>+</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>α</mi><mi>N</mi><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><msub><mi>D</mi><mi>F</mi></msub></mrow><annotation encoding="application/x-tex">D_K×D_K×αM×D_F×D_F+αM×αN×D_F×D_F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
-<h2 id="分辨率参数-resolution-multiplier">分辨率参数 Resolution Multiplier</h2>
-<p>分辨率乘数用来改变输入数据层的分辨率，同样也能减少参数。在 α 和 ρ 共同作用下，MobileNets某一层的计算量为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><msub><mi>D</mi><mi>K</mi></msub><mo>×</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>+</mo><mi>α</mi><mi>M</mi><mo>×</mo><mi>α</mi><mi>N</mi><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub><mo>×</mo><mi>ρ</mi><msub><mi>D</mi><mi>F</mi></msub></mrow><annotation encoding="application/x-tex">D_K×D_K×αM×ρD_F×ρD_F+αM×αN×ρD_F×ρD_F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">ρ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
-<p>ρ 是隐式参数，ρ 如果为{1，6/7，5/7，4/7}，则对应输入分辨率为{224，192，160，128}，ρ 参数的优化空间同样是 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>ρ</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">ρ^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.008548em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">ρ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 左右.</p>
-<p>没有使用这两个参数的mobilenet是vGG的1/30<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502695710122.jpg" alt="mobilenet参数量"></p>
-<p>,<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.5</mn><mo separator="true">,</mo><mi>ρ</mi><mo>=</mo><mfrac><mn>5</mn><mn>7</mn></mfrac></mrow><annotation encoding="application/x-tex">\alpha = 0.5, \rho = \frac{5}{7}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8388800000000001em;vertical-align:-0.19444em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">ρ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">7</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>时是alexnet的1/50,精度提升了0.3%</p>
-<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502696170111.jpg" alt="与alexnet对比"></figure>
-<p><a href="https://www.tensorflow.org/mobile/">tensorflow官网</a>给出了部署方式，支持android,ios,raspberry Pi等。</p>
-<p><strong>持续更新中。。。。。。。。。。。</strong></p>
-<h1 id="reference">reference</h1>
-<p><a href="https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.md">github源码</a></p>
-<p><a href="https://www.tensorflow.org/mobile/">官方的部署方式</a></p>
-<p><a href="http://blog.csdn.net/hjimce/article/details/72831171"> 深度学习（六十五）移动端网络MobileNets</a></p>
-<p><a href="http://blog.csdn.net/Jesse_Mx/article/details/70766871">MobileNets 论文笔记</a></p>
-<p><a href="http://www.jianshu.com/p/2fd0c007a560">MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications 论文理解</a></p>
-<p><a href="https://www.zhihu.com/question/58287577">tensorflow训练好的模型怎么调用？</a></p>
-<p><a href="https://www.ctolib.com/topics-101544.html">如何用TensorFlow和TF-Slim实现图像分类与分割</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[squeeze_net的模型优化]]></title>
-        <id>https://DragonFive.github.io//post/squeeze_net</id>
-        <link href="https://DragonFive.github.io//post/squeeze_net">
-        </link>
-        <updated>2017-07-20T03:52:49.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: squeeze_net的模型优化</p>
-<p>date: 2017/7/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>梯度下降法</li>
-<li>正则化</li>
-<li>激活函数</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<div class="github-widget" data-repo="DragonFive/deep-learning-exercise"></div>
-<p>SqueezeNet主要是为了降低CNN模型参数数量而设计的。没有提高运行速度。</p>
-]]></summary>
-        <content type="html"><![CDATA[<hr>
-<p>title: squeeze_net的模型优化</p>
-<p>date: 2017/7/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>梯度下降法</li>
-<li>正则化</li>
-<li>激活函数</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<div class="github-widget" data-repo="DragonFive/deep-learning-exercise"></div>
-<p>SqueezeNet主要是为了降低CNN模型参数数量而设计的。没有提高运行速度。</p>
-<!--more-->
-<p>使用的squeezenet的pre-trained model来自<a href="https://github.com/DeepScale/SqueezeNet">SqueezeNet repo</a></p>
-<h1 id="设计原则">设计原则</h1>
-<p>（1）替换3x3的卷积kernel为<strong>1x1的卷积kernel</strong></p>
-<p>卷积模板的选择，从12年的AlexNet模型一路发展到2015年底Deep Residual Learning模型，基本上卷积大小都选择在3x3了，因为其有效性，以及设计简洁性。本文替换3x3的卷积kernel为1x1的卷积kernel可以让参数缩小9X。但是为了不影响识别精度，并不是全部替换，而是一部分用3x3，一部分用1x1。具体可以看后面的模块结构图。</p>
-<p>（2）减少输入3x3卷积的input feature map数量<br>
-如果是conv1-conv2这样的直连，那么实际上是没有办法<strong>减少conv2的input feature map</strong>数量的。所以作者巧妙地把原本一层conv分解为两层，并且封装为一个<strong>Fire Module</strong>。</p>
-<p>（3）**减少pooling **<br>
-这个观点在很多其他工作中都已经有体现了，比如GoogleNet以及Deep Residual Learning。</p>
-<p>同时也替换fc层为 global avg pooling层</p>
-<h2 id="fire-module">Fire Module</h2>
-<p>Fire Module是本文的核心构件，思想非常简单，就是将原来简单的一层conv层变成两层：<strong>squeeze层+expand层</strong>，各自带上Relu激活层。在squeeze层里面全是1x1的卷积kernel，数量记为S11；在expand层里面有1x1和3x3的卷积kernel，数量分别记为E11和E33，<strong>要求S11 &lt; input map number即满足上面的设计原则（2）</strong>。expand层之后将1x1和3x3的卷积output feature maps在<strong>channel维度拼接起来</strong>。</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707058373.jpg" alt="squeezenet"></figure>
-<h2 id="总体网络架构">总体网络架构</h2>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707143096.jpg" alt="squeezenet网络结构"></figure>
-<p>共有<strong>9层fire module</strong>，中间穿插一些max pooling，最后是<strong>global avg pooling代替了fc层</strong>（参数大大减少）。在开始和最后还有两层最简单的单层conv层，保证输入输出大小可掌握。</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707297973.jpg" alt="squeezenet 参数数量"></figure>
-<p>比较了alexnet，可以看到准确率差不多的情况下，squeezeNet模型参数数量显著降低了（下表倒数第三行），参数减少50X；如果再加上deep compression技术，压缩比可以达到461X！</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707773916.jpg" alt="参数量比较"></figure>
-<h2 id="延迟下采样操作">延迟下采样操作</h2>
-<p>在alexnet里，第一层卷积层的stride = 4, 直接下采样了4倍。在一般的CNN中，一般卷积层、池化层都会有下采样(stride&gt;1), 甚至在<strong>前面几层网络的下采样比例</strong>会比较大，这样会导致后面基层的神经元的激活映射区域减少，为了提高精度设计下采样层延迟的慢一点，这也是squeezenet不能提高速度的真正原因。</p>
-<p><strong>持续更新中。。。。。。。。。。。</strong></p>
-<h1 id="reference">reference</h1>
-<p><a href="http://blog.csdn.net/hjimce/article/details/72809131">深度学习（六十二）SqueezeNet网络设计思想笔记</a></p>
-<p><a href="http://blog.csdn.net/xbinworld/article/details/50897870"> 深度学习方法（七）：最新SqueezeNet 模型详解</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[深度学习理论问题小结]]></title>
-        <id>https://DragonFive.github.io//post/deeplearning-theory</id>
-        <link href="https://DragonFive.github.io//post/deeplearning-theory">
-        </link>
-        <updated>2017-07-10T03:50:03.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: 深度学习理论问题小结</p>
-<p>date: 2017/7/10 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>梯度下降法</li>
-<li>正则化</li>
-<li>激活函数</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<p>Michael Nielsen的《Neural Network and Deep Learning》<br>
-![神经网络和深度学习][1]</p>
-]]></summary>
-        <content type="html"><![CDATA[<hr>
-<p>title: 深度学习理论问题小结</p>
-<p>date: 2017/7/10 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>梯度下降法</li>
-<li>正则化</li>
-<li>激活函数</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<p>Michael Nielsen的《Neural Network and Deep Learning》<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1499827436670.jpg" alt="神经网络和深度学习"></p>
-<!--more-->
-<h1 id="神经网络基础">神经网络基础</h1>
-<h2 id="sigmoid神经元">sigmoid神经元</h2>
-<p>假设在网络的一些权值（或偏移）上做一个小的改变。我们期望的结果是，这些在权值上的小改变，将会为网络的输出结果带来相应的改变，且这种改变也必须是轻微的。我们在后面将会看到，满足这样的性质才能使学习变得可能。我们就可以改变权值和偏移来使得网络的表现越来越接近我们预期。<br>
-当使用σ函数时我们就得到了一个平滑的感知机。而且，σ函数的平滑属性才是其关键。sigmoid函数的代数形式保证了其在求微分的时候很方便。<br>
-根据我的经验，很多layer后面都会跟上一个激活函数，激活函数用于将该层之前的输入的线性组合进行非线性运算，如果没有激活函数那么整个神经网络就相当于一层了。另外一些激活函数有梯度消失的问题，当层数过深的时候在后向传播的时候梯度趋近于0,relu能够缓解这个问题，同时能够让一些神经元的梯度为0,来减少运算量。</p>
-<p><a href="https://zhihu.com/question/41841299/answer/92683898">不同激活函数(activation function)的神经网络的表达能力是否一致？ - 回答作者: 纳米酱</a></p>
-<p>我们也有一些存在回馈环路可能性的人工神经网络模型。这种模型被称为<strong>递归神经网络（recurrent neural networks）</strong>。该模型的关键在于，神经元在变为非激活态之前会在一段有限时间内均保持激活状态。这种激活状态可以激励其他的神经元，被激励的神经元在随后一段有限时间内也会保持激活状态。如此就会导致更多的神经元被激活，一段时间后我们将得到一个级联的神经元激活系统。</p>
-<p><a href="https://mp.weixin.qq.com/s?__biz=MzIxMjAzNDY5Mg==&amp;mid=400137026&amp;idx=1&amp;sn=f5c8a9ab3e24d7c0bd38058ba211d22a&amp;scene=21#wechat_redirect">用简单的网络结构解决手写数字识别</a></p>
-<h2 id="损失函数">损失函数</h2>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501471631797.jpg" alt="平方误差损失函数"></figure>
-<p>为什么要介绍平方代价（quadratic cost）呢？毕竟我们最初所感兴趣的内容不是对图像正确地分类么？为什么不增大正确输出的得分，而是去最小化一个像平方代价类似的间接评估呢？这么做是因为在神经网络中，<strong>被正确分类的图像的数量所关于权重、偏置的函数并不是一个平滑的函数</strong>。大多数情况下，对权重和偏置做出的微小变动并不会影响被正确分类的图像的数量。这会导致我们很难去刻画如何去优化权重和偏置才能得到更好的结果。<strong>一个类似平方代价的平滑代价函数能够更好地指导我们如何去改变权重和偏置来达到更好的效果</strong>。这就是为何我们集中精力去最小化平方代价，只有通过这种方式我们才能让分类器更精确。</p>
-<p><a href="https://mp.weixin.qq.com/s?__biz=MzIxMjAzNDY5Mg==&amp;mid=400169015&amp;idx=1&amp;sn=757c015a7d2aea1b79a681158dd107e9&amp;scene=21#wechat_redirect">神经网络与深度学习中对为什么梯度下降法能够work做了详尽的解释</a></p>
-<p>ΔC≈∇C⋅Δv. (9)<br>
-Δv=−η∇C, (10)<br>
-这里的η是个很小的正数（就是我们熟知的学习速率）。等式（9）告诉我们ΔC≈−η∇C⋅∇C=−η||∇C||2。由于||∇C||2≥0，这保证了ΔC≤0，例如，如果我们以等式（10）的方式去改变v，那么C将一直会降低，不会增加。（当然，要在（9）式的近似约束下）。这就是我们想要的特性！</p>
-<p>为了使我们的梯度下降法能够正确地运行，我们需要选择足够小的学习速率η使得等式（9）能得到很好的近似。</p>
-<h2 id="反向传播">反向传播</h2>
-<p>如果输入神经元是低激活量的，或者输出神经元已经饱和（高激活量或低激活量），那么权重就会学习得缓慢。</p>
-<p><a href="https://mp.weixin.qq.com/s?__biz=MzIxMjAzNDY5Mg==&amp;mid=400329443&amp;idx=1&amp;sn=f7158ee615c2a0d6f0014adae038193e&amp;scene=21#wechat_redirect">反向传播背后的四个基本等式</a></p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501419765215.jpg" alt="四个基本等式"></figure>
-<p>反向传播的过程</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1500378801942.jpg" alt="enter description here"></figure>
-<p>方向传播算法就是将错误量从输出层反向传播。</p>
-<h1 id="改进神经网络的方式">改进神经网络的方式</h1>
-<p>学习的速度（收敛速度）与很多因素有关，学习率、代价函数的形式、激活函数的形式都有关系。这是使用平方误差作为代价函数。</p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501232404378.jpg" alt="代价函数"><br>
-假设y=0是我们的输出。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501232423609.jpg" alt="对权值偏导"><br>
-我们能够从图像看出当神经元输出接近Rendered by QuickLaTeX.com时，曲线变得非常平坦，因此激活函数的导数会变得很小。</p>
-<h2 id="交叉熵代价函数与sigmoid激活函数">交叉熵代价函数与sigmoid激活函数</h2>
-<p>可以用不同的代价函数比如交叉熵（cross-entropy）代价函数来替代二次代价函数来让学习速度加快。</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501233195651.jpg" alt="交叉熵代价函数"></figure>
-<p><strong>交叉熵函数为什么能作为代价函数</strong><br>
-交叉熵有两个特性能够合理地解释为何它能作为代价函数。首先，它是<strong>非负</strong>的; 其次，如果对于所有的训练输入x，这个神经元的<strong>实际输出值都能很接近我们期待的输出</strong>的话，那么交叉熵将会非常接近0。</p>
-<p>。而且交叉熵有另一个均方代价函数不具备的特征，<strong>它能够避免学习速率降低的情况</strong>。为了理解这个，我们需要计算一下交叉熵关于权重的偏导。因为在计算代价函数关于权值的偏导的时候，sigmoid函数的导数会与交叉熵中导数的一部分抵消掉。</p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501241302962.jpg" alt="误差关于权值的偏导">-</p>
-<p>当我们的输出层是线性神经元（linear neurons）的时候使用均方误差，假设我们有一个多层神经网络。假设最后一层的所有神经元都是线性神经元（linear neurons）意味着我们不用sigmoid作为激活函数。</p>
-<table>
-<thead>
-<tr>
-<th>激活函数</th>
-<th>函数</th>
-<th>导数</th>
-<th>特点</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>sigmoid</td>
-<td><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341517202.jpg" alt="sigmoid"></td>
-<td><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341554626.jpg" alt="sigmoid导数"></td>
-<td>有饱和状态</td>
-</tr>
-<tr>
-<td>tanh</td>
-<td><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341596684.jpg" alt="tanh"></td>
-<td><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341636250.jpg" alt="enter description here"></td>
-<td>tanh保持非线性单调，延迟饱和 ，[-1,1]</td>
-</tr>
-<tr>
-<td>relu</td>
-<td>y=max(0,x)</td>
-<td>导数为常数</td>
-<td>节省计算量，避免梯度丢失，网络稀疏</td>
-</tr>
-<tr>
-<td>softplus</td>
-<td>y=log(1+e^x)</td>
-<td></td>
-<td>softplus可以看作是ReLu的平滑</td>
-</tr>
-</tbody>
-</table>
-<p><strong>如何选择为自己的模型选择合适的激活函数</strong></p>
-<ol>
-<li>通常使用tanh激活函数要比sigmoid收敛速度更快；</li>
-<li>在较深层的神经网络中，选用relu激活函数能使梯度更好地传播回去</li>
-<li>当使用softmax作为最后一层的激活函数时，其前一层最好不要使用relu进行激活，而是使用tanh作为替代，否则最终的loss很可能变成Nan；</li>
-<li>当选用高级激活函数时，建议的尝试顺序为ReLU-&gt;ELU-&gt;PReLU-&gt;MPELU，因为前两者没有超参数，而后两者需要自己调节参数使其更适应构建的网络结构。</li>
-</ol>
-<h2 id="softmax-层的输出是一个概率分布">softmax 层的输出是一个概率分布</h2>
-<p><strong>softmax 的单调性</strong>，如果J=K，那么<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501419089972.jpg" alt="enter description here">为正数， 如果J!=K,则为负数，这个表明了 z增大，则相应的a增大，其它a（输出概率）就见效</p>
-<p><strong>softmax 的非局部性</strong>，任何一个输出激活值a依赖于所有的输入值。</p>
-<p><strong>softmax函数的导数</strong></p>
-<p><a href="http://www.jianshu.com/p/8eb17fa41164">参考softmax分类</a></p>
-<p><a href="http://shuokay.com/2016/07/20/softmax-loss/">Softmax 输出及其反向传播推导</a></p>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341429967.jpg" alt="softmax函数"></figure>
-<p><a href="https://www.zhihu.com/question/40403377/answer/86647017">知乎：多类分类下为什么用softmax而不是用其他归一化方法?</a></p>
-<p><a href="http://freemind.pluskid.org/machine-learning/softmax-vs-softmax-loss-numerical-stability/">free-mind博客，softmax-loss</a></p>
-<p>当 j = k时， <img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341467832.jpg" alt="enter description here">，其中 y=1,所以可以写成<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501422347832.jpg" alt="enter description here"></p>
-<p>当j!=k,  <img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501341954136.jpg" alt="enter description here"></p>
-<p>这样的话当j = k 的时候, <img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501422904920.jpg" alt="enter description here">,这个形式非常简洁，而且与线性回归（采用最小均方误差目标函数）、两类分类（采用cross-entropy目标函数）时的形式一致。</p>
-<p>其中，损失函数对激活函数的结果a的偏导是top_diff, 而对激活函数的输入z的偏导是bottom_diff。</p>
-<p><strong>损失函数是最大似然也是交叉熵</strong></p>
-<p>因为softmax的输出是一个概率分布，所以它的损失函数可以使用 最大似然估计</p>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501421402308.jpg" alt="损失函数是log最大似然"></figure>
-<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501422904920.jpg" alt="bottom-diff的值"></figure>
-<figure data-type="image" tabindex="8"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501423109179.jpg" alt="偏置的偏导"></figure>
-<figure data-type="image" tabindex="9"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501423214892.jpg" alt="权值的偏导"></figure>
-<h2 id="过拟合与正则化">过拟合与正则化</h2>
-<p>检测过拟合一个显而易见的方法就是跟踪网络训练过程中测试数据的准确率。如果测试数据的精度不再提高，就应该停止训练。当然，严格地说，这也不一定就是过拟合的迹象，也许需要同时检测到测试数据和训练数据的精度都不再提高时才行。</p>
-<p>在每一步训练之后，计算 validation_data 的分类精度。一旦 validation_data 的分类精度达到饱和，就停止训练。这种策略叫做提前终止（early stopping）。validation_data视为帮助我们学习合适超参数的一种训练数据。由于validation_data和test_data是完全分离开的，所以这种找到优秀超参数的方法被称为分离法（hold out method）。</p>
-<p>避免过拟合的手段:<strong>增大训练集、减小模型的规模、L2正则化、L1 规范化、弃权(Dropout)</strong>。正则化的一种手段叫weight-decay 又叫L2正则。L2 正则的思想是，在代价函数中加入一个额外的正则化项。下面是加入<br>
-<strong>L2正则</strong><br>
-项之后的交叉熵代价函数。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501424722993.jpg" alt="weight-decay"></p>
-<p>直观来说，正则化的作用是让网络偏向学习更小的权值，而在其它的方面保持不变。选择较大的权值只有一种情况，那就是它们能显著地改进代价函数的第一部分。换句话说，正则化可以视作一种能够<strong>折中考虑小权值和最小化原来代价函数</strong>的方法。</p>
-<p>而在反向传播过程中，这个正则项只影响权重项。</p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501425196600.jpg" alt="损失函数对权重和偏置的偏导"><br>
-如果代价函数没有正则化，那么<strong>权重向量的长度</strong>倾向于增长，而其它的都不变。随着时间推移，权重向量将会变得非常大。这可能导致权重向量被限制得或多或少指向同一个方向，因为当长度过长时，梯度下降只能带来很小的变化。我相信这一现象令我们的学习算法难于恰当地探索权重空间，<strong>因而难以给代价函数找到一个好的极小值</strong>。</p>
-<p><strong>L1正则</strong></p>
-<p>L1 规范化，这个方法是在未规范化的代价函数上加上一个权重绝对值的和：<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501468097877.jpg" alt="L1正则"><br>
-其中C0表示的是原来的损失函数，对上面的损失函数求导数得到：<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501468817310.jpg" alt="L1求导"></p>
-<p>那么给予L1规范化的网络的更新规则为：<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501469475625.jpg" alt="权值更新规则"><br>
-可以发现正则项的导数是常数。在 L1 规范化中，权重通过一个<strong>常量向 0 <strong>进行缩小。在 L2规范化中，权重通过一个和</strong> |w| 成比例的量</strong>进行缩小的。所以，当一个特定的权重绝对值 |w|  很大时，L1 规范化的权重缩小得远比 L2 规范化要小得多。相反，当一个特定的权重绝对值  |w|  很小时，L1 规范化的权重缩小得要比 L2 规范化大得多。最终的结果就是：L1 规范化倾向于<strong>聚集网络的权重在相对少量的高重要度连接上</strong>，而其他权重就会被驱使<strong>向 0 接近</strong>。</p>
-<p><strong>弃权（Dropout）</strong><br>
-dropout并不修改代价函数，而是修改网络本身。主要是用在全连接层。</p>
-<p>因为神经元不能依赖其他神经元特定的存在，这个技术其实<strong>减少了复杂的互适应的神经元</strong>。所以，强制要学习那些在神经元的不同随机子集中更加健壮的特征。</p>
-<p>当我们弃权掉不同的神经元集合时，有点像我们在<strong>训练不同的神经网络</strong>。所以，弃权过程就如同大量不同网络的效果的平均那样。不同的网络会以不同的方式过度拟合了，所以，弃权过的网络的效果会减轻过度拟合。</p>
-<p><strong>人为扩展训练数据data augmentation</strong></p>
-<p>可以提高网络性能</p>
-<p>** batch normalization **<br>
-用在relu前面效果好，是LRN的升级版，把结果映射到0-1之间。</p>
-<p>即在每次SGD时，通过mini-batch来对相应的activation做规范化操作，使得结果（输出信号各个维度）的均值为0，方差为1. 而最后的“scale and shift”操作则是为了让因训练所需而“刻意”加入的BN能够有可能还原最初的输入，从而保证整个network的capacity。</p>
-<figure data-type="image" tabindex="10"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502692445739.jpg" alt="batch normalization"></figure>
-<p>1）直接对输入信号的每个维度做规范化（“normalize each scalar feature independently”）；<br>
-2）在每个mini-batch中计算得到mini-batch mean和variance来替代整体训练集的mean和variance.</p>
-<p>BN的提出还是为了克服深度神经网络难以训练的弊病.说到底还是为了防止“梯度弥散”。关于梯度弥散，大家都知道一个简单的栗子：$ 0.9^30 = 0.04 $ ,在神经网络训练时遇到收敛速度很慢，或梯度爆炸等无法训练的状况时可以尝试BN来解决。另外，在一般使用情况下也可以加入BN来加快训练速度，提高模型精度。</p>
-<p><a href="https://www.zhihu.com/question/38102762">知乎:深度学习中 Batch Normalization为什么效果好？</a></p>
-<h2 id="参数初始化">参数初始化</h2>
-<p>输出神经元在错误的值上饱和导致学习的下降。但是隐含层的饱和没法解决，需要用其它的初始化方法。<br>
-假设我们有一个有<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501474164438.jpg" alt="enter description here">个输入权重的神经元。我们会使用<strong>均值为 0 标准差为 <img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1501474130990.jpg" alt="enter description here"> 的高斯随机分布</strong>初始化这些权重。也就是说，我们会<strong>向下挤压高斯分布</strong>，让我们的神经元更不可能饱和。我们会继续使用均值为0 标准差为 1 的高斯分布来对偏置进行初始化。</p>
-<h2 id="resnet如何解决了梯度消失问题">resnet如何解决了梯度消失问题</h2>
-<p>梯度消失的问题出现的本质原因是梯度连乘问题</p>
-<p>而residual 结构出现后，求梯度就成</p>
-<figure data-type="image" tabindex="11"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507733864824.jpg" alt="enter description here"></figure>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><msub><mi>X</mi><mi>L</mi></msub></mrow><mrow><mi mathvariant="normal">∂</mi><msub><mi>X</mi><mi>l</mi></msub></mrow></mfrac><mo>=</mo><mfrac><mrow><mi mathvariant="normal">∂</mi><msub><mi>X</mi><mi>l</mi></msub><mo>+</mo><mi>F</mi><mo>(</mo><msub><mi>X</mi><mi>l</mi></msub><mo separator="true">,</mo><msub><mi>W</mi><mi>l</mi></msub><mo separator="true">,</mo><msub><mi>b</mi><mi>l</mi></msub><mo>)</mo></mrow><mrow><mi mathvariant="normal">∂</mi><msub><mi>X</mi><mi>l</mi></msub></mrow></mfrac><mo>=</mo><mn>1</mn><mo>+</mo><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>F</mi><mo>(</mo><msub><mi>X</mi><mi>L</mi></msub><mo separator="true">,</mo><msub><mi>W</mi><mi>L</mi></msub><mo separator="true">,</mo><msub><mi>b</mi><mi>L</mi></msub><mo>)</mo></mrow><mrow><mi mathvariant="normal">∂</mi><msub><mi>X</mi><mi>L</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{\partial X_L}{\partial X_{l}} = \frac{\partial X_l + F(X_l,W_l,b_l)}{\partial X_l} = 1 + \frac{\partial F(X_L,W_L,b_L)}{\partial X_L}
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.20744em;vertical-align:-0.8360000000000001em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.37144em;"><span style="top:-2.3139999999999996em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">L</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8360000000000001em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.263em;vertical-align:-0.8360000000000001em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.3139999999999996em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8360000000000001em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:2.263em;vertical-align:-0.8360000000000001em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.3139999999999996em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">L</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">L</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">L</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">L</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8360000000000001em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
-<h1 id="reference">reference</h1>
-<p><a href="http://blog.csdn.net/superCally/article/details/55671064">Deep Residual Network 与 梯度消失</a></p>
-<p><a href="http://neuralnetworksanddeeplearning.com/index.html">Neural Networks and Deep Learning</a></p>
-<p><a href="http://www.jianshu.com/p/6033a5d3ad4b">解析深度学习中的激活函数</a></p>
-<p><a href="https://mp.weixin.qq.com/s?__biz=MzIxMjAzNDY5Mg==&amp;mid=503307054&amp;idx=1&amp;sn=d20623df35d1771dc548d545ed38f318&amp;chksm=0f474ec53830c7d3bd43285f1b32a69ee76887676ce276446aed833512ddc1d3515331b954e7&amp;mpshare=1&amp;scene=1&amp;srcid=0712NxuIohdYeyT9HV9KoJD0&amp;pass_ticket=ih%2BTmMdW0BKOpaQftxTEsre0o%2FuiaqArflVqs4UY1MJqSN5yV0Im5QO0FlBgY6QF#rd">参考：《神经网络与深度学习》连载——哈工大</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[神经网络模型演化]]></title>
-        <id>https://DragonFive.github.io//post/cnn_history</id>
-        <link href="https://DragonFive.github.io//post/cnn_history">
-        </link>
-        <updated>2017-07-05T02:34:51.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: 神经网络模型演化<br>
-date: 2017/7/5 17:38:58</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>alexnet</li>
-<li>googlenet</li>
-<li>caffenet</li>
-<li>caffe</li>
-</ul>
-<hr>
-<p>[TOC]</p>
-<ol>
-<li>Lenet，1986年</li>
-<li>Alexnet，2012年</li>
-<li>GoogleNet，2014年</li>
-<li>VGG，2014年</li>
-<li>Deep Residual Learning，2015年</li>
-</ol>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1503832736486.jpg" alt="caffe model"></figure>
-<h1 id="网络结构的基础知识">网络结构的基础知识</h1>
-<ol>
-<li>下采样层的目的是为了<strong>降低网络训练参数</strong>及模型的<strong>过拟合程度</strong>。</li>
-<li>LRN局部响应归一化有利于模型泛化。（过拟合）</li>
-<li>alexnet做了重叠池化，与lenet不同。也就是说它的pool kernel的步长比kernel size要小。</li>
-<li>dropout在每个不同的样本进来的时候用不同的一半的神经元做fc层。但他们共享权重，</li>
-<li>relu是线性的，非饱和的。收敛速度比sigmoid和tanh快</li>
-<li>inception的主要思路是用密集成分来近似局部稀疏结构。网络越到后面，特征越来越抽象，3x3、5x5的卷积的比例也在增加，但是5x5的卷积计算量会大，后续层的参数会多，因此需要用1x1的卷积进行降维</li>
-</ol>
-<h2 id="alexnet">alexNet</h2>
-<p>它证明了CNN在复杂模型下的有效性，然后GPU实现使得训练在可接受的时间范围内得到结果<br>
-Alexnet有一个特殊的计算层，LRN层，做的事是对当前层的输出结果做平滑处理。</p>
-<p>前面的结构  conv - relu - pool - LRN</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502709541017.jpg" alt="卷积层"></figure>
-<p>全连接的结构 fc - relu - dropout</p>
-<h2 id="googlenet">googLeNet</h2>
-<p>从这里开始pooling层其实变少了。<br>
-要想提高CNN的网络能力，比如分类准确率，一般的想法就是增大网络，比如Alexnet确实比以前早期Lenet大了很多，但是纯粹的增大网络——比如把<strong>每一层的channel数量翻倍</strong>——但是这样做有两个缺点——<strong>参数太多容易过拟合，网络计算量也会越来越大</strong>。</p>
-<h3 id="inception-v1">inception v1</h3>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502709248613.jpg" alt="inceptionv1结构"></figure>
-<p>一分四，然后做一些不同大小的卷积，之后再堆叠feature map。这样提取不同尺度的特征，能够提高网络表达能力。</p>
-<p>目前很多工作证明，要想增强网络能力，可以：增加网络深度，增加网络宽度；但是为了<strong>减少过拟合，也要减少自由参数</strong>。因此，就自然而然有了这个第一版的Inception网络结构——同一层里面，有卷积1x1, 3x 3,5x 5 <strong>不同的卷积模板，他们可以在不同size的感受野做特征提取</strong>，也算的上是一种混合模型了。因为<strong>Max Pooling本身也有特征提取的作用</strong>，而且和卷积不同，没有参数不会过拟合，也作为一个分支。但是直接这样做，整个网络计算量会较大，且层次并没有变深，因此，在3x3和5x5卷 积前面<strong>先做1x1的卷积，降低input的channel数量，这样既使得网络变深，同时计算量反而小了</strong>；（在每一个卷积之后都有<strong>ReLU</strong>）</p>
-<h3 id="inception-v2-v3">inception v2 v3</h3>
-<p>用1x3和3x1卷积替代3x3卷积，计算量少了很多，深度变深，思路是一样的。（实际上是1xn和nx1替代nxn，n可以变）,使用的是不对称的卷积核</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502710845336.jpg" alt="incepiton v2"></figure>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502710981337.jpg" alt="incpiton 2网络结构"></figure>
-<h2 id="vgg">VGG</h2>
-<p>特点也是连续conv多，计算量巨大</p>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502710007686.jpg" alt="做连续卷积"></figure>
-<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505876579495.jpg" alt="VGG的参数量"></figure>
-<h2 id="resnet">resnet</h2>
-<p>特殊之处在于设计了“bottleneck”形式的block（有跨越几层的直连）。最深的model采用的152层</p>
-<p>block的结构如下图</p>
-<figure data-type="image" tabindex="8"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502710123203.jpg" alt="block"></figure>
-<h2 id="global-average-pooling">Global Average Pooling</h2>
-<p>在Googlenet网络中，也用到了Global Average Pooling，其实是受启发于Network In Network。Global Average Pooling一般用于放在网络的最后，用于替换全连接FC层，为什么要替换FC？因为在使用中，例如alexnet和vgg网络都在卷积和softmax之间串联了fc层，发现有一些缺点：</p>
-<p>（1）<strong>参数量极大</strong>，有时候一个网络超过80~90%的参数量在最后的几层FC层中；<br>
-（2）<strong>容易过拟合</strong>，很多CNN网络的过拟合主要来自于最后的fc层，因为参数太多，却没有合适的regularizer；过拟合导致模型的泛化能力变弱；<br>
-（3）实际应用中非常重要的一点，paper中并没有提到：<strong>FC要求输入输出是fix的</strong>，也就是说图像必须按照给定大小，而实际中，图像有大有小，fc就很不方便；</p>
-<p>作者提出了Global Average Pooling，做法很简单，是对<strong>每一个单独的feature map取全局average</strong>。要求输出的nodes和分类category数量一致，这样后面就可以直接接softmax了。</p>
-<p>global avg pooling层没有参数所以不会过拟合。</p>
-<h1 id="reference">reference</h1>
-<p><a href="http://blog.csdn.net/xbinworld/article/details/61674836">深度学习方法（十一）：卷积神经网络结构变化</a></p>
-<p><a href="http://blog.csdn.net/xbinworld/article/details/61210499">卷积神经网络结构变化</a></p>
-<p><a href="http://www.shuang0420.com/2017/04/25/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%20CNN%20%E7%AC%94%E8%AE%B0(%E9%AB%98%E7%BA%A7%E7%AF%87)/">卷积神经网络总结</a></p>
-]]></content>
-    </entry>
-</feed>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/TzNXsQX20" class="tag">
+                    机器学习
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
+                    深度学习
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/network_compression">
+                  <h3 class="post-title">
+                    神经网络的压缩优化方法总结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

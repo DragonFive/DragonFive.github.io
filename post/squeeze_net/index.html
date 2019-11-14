@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>squeeze_net的模型优化 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573703744475">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573703744475" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">squeeze_net的模型优化</h2>
+            <div class="post-date">2017-07-20</div>
+            
+              <div class="feature-container" style="background-image: url('https://image.slidesharecdn.com/forrestiandolatinymlpresentation-171007214051/95/small-deepneuralnetworks-their-advantages-and-theirdesign-12-638.jpg?cb=1510284537')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: squeeze_net的模型优化</p>
+<p>date: 2017/7/20 12:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>梯度下降法</li>
+<li>正则化</li>
+<li>激活函数</li>
+<li>神经网络</li>
+</ul>
+<hr>
+<div class="github-widget" data-repo="DragonFive/deep-learning-exercise"></div>
+<p>SqueezeNet主要是为了降低CNN模型参数数量而设计的。没有提高运行速度。</p>
+<!--more-->
+<p>使用的squeezenet的pre-trained model来自<a href="https://github.com/DeepScale/SqueezeNet">SqueezeNet repo</a></p>
+<h1 id="设计原则">设计原则</h1>
+<p>（1）替换3x3的卷积kernel为<strong>1x1的卷积kernel</strong></p>
+<p>卷积模板的选择，从12年的AlexNet模型一路发展到2015年底Deep Residual Learning模型，基本上卷积大小都选择在3x3了，因为其有效性，以及设计简洁性。本文替换3x3的卷积kernel为1x1的卷积kernel可以让参数缩小9X。但是为了不影响识别精度，并不是全部替换，而是一部分用3x3，一部分用1x1。具体可以看后面的模块结构图。</p>
+<p>（2）减少输入3x3卷积的input feature map数量<br>
+如果是conv1-conv2这样的直连，那么实际上是没有办法<strong>减少conv2的input feature map</strong>数量的。所以作者巧妙地把原本一层conv分解为两层，并且封装为一个<strong>Fire Module</strong>。</p>
+<p>（3）**减少pooling **<br>
+这个观点在很多其他工作中都已经有体现了，比如GoogleNet以及Deep Residual Learning。</p>
+<p>同时也替换fc层为 global avg pooling层</p>
+<h2 id="fire-module">Fire Module</h2>
+<p>Fire Module是本文的核心构件，思想非常简单，就是将原来简单的一层conv层变成两层：<strong>squeeze层+expand层</strong>，各自带上Relu激活层。在squeeze层里面全是1x1的卷积kernel，数量记为S11；在expand层里面有1x1和3x3的卷积kernel，数量分别记为E11和E33，<strong>要求S11 &lt; input map number即满足上面的设计原则（2）</strong>。expand层之后将1x1和3x3的卷积output feature maps在<strong>channel维度拼接起来</strong>。</p>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707058373.jpg" alt="squeezenet"></figure>
+<h2 id="总体网络架构">总体网络架构</h2>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707143096.jpg" alt="squeezenet网络结构"></figure>
+<p>共有<strong>9层fire module</strong>，中间穿插一些max pooling，最后是<strong>global avg pooling代替了fc层</strong>（参数大大减少）。在开始和最后还有两层最简单的单层conv层，保证输入输出大小可掌握。</p>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707297973.jpg" alt="squeezenet 参数数量"></figure>
+<p>比较了alexnet，可以看到准确率差不多的情况下，squeezeNet模型参数数量显著降低了（下表倒数第三行），参数减少50X；如果再加上deep compression技术，压缩比可以达到461X！</p>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1502707773916.jpg" alt="参数量比较"></figure>
+<h2 id="延迟下采样操作">延迟下采样操作</h2>
+<p>在alexnet里，第一层卷积层的stride = 4, 直接下采样了4倍。在一般的CNN中，一般卷积层、池化层都会有下采样(stride&gt;1), 甚至在<strong>前面几层网络的下采样比例</strong>会比较大，这样会导致后面基层的神经元的激活映射区域减少，为了提高精度设计下采样层延迟的慢一点，这也是squeezenet不能提高速度的真正原因。</p>
+<p><strong>持续更新中。。。。。。。。。。。</strong></p>
+<h1 id="reference">reference</h1>
+<p><a href="http://blog.csdn.net/hjimce/article/details/72809131">深度学习（六十二）SqueezeNet网络设计思想笔记</a></p>
+<p><a href="http://blog.csdn.net/xbinworld/article/details/50897870"> 深度学习方法（七）：最新SqueezeNet 模型详解</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/LI4Uk3FeTa" class="tag">
+                    网络压缩
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
+                    神经网络
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
+                    深度学习
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/deeplearning-theory">
+                  <h3 class="post-title">
+                    深度学习理论问题小结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

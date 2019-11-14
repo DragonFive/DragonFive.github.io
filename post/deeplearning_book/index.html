@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>深度学习中译本-节选 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573703744475">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573703744475" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">深度学习中译本-节选</h2>
+            <div class="post-date">2017-04-08</div>
+            
+              <div class="feature-container" style="background-image: url('http://www.ourwen.com/upload/material/img/20170520/SdrIiK85.png')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: 深度学习中译本-节选</p>
+<p>date: 2017/4/8 17:38:58</p>
+<p>categories:</p>
+<ul>
+<li>计算机视觉<br>
+tags:</li>
+<li>deeplearning</li>
+<li>深度学习</li>
+</ul>
+<hr>
+<p>[TOC]</p>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491645781301.jpg" alt="AI" title="1491645781301"></figure>
+<!--more-->
+<h1 id="前言">前言</h1>
+<p>一个人的日常生活需要关于世界的巨量知识。很多这方面的知识是<strong>主观的</strong>、直观的，因此很难通过<strong>形式化的方式表达</strong>清楚。计算机需要获取同样的知识才能表现出智能。<br>
+AI 系统需要具备自己<strong>获取知识的能力</strong>，即从原始数据中提取模式的能力。这种能力被称为 机器学习。</p>
+<p><strong>对表示的依赖</strong>都是一个普遍现象。在计算机科学中，如果数据集合被精巧地结构化并被智能地索引，那么诸如搜索之类的操作的处理速度就可以成指数级地加快。</p>
+<p>使用机器学习来<strong>发掘表示本身</strong>，而不仅仅把表示映射到输出。这种方法我们称之为 <strong>表示学习</strong>（representation learning）。学习到的表示往往比手动设计的表示表现得更好。并且它们只需<strong>最少的人工干预</strong>，就能让AI系统迅速适应新的任务。表示学习算法的典型例子是 自编码器(autoencoder)。</p>
+<p>深度学习（deep learning）通过其他较简单的表示来表达复杂表示，解决了表示学习中的核心问题。下图展示了深度学习系统如何通过<strong>组合较简单的概念</strong>，获得不同层次的抽象（例如转角和轮廓，它们转而由边线定义）来表示图像中人的概念。第一层可以轻易地通过<strong>比较相邻像素的亮度来识别边缘</strong>。有了第一隐藏层描述的边缘，第二隐藏层可以容易地<strong>搜索可识别为角和扩展轮廓</strong>的边集合。给定第二隐藏层中关于角和轮廓的图像描述，第三隐藏层可以找到轮廓和角的特定集合来检测特定对象的整个部分。最后，根据图像描述中包含的对象部分，可以识别图像中存在的对象。</p>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491647505456.jpg" alt="enter description here" title="1491647505456"></figure>
+<p>深度学习与其他学习的区别。<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491648776897.jpg" alt="深度学习与其他的区别" title="1491648776897"></p>
+<h1 id="应用数学与机器学习基础">应用数学与机器学习基础</h1>
+<h2 id="线性代数部分">线性代数部分</h2>
+<p>坐标超过两维度的数组称为<strong>张量（tensor）</strong>，一个数组中的元素分布在若干维坐标的规则网络中。</p>
+<p>一组向量的<strong>生成子空间</strong>是原始向量线性组合后所能抵达的点的集合。<br>
+确定 $ Ax=b$是否有解相当于确定向量b是否在A列向量的<strong>生成子空间中</strong>。又叫A的<strong>值域</strong></p>
+<p>如果一个矩阵的列空间涵盖整个 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mi>m</mi></msup></mrow><annotation encoding="application/x-tex">R^m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">m</span></span></span></span></span></span></span></span></span></span></span>，那么该矩阵必须包含至少一组 m 个线性无关的向量。这是式 (2.11) 对于每一个向量 b 的取值都有解的充分必要条件。值得注意的是，<br>
+这个条件是说该向量集恰好有 m 个线性无关的列向量，而不是至少 m 个。</p>
+<p>一个列向量线性相关的<strong>方阵</strong>被称为 <strong>奇异的</strong>（singular）。</p>
+<h3 id="范数">范数</h3>
+<p>范数（包括 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>L</mi><mi>p</mi></msup></mrow><annotation encoding="application/x-tex">L^p</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">L</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">p</span></span></span></span></span></span></span></span></span></span></span> 范数）是将<strong>向量映射到非负值</strong>的函数。直观上来说，向量 x 的范数衡量从原点到点 x 的距离。比如L2范数衡量的就是欧氏距离</p>
+<p>当机器学习问题中<strong>零和非零元素之间的差异非常重要</strong>时，通常会使用 L1 范数。特别是求梯度的时候。</p>
+<p>最大范数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>L</mi><mi mathvariant="normal">∞</mi></msup></mrow><annotation encoding="application/x-tex">L^{\infty }</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">L</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span></span></span></span></span></span></span></span>，衡量的是向量中具有最大幅值的元素的绝对值：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mrow><mo fence="true">∥</mo><mi>x</mi><mo fence="true">∥</mo></mrow><mi mathvariant="normal">∞</mi></msub><mo>=</mo><mi>m</mi><mi>a</mi><msub><mi>x</mi><mi>i</mi></msub><mi mathvariant="normal">∣</mi><msub><mi>x</mi><mi>i</mi></msub><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">\left \| x \right \|_\infty =max_i|x_i|</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0497em;vertical-align:-0.29969999999999997em;"></span><span class="minner"><span class="minner"><span class="mopen delimcenter" style="top:0em;">∥</span><span class="mord mathdefault">x</span><span class="mclose delimcenter" style="top:0em;">∥</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.0016920000000000268em;"><span style="top:-2.4003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">∞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29969999999999997em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">m</span><span class="mord mathdefault">a</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span></p>
+<p>衡量矩阵的大小需要用到Frobenius范数：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mrow><mo fence="true">∥</mo><mi>A</mi><mo fence="true">∥</mo></mrow><mi>F</mi></msub><mo>=</mo><msqrt><mrow><munder><mo>∑</mo><mrow><mi>i</mi><mo separator="true">,</mo><mi>j</mi></mrow></munder><msubsup><mi>A</mi><mrow><mi>i</mi><mo separator="true">,</mo><mi>j</mi></mrow><mn>2</mn></msubsup></mrow></msqrt><mo>=</mo><msqrt><mrow><mi>T</mi><mi>r</mi><mo>(</mo><mi>A</mi><mi>A</mi><mi mathvariant="normal">⊤</mi><mo>)</mo></mrow></msqrt></mrow><annotation encoding="application/x-tex">\left \| A \right \|_{F }=  \sqrt{ \sum_{i,j}A_{i,j}^2} = \sqrt{Tr(AA\top) }
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0497em;vertical-align:-0.29969999999999997em;"></span><span class="minner"><span class="minner"><span class="mopen delimcenter" style="top:0em;">∥</span><span class="mord mathdefault">A</span><span class="mclose delimcenter" style="top:0em;">∥</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.17863099999999998em;"><span style="top:-2.4003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">F</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29969999999999997em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.04em;vertical-align:-1.5880110000000003em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4519889999999998em;"><span class="svg-align" style="top:-5em;"><span class="pstrut" style="height:5em;"></span><span class="mord" style="padding-left:1em;"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.050005em;"><span style="top:-1.8723309999999997em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mpunct mtight">,</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span style="top:-3.0500049999999996em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.413777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.795908em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mpunct mtight">,</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span style="top:-3.0448000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4129719999999999em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.4119889999999997em;"><span class="pstrut" style="height:5em;"></span><span class="hide-tail" style="min-width:1.02em;height:3.08em;"><svg width='400em' height='3.08em' viewBox='0 0 400000 3240' preserveAspectRatio='xMinYMin slice'><path d='M473,2793c339.3,-1799.3,509.3,-2700,510,-2702
+c3.3,-7.3,9.3,-11,18,-11H400000v40H1017.7s-90.5,478,-276.2,1466c-185.7,988,
+-279.5,1483,-281.5,1485c-2,6,-10,9,-24,9c-8,0,-12,-0.7,-12,-2c0,-1.3,-5.3,-32,
+-16,-92c-50.7,-293.3,-119.7,-693.3,-207,-1200c0,-1.3,-5.3,8.7,-16,30c-10.7,
+21.3,-21.3,42.7,-32,64s-16,33,-16,33s-26,-26,-26,-26s76,-153,76,-153s77,-151,
+77,-151c0.7,0.7,35.7,202,105,604c67.3,400.7,102,602.7,104,606z
+M1001 80H400000v40H1017z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.5880110000000003em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.24em;vertical-align:-0.25612499999999994em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.983875em;"><span class="svg-align" style="top:-3.2em;"><span class="pstrut" style="height:3.2em;"></span><span class="mord" style="padding-left:1em;"><span class="mord mathdefault" style="margin-right:0.13889em;">T</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathdefault">A</span><span class="mord mathdefault">A</span><span class="mord">⊤</span><span class="mclose">)</span></span></span><span style="top:-2.9438750000000002em;"><span class="pstrut" style="height:3.2em;"></span><span class="hide-tail" style="min-width:1.02em;height:1.28em;"><svg width='400em' height='1.28em' viewBox='0 0 400000 1296' preserveAspectRatio='xMinYMin slice'><path d='M263,681c0.7,0,18,39.7,52,119c34,79.3,68.167,
+158.7,102.5,238c34.3,79.3,51.8,119.3,52.5,120c340,-704.7,510.7,-1060.3,512,-1067
+c4.7,-7.3,11,-11,19,-11H40000v40H1012.3s-271.3,567,-271.3,567c-38.7,80.7,-84,
+175,-136,283c-52,108,-89.167,185.3,-111.5,232c-22.3,46.7,-33.8,70.3,-34.5,71
+c-4.7,4.7,-12.3,7,-23,7s-12,-1,-12,-1s-109,-253,-109,-253c-72.7,-168,-109.3,
+-252,-110,-252c-10.7,8,-22,16.7,-34,26c-22,17.3,-33.3,26,-34,26s-26,-26,-26,-26
+s76,-59,76,-59s76,-60,76,-60z M1001 80H40000v40H1012z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.25612499999999994em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p>.其类似于向量的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>L</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">L^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">L</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>.，F范数可以用于定义最小平方误差。</p>
+<h3 id="特殊类型的矩阵和向量">特殊类型的矩阵和向量</h3>
+<p><strong>对角矩阵</strong>是只在主对角线上含有非零元素的矩阵。单位矩阵就是对角阵。对角阵受欢迎主要是因为其乘法计算很高效。计算乘法$ diag(v)x $，只需要把x中的每个元素xi放大vi倍就可以了。并且对角方阵的逆矩阵。</p>
+<p><strong>正交矩阵</strong>是指行向量和列向量都分别标准正交(都是单位向量然后各自正交)的方阵：<br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>A</mi><mi mathvariant="normal">⊤</mi></msup><mi>A</mi><mo>=</mo><mi>I</mi></mrow><annotation encoding="application/x-tex">A^\top A = I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">⊤</span></span></span></span></span></span></span></span><span class="mord mathdefault">A</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span></span></span></span> 这以为着 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>A</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>=</mo><msup><mi>A</mi><mi mathvariant="normal">⊤</mi></msup></mrow><annotation encoding="application/x-tex">A^{-1} = A^\top</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">⊤</span></span></span></span></span></span></span></span></span></span></span>.<br>
+所以正交矩阵收到关注是因为求逆代价小。</p>
+<h3 id="特征分解">特征分解</h3>
+<p>特征分解是广泛使用的矩阵分解之一，即我们将矩阵分解成一组特征向量和特征值。<br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi><mi>v</mi><mo>=</mo><mi>λ</mi><mi>v</mi></mrow><annotation encoding="application/x-tex">Av = \lambda v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">λ</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span></span></span></span></p>
+<p><strong>矩阵分解</strong>，假设A有n个线性无关的特征向量{v1,v2,..vn},它们对应的特征值是{<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>λ</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><msub><mi>λ</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_1,\lambda_2,...\lambda_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mord"><span class="mord mathdefault">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>},把每一个特征向量做一个列向量，然后组合起来形成一个矩阵，然后把相应的特征值组成对角阵。就是特征分解，把特征向量进行归一化（L2范数为1，单位向量），可以记做<br>
+$ A = Vdiag(\lambda)V^{-1} <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">因</mi><mi mathvariant="normal">为</mi><mi mathvariant="normal">我</mi><mi mathvariant="normal">们</mi><mi mathvariant="normal">这</mi><mi mathvariant="normal">里</mi><mi mathvariant="normal">只</mi><mi mathvariant="normal">讨</mi><mi mathvariant="normal">论</mi><mi mathvariant="normal">实</mi><mi mathvariant="normal">对</mi><mi mathvariant="normal">称</mi><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">所</mi><mi mathvariant="normal">以</mi><mi>A</mi><mi mathvariant="normal">的</mi><mi mathvariant="normal">特</mi><mi mathvariant="normal">征</mi><mi mathvariant="normal">向</mi><mi mathvariant="normal">量</mi><mi mathvariant="normal">组</mi><mi mathvariant="normal">成</mi><mi mathvariant="normal">的</mi><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">就</mi><mi mathvariant="normal">是</mi><mi mathvariant="normal">正</mi><mi mathvariant="normal">交</mi><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">所</mi><mi mathvariant="normal">以</mi><mi mathvariant="normal">求</mi><mi mathvariant="normal">逆</mi><mi mathvariant="normal">就</mi><mi mathvariant="normal">是</mi><mi mathvariant="normal">求</mi><mi mathvariant="normal">转</mi><mi mathvariant="normal">置</mi><mi mathvariant="normal">。</mi></mrow><annotation encoding="application/x-tex">
+因为我们这里只讨论实对称矩阵，所以A的特征向量组成的矩阵就是正交矩阵，所以求逆就是求转置。
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord cjk_fallback">因</span><span class="mord cjk_fallback">为</span><span class="mord cjk_fallback">我</span><span class="mord cjk_fallback">们</span><span class="mord cjk_fallback">这</span><span class="mord cjk_fallback">里</span><span class="mord cjk_fallback">只</span><span class="mord cjk_fallback">讨</span><span class="mord cjk_fallback">论</span><span class="mord cjk_fallback">实</span><span class="mord cjk_fallback">对</span><span class="mord cjk_fallback">称</span><span class="mord cjk_fallback">矩</span><span class="mord cjk_fallback">阵</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">所</span><span class="mord cjk_fallback">以</span><span class="mord mathdefault">A</span><span class="mord cjk_fallback">的</span><span class="mord cjk_fallback">特</span><span class="mord cjk_fallback">征</span><span class="mord cjk_fallback">向</span><span class="mord cjk_fallback">量</span><span class="mord cjk_fallback">组</span><span class="mord cjk_fallback">成</span><span class="mord cjk_fallback">的</span><span class="mord cjk_fallback">矩</span><span class="mord cjk_fallback">阵</span><span class="mord cjk_fallback">就</span><span class="mord cjk_fallback">是</span><span class="mord cjk_fallback">正</span><span class="mord cjk_fallback">交</span><span class="mord cjk_fallback">矩</span><span class="mord cjk_fallback">阵</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">所</span><span class="mord cjk_fallback">以</span><span class="mord cjk_fallback">求</span><span class="mord cjk_fallback">逆</span><span class="mord cjk_fallback">就</span><span class="mord cjk_fallback">是</span><span class="mord cjk_fallback">求</span><span class="mord cjk_fallback">转</span><span class="mord cjk_fallback">置</span><span class="mord cjk_fallback">。</span></span></span></span> A = Vdiag(\lambda) V^\top$</p>
+<p>矩阵是<strong>奇异的</strong>，当且仅当含有零特征向量。实对称矩阵的特征分解也可以用于优化二次方程：<br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><msup><mi>x</mi><mi mathvariant="normal">⊤</mi></msup><mi>A</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">f(x)=x^{\top}A x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">⊤</span></span></span></span></span></span></span></span></span><span class="mord mathdefault">A</span><span class="mord mathdefault">x</span></span></span></span>，其中限制<br>
+$ \left | x \right |_2 = 1 $，</p>
+<p>当<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">x</span></span></span></span>是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault">A</span></span></span></span>的特征值的时候，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span></span></span></span>将返回对应的特征值，f的<strong>最大值是最大的特征值</strong>，最小值是最小的特征值。</p>
+<p>所有特征值都是正数的矩阵被称为<strong>正定</strong>，所有特征值都是非负数的矩阵被称为<strong>半正定</strong>。半正定矩阵受到关注是因为它们保证<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mi mathvariant="normal">⊤</mi></msup><mi>A</mi><mi>x</mi><mo>&gt;</mo><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x^{\top}Ax&gt;=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.888208em;vertical-align:-0.0391em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">⊤</span></span></span></span></span></span></span></span></span><span class="mord mathdefault">A</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span></span><span class="base"><span class="strut" style="height:0.36687em;vertical-align:0em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span>。</p>
+<h3 id="奇异值分解">奇异值分解</h3>
+<p><strong>奇异值分解，singular value decomposition,SVD</strong>，将矩阵分解为<strong>奇异向量</strong>和奇异值。每个实数矩阵都有奇异值分解，但不一定有特征分解。</p>
+<p>$ A = UDV^{\top} $</p>
+<p>A是mxn矩阵，则U是mxm正交矩阵，V是nxn正交矩阵 ，D是mxn对角矩阵（不一定是方阵）<br>
+SVD分解可以把矩阵求逆拓展到非方矩阵上面。</p>
+<h3 id="行列式">行列式</h3>
+<p>行列式的绝对值可以衡量矩阵参与矩阵乘法后空间扩大或者缩小了多少。如果行列式是0，那么空间至少沿着某一维完全收缩了，使其失去了所有的体积。</p>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491899762309.jpg" alt="enter description here" title="1491899762309"></figure>
+<h2 id="概率与信息论">概率与信息论</h2>
+<p>概率分布用来描述随机变量在每一个可能取值的可能性的大小。</p>
+<h3 id="边缘概率">边缘概率</h3>
+<p>离散变量：$P(X=x) = \sum_y P(X=x,Y=y) <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">.</mi><mi mathvariant="normal">连</mi><mi mathvariant="normal">续</mi><mi mathvariant="normal">变</mi><mi mathvariant="normal">量</mi><mi mathvariant="normal">：</mi></mrow><annotation encoding="application/x-tex">.
+连续变量：</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.10556em;vertical-align:0em;"></span><span class="mord">.</span><span class="mord cjk_fallback">连</span><span class="mord cjk_fallback">续</span><span class="mord cjk_fallback">变</span><span class="mord cjk_fallback">量</span><span class="mord cjk_fallback">：</span></span></span></span>p(x) = \int p(x,y)dy.$</p>
+<p><strong>条件概率的链式法则</strong>：$P(a,b,c) = P(a|b,c)P(b|c)P(c) $</p>
+<h3 id="协方差">协方差</h3>
+<p>两个变量的协方差如果是正的，那么两个变量都倾向于同时取得相对较大的值。</p>
+<p>中心极限定理表明很多独立随机变量的和近似服从<strong>正态分布</strong>，正态分布是对模型加入的先验知识量最少的分布。</p>
+<h3 id="multinouli分布">multinouli分布</h3>
+<p>多努力分布，又叫范畴分布，是指由一个随机变量在多个分类上的分布，与伯努利的区别在于伯努利指的是两个类。<br>
+伯努利函数的概率用sigmoid函数来预测，而多努力函数是用softmax函数与做预测的。</p>
+<p>$ softmax(x)_i = \frac{exp(x_i)}{\sum _{j=1}^nexp(x_j)} $</p>
+<p><a href="http://blog.csdn.net/supercally/article/details/54234115">softmax的理解与应用</a></p>
+<h3 id="常用函数的有用性质">常用函数的有用性质</h3>
+<p><strong>logistic sigmoid函数</strong>：$ \sigma(x) = \frac{1}{1+exp(-x)} $，在变量的绝对值很大的情况下回出现饱和现象，这时候就会对输入的微小变化不敏感。</p>
+<p>另一个经常遇到的函数是<strong>softplus函数</strong>：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ζ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>l</mi><mi>o</mi><mi>g</mi><mo>(</mo><mn>1</mn><mo>+</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\zeta(x) = log(1+exp(x))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.07378em;">ζ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">e</span><span class="mord mathdefault">x</span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span>，它的值域是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mn>0</mn><mo separator="true">,</mo><mi mathvariant="normal">∞</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(0,\infty)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∞</span><span class="mclose">)</span></span></span></span>,他是对max函数的平滑max(0,x).</p>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491965737743.jpg" alt="softplus函数" title="1491965737743"></figure>
+<p>一些性质：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>+</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mn>0</mn><mo>)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\sigma(x) = \frac{exp(x)}{exp(x)+exp(0)}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.53em;vertical-align:-0.52em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.01em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mathdefault mtight">x</span><span class="mclose mtight">)</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mtight">0</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.485em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mathdefault mtight">x</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.52em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span><br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mi>d</mi><mrow><mi>d</mi><mi>x</mi></mrow></mfrac><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\frac{d}{dx}\sigma(x)=\sigma(x)(1-\sigma(x))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">d</span><span class="mord mathdefault mtight">x</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span><br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>σ</mi><mo>(</mo><mo>−</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">1-\sigma(x)=\sigma(-x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span><br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>o</mi><mi>g</mi><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>−</mo><mi>ζ</mi><mo>(</mo><mo>−</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">log\sigma(x)=-\zeta(-x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">−</span><span class="mord mathdefault" style="margin-right:0.07378em;">ζ</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span></p>
+<h2 id="数值计算">数值计算</h2>
+<h3 id="梯度下降法">梯度下降法</h3>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491968682477.jpg" alt="三种临界点" title="1491968682477"></figure>
+<p><strong>鞍点</strong>是拐点的一种。其二阶导数为0</p>
+<h3 id="jacobian矩阵和hessian矩阵">jacobian矩阵和hessian矩阵</h3>
+<p>f的Jacobian矩阵定义为 $ J_{i,j} = \frac{\partial }{\partial x_j}f(x)<em>i <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">当</mi><mi mathvariant="normal">我</mi><mi mathvariant="normal">们</mi><mi mathvariant="normal">的</mi><mi mathvariant="normal">函</mi><mi mathvariant="normal">数</mi><mi mathvariant="normal">有</mi><mi mathvariant="normal">多</mi><mi mathvariant="normal">维</mi><mi mathvariant="normal">输</mi><mi mathvariant="normal">入</mi><mi mathvariant="normal">时</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">把</mi><mi mathvariant="normal">二</mi><mi mathvariant="normal">阶</mi><mi mathvariant="normal">导</mi><mi mathvariant="normal">数</mi><mi mathvariant="normal">合</mi><mi mathvariant="normal">并</mi><mi mathvariant="normal">成</mi><mi mathvariant="normal">一</mi><mi mathvariant="normal">个</mi><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">称</mi><mi mathvariant="normal">为</mi><mo>∗</mo><mo>∗</mo><mi>H</mi><mi>e</mi><mi>s</mi><mi>s</mi><mi>i</mi><mi>a</mi><mi>n</mi><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">。</mi></mrow><annotation encoding="application/x-tex">
+当我们的函数有多维输入时，把二阶导数合并成一个矩阵，称为**Hessian**矩阵。</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord cjk_fallback">当</span><span class="mord cjk_fallback">我</span><span class="mord cjk_fallback">们</span><span class="mord cjk_fallback">的</span><span class="mord cjk_fallback">函</span><span class="mord cjk_fallback">数</span><span class="mord cjk_fallback">有</span><span class="mord cjk_fallback">多</span><span class="mord cjk_fallback">维</span><span class="mord cjk_fallback">输</span><span class="mord cjk_fallback">入</span><span class="mord cjk_fallback">时</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">把</span><span class="mord cjk_fallback">二</span><span class="mord cjk_fallback">阶</span><span class="mord cjk_fallback">导</span><span class="mord cjk_fallback">数</span><span class="mord cjk_fallback">合</span><span class="mord cjk_fallback">并</span><span class="mord cjk_fallback">成</span><span class="mord cjk_fallback">一</span><span class="mord cjk_fallback">个</span><span class="mord cjk_fallback">矩</span><span class="mord cjk_fallback">阵</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">称</span><span class="mord cjk_fallback">为</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault">e</span><span class="mord mathdefault">s</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault">a</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mord cjk_fallback">矩</span><span class="mord cjk_fallback">阵</span><span class="mord cjk_fallback">。</span></span></span></span> H(f)(x)</em>{i,j} = \frac{\partial ^2}{\partial x_i \partial x_j} f(x) $</p>
+<p>Hessian矩阵大多数都是实对称矩阵。所以可以进行特征分解并写成下面的表达式：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>d</mi><mi mathvariant="normal">⊤</mi></msup><mi>H</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">d^\top Hd</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">⊤</span></span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault">d</span></span></span></span>,当d是H的特征向量时，表达式的值为d对应的特征值，也就是d这个方向上的二阶导数。当d是H的一个特征向量时，这个方向的二阶导数就是对应的特征值。对于其他的方向d，<strong>方向二阶导数就是所有特征值的加权平均</strong>，权重在0和1之间，且与d夹角越小的特征向量的权重越大。最大特征值来确定最大二阶导数，最小特征值确定最小二阶导数。</p>
+<p>在临界点（一阶偏导都为0处），我们通过检测Hessian的特征值来判断该临界点是一个局部极大点、局部极小点还是鞍点。当<strong>Hessian是正定</strong>的（所有特征值都是正的），则该临界点是局部极小点。因为方向二阶导数在任何方向都是正的，当Hessian矩阵是负定的，这个点就是局部极大点。如果hessian的特征值中至少一个是正的且至少一个是负的，</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://exacity.github.io/deeplearningbook-chinese/0">bengio 深度学习中译本</a></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>京东报价</th>
+<th>李季报价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vCPU：I7 5930k</td>
+<td>4299</td>
+<td>4850</td>
+</tr>
+<tr>
+<td>v主板华硕x99 deluxe II</td>
+<td>3999</td>
+<td>4350</td>
+</tr>
+<tr>
+<td>v内存条：金士顿Fury DDR4  2400 8Gx4</td>
+<td>1796</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>v固态硬盘：三星850EVO 250G M.2接口</td>
+<td>669</td>
+<td>795</td>
+</tr>
+<tr>
+<td>v机械硬盘：希捷2T7200 SATA3</td>
+<td>449</td>
+<td>515</td>
+</tr>
+<tr>
+<td>机箱 ttthernaltake core v51 台式机中塔机箱</td>
+<td>649</td>
+<td>700</td>
+</tr>
+<tr>
+<td>主机电源：海韵x1250w 全模电源</td>
+<td>1999</td>
+<td>2200</td>
+</tr>
+<tr>
+<td>v显卡  titan x pascal</td>
+<td>11100</td>
+<td>14400</td>
+</tr>
+<tr>
+<td>v显示器：戴尔U2414H</td>
+<td>1549</td>
+<td>1700</td>
+</tr>
+<tr>
+<td>键鼠罗技MK520</td>
+<td>239</td>
+<td>280</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>157</td>
+<td>185</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>26905</td>
+<td>31975</td>
+</tr>
+</tbody>
+</table>
+<h1 id="深度学习学习资料">深度学习学习资料</h1>
+<p><a href="http://space.bilibili.com/23852932/#!/video">爱可可爱生活搬运的cs231N课程</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/21930884?refer=intelligentunit">cs231N课程笔记翻译</a></p>
+<p><a href="http://www.jianshu.com/p/004c99623104">网友的cs231n课程作业与课程内容回顾</a></p>
+<p><a href="http://pan.baidu.com/s/1pKsTivp#list/path=%2F">cs231n课程课件</a></p>
+<p><a href="http://speech.ee.ntu.edu.tw/~tlkagk/courses_MLDS17.html">李宏毅2017课程,深度学习偏语音</a></p>
+<p><a href="http://speech.ee.ntu.edu.tw/~tlkagk/courses_ML16.html">李宏毅2016课程</a></p>
+<p><a href="http://ufldl.stanford.edu/wiki/index.php/UFLDL%E6%95%99%E7%A8%8B">UFLDL教程中文版</a></p>
+<p><a href="https://github.com/exacity/deeplearningbook-chinese">杨立坤的deeplearning</a></p>
+<p><a href="http://tensorlayercn.readthedocs.io/zh/latest/">tensorlayer中文版</a></p>
+<p><a href="https://morvanzhou.github.io/tutorials/machine-learning/tensorflow/1-2-install/">莫凡 tensorflow</a></p>
+<p><a href="http://www.tensorfly.cn/home/">tensorfly</a></p>
+<p><a href="https://hit-scir.gitbooks.io/neural-networks-and-deep-learning-zh_cn/content/">Neural Networks and Deep Learning中文翻译</a></p>
+<p><a href="http://www.cnblogs.com/charlotte77/p/5629865.html">一文弄懂神经网络中的反向传播法——BackPropagation</a></p>
+<p><a href="http://blog.csdn.net/peghoty/article/category/1451403">皮果提的深度学习笔记</a></p>
+<p><a href="http://blog.csdn.net/zouxy09/article/details/8782018">邹晓艺汇总的深度学习学习资料</a></p>
+<p><a href="http://blog.csdn.net/zouxy09/article/details/8775360">Deep Learning（深度学习）学习笔记整理系列之（一）</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
+                    神经网络
+                  </a>
+                
+                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
+                    深度学习
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/deeplearning_basic">
+                  <h3 class="post-title">
+                    深度学习基础知识
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
