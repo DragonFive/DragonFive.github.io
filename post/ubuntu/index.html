@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</h2>
+            <div class="post-date">2017-04-27</div>
+            
+              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.zfUcH2PwfENIUHzkRiAzvgHaEK&amp;pid=Api&amp;rs=1')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: 懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</p>
+<p>date: 2017/4/27 15:04:12</p>
+<p>categories:</p>
+<ul>
+<li>计算机视觉<br>
+tags:</li>
+<li>nvidia驱动</li>
+<li>cuda</li>
+<li>anaconda</li>
+<li>tensorflow</li>
+<li>tensorlayer</li>
+<li>深度学习</li>
+<li>keras</li>
+<li>caffe</li>
+<li>docker</li>
+<li>deeplearning</li>
+</ul>
+<hr>
+<p>[TOC]</p>
+<!--more-->
+<h1 id="安装nvidia驱动">安装Nvidia驱动</h1>
+<h2 id="安装步骤">安装步骤</h2>
+<h3 id="查询nvidia驱动">查询NVIDIA驱动</h3>
+<p>首先去官网(http://www.nvidia.com/Download/index.aspx?lang=en-us) 查看适合自己显卡的驱动</p>
+<h3 id="安装nvidia驱动-2">安装NVIDIA驱动</h3>
+<ul>
+<li>安装之前先卸载已经存在的驱动版本：</li>
+</ul>
+<pre><code>sudo apt-get remove --purge nvidia*
+</code></pre>
+<ul>
+<li>若电脑是集成显卡（NVIDIA独立显卡忽略此步骤），需要在安装之前禁止一项：</li>
+</ul>
+<pre><code>sudo service lightdm stop
+</code></pre>
+<ul>
+<li>执行以下指令安装驱动：</li>
+</ul>
+<pre><code>sudo add-apt-repository ppa:xorg-edgers/ppa
+sudo apt-get update
+sudo apt-get install nvidia-375 #注意在这里指定自己的驱动版本！
+</code></pre>
+<ul>
+<li>安装完成之后输入以下指令进行验证：</li>
+</ul>
+<pre><code>sudo nvidia-smi
+</code></pre>
+<p>若列出了GPU的信息列表则表示驱动安装成功。如果没看到，重启再试一下,linux装驱动需要重启才加载吧</p>
+<h2 id="可能出的问题">可能出的问题</h2>
+<ul>
+<li>add-apt-repository 命令不存在</li>
+</ul>
+<pre><code>sudo apt-get update
+sudo apt-get install python-software-properties
+sudo apt-get install software-properties-common
+</code></pre>
+<p>然后关掉terminator</p>
+<ul>
+<li>输入nvidia-smi 说驱动没装上</li>
+</ul>
+<p>重装系统换成英文版ubuntu</p>
+<h1 id="anaconda">anaconda</h1>
+<p>安装andaconda会自动安装很多python库和ipython notebook，并且可以提供虚拟机机制，支持多版本python共存。anaconda自动集成了最新版的MKL（math kernel libray）库，这是Intel推出的底层数值计算库。</p>
+<h2 id="安装anaconda">安装anaconda</h2>
+<ul>
+<li>在anaconda官网continuum下载64位python3版本</li>
+<li>在annaconda下载目录执行命令</li>
+</ul>
+<pre><code>bash Anaconda*.sh
+</code></pre>
+<ul>
+<li>anaconda的license文档按q跳过，输入yes确认，按回车使用默认路径</li>
+<li>输入yes把anaconda的binary路径加入~/.bashrc</li>
+</ul>
+<h2 id="anacond的使用">anacond的使用</h2>
+<p>用户安装的不同python环境都会被放在目录~/anaconda/envs下</p>
+<ul>
+<li>查看已安装环境</li>
+</ul>
+<pre><code>conda info -e
+</code></pre>
+<ul>
+<li>anaconda版本</li>
+</ul>
+<pre><code>which conda # 或者 conda -V
+</code></pre>
+<h3 id="conda的环境管理">conda的环境管理</h3>
+<ul>
+<li>创建一个python2.7的环境</li>
+</ul>
+<pre><code>conda create --name py27 python=2.7
+</code></pre>
+<ul>
+<li>使用activate激活某个环境</li>
+</ul>
+<pre><code>source activate py27  # linux使用此句
+activate python34      # windows使用此句
+</code></pre>
+<blockquote>
+<p>激活后，会发现terminal输入的地改成py27，是因为把.bashrc里的path改成python27的路径</p>
+</blockquote>
+<ul>
+<li>若想返回默认的python版本</li>
+</ul>
+<pre><code>source deactivate py27   # 返回原始版本python
+</code></pre>
+<ul>
+<li>删除一个已有的环境</li>
+</ul>
+<pre><code>conda remove --name py27 --all
+</code></pre>
+<h3 id="conda的包管理">conda的包管理</h3>
+<ul>
+<li>安装包</li>
+</ul>
+<pre><code>conda install scipy
+</code></pre>
+<ul>
+<li>查看已经安装packages</li>
+</ul>
+<pre><code>conda list
+</code></pre>
+<ul>
+<li>查看某个指定环境的已安装包</li>
+</ul>
+<pre><code>conda list -n py27
+</code></pre>
+<ul>
+<li>查看package信息</li>
+</ul>
+<pre><code>conda search numpy
+</code></pre>
+<ul>
+<li>更新package</li>
+</ul>
+<pre><code>conda update -n py27 numpy
+</code></pre>
+<ul>
+<li>删除package</li>
+</ul>
+<pre><code>conda remove -n py27 numpy
+</code></pre>
+<h1 id="安装cuda">安装cuda</h1>
+<p>先下载<a href="https://developer.nvidia.com/cuda-downloads">cuda</a><br>
+然后输入命令进行安装</p>
+<pre><code>sudo sh cuda*linux.run --override
+</code></pre>
+<blockquote>
+<p>启动安装程序，一直按q，输入accept接受条款<br>
+输入n不安装nvidia图像驱动，之前已经安装过了<br>
+输入y安装cuda 8.0工具<br>
+回车确认cuda默认安装路径：/usr/local/cuda-8.0<br>
+输入y用sudo权限运行安装，输入密码<br>
+输入y或者n安装或者不安装指向/usr/local/cuda的符号链接<br>
+输入y安装CUDA 8.0 Samples，以便后面测试</p>
+</blockquote>
+<h1 id="安装cudnn">安装cudnn</h1>
+<ul>
+<li>将下载下来的cudnn-8.0-linux-x64-v5.1.tgz 解压之后，解压后的cuda文件夹先打开里面的include文件夹，在终端输入：</li>
+</ul>
+<pre><code>sudo cp cudnn.h /usr/local/cuda/include/ 
+cd ~/cuda/lib64 
+sudo cp lib* /usr/local/cuda/lib64/
+</code></pre>
+<ul>
+<li>继续更新文件链接</li>
+</ul>
+<pre><code>cd /usr/local/cuda/lib64/ 
+sudo rm -rf libcudnn.so libcudnn.so.5 
+sudo ln -s libcudnn.so.5.1.10 libcudnn.so.5 
+sudo ln -s libcudnn.so.5 libcudnn.so
+</code></pre>
+<ul>
+<li>然后设置环境变量</li>
+</ul>
+<pre><code>sudo gedit /etc/profile
+</code></pre>
+<ul>
+<li>在末尾加入</li>
+</ul>
+<pre><code>PATH=/usr/local/cuda/bin:$PATH 
+export PATH
+</code></pre>
+<ul>
+<li>保存之后创建链接文件</li>
+</ul>
+<pre><code>sudo gedit /etc/ld.so.conf.d/cuda.conf
+</code></pre>
+<ul>
+<li>加入</li>
+</ul>
+<pre><code>/usr/local/cuda/lib64
+</code></pre>
+<ul>
+<li>终端下接着输入</li>
+</ul>
+<pre><code>sudo ldconfig
+</code></pre>
+<p>使链接生效</p>
+<h1 id="advance-profile-工具接口">advance profile 工具接口</h1>
+<pre><code>sudo apt-get install libcupti-dev
+</code></pre>
+<h1 id="安装tensorflow-gpu版本">安装tensorflow GPU版本</h1>
+<ul>
+<li>创建一个环境</li>
+</ul>
+<pre><code>conda create -n tensorflow
+source activate tensorflow
+</code></pre>
+<ul>
+<li>安装GPU版的tensorflow</li>
+</ul>
+<pre><code>pip install --ignore-installed --upgrade  tensorflow的网址
+</code></pre>
+<p><a href="https://www.tensorflow.org/install/install_linux#the_url_of_the_tensorflow_python_package">tensorflow的网址</a></p>
+<h2 id="安装tensorlayer">安装tensorlayer</h2>
+<p>安装前需要安装tensorflow.</p>
+<pre><code>pip install tensorlayer
+</code></pre>
+<h2 id="安装keras">安装keras</h2>
+<p>keras 是一个高度封装的深度学习框架，后端可以是tensorflow,也可以是theno，安装非常简单,安装前需要安装tensorflow</p>
+<pre><code>conda install keras
+</code></pre>
+<h1 id="安装caffe">安装caffe</h1>
+<p>caffe的以来项还是很多的，所以我写了个脚本，把它们一并安了吧</p>
+<pre><code>#! /bin/bash
+sudo apt-get install libatlas-base-dev -y
+sudo apt-get install libprotobuf-dev -y
+sudo apt-get install libleveldb-dev -y
+sudo apt-get install libsnappy-dev -y
+sudo apt-get install libopencv-dev -y
+sudo apt-get install libboost-all-dev -y
+sudo apt-get install libhdf5-serial-dev -y
+sudo apt-get install libgflags-dev -y
+sudo apt-get install libgoogle-glog-dev -y
+sudo apt-get install liblmdb-dev -y
+sudo apt-get install protobuf-compiler -y
+sudo git clone https://github.com/jayrambhia/Install-OpenCV
+cd Install-OpenCV/Ubuntu 
+sudo sh dependencies.sh 
+cd 2.4 
+sudo sh opencv2_4_10.sh
+cd ../../..
+sudo cp Makefile.config.example Makefile.config
+make all
+sudo echo '/usr/local/cuda/lib64' &gt;&gt; /etc/ld.so.conf.d/caffe.conf
+sudo ldconfig
+</code></pre>
+<p>在make all的时候可能出问题：</p>
+<pre><code>compilation terminated.
+Makefile:575: recipe for target '.build_release/src/caffe/util/hdf5.o' failed
+</code></pre>
+<p>这时候需要 ：<br>
+在 Makefile.config 中追加 /usr/include/hdf5/serial/ 到 INCLUDE_DIR后面:</p>
+<p>在Makefile.config中注释掉：INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include<br>
+a下一行加上 INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial/</p>
+<p>在makefile中把hdf5_hl and hdf5 改成 hdf5_serial_hl and hdf5_serial</p>
+<p>--- LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_hl hdf5<br>
++++ LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_serial_h</p>
+<p>参考<a href="https://github.com/BVLC/caffe/issues/4808">iss:4808</a></p>
+<h1 id="docker安装kerascaffe等">docker安装keras/caffe等</h1>
+<p>可以使用别人弄好的，但是在使用GPU的时候有些问题 <a href="https://zhuanlan.zhihu.com/p/26916891">大杂烩</a>/ <a href="https://hub.docker.com/r/yiminglin/dl-image/">大杂烩镜像</a></p>
+<h1 id="docker与nvidia-docker">docker与nvidia-docker</h1>
+<p>ubuntu安装docker直接</p>
+<pre><code class="language-bash">sudo apt-get install docker.io
+</code></pre>
+<p>安装nvidia-docker</p>
+<pre><code class="language-bash">wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb
+sudo dpkg -i /tmp/nvidia-docker*.deb &amp;&amp; rm /tmp/nvidia-docker*.deb
+</code></pre>
+<p>测试安装的nvidia-docker <a href="https://github.com/NVIDIA/nvidia-docker">nvidia-docker</a></p>
+<pre><code>nvidia-docker run --rm nvidia/cuda nvidia-smi
+</code></pre>
+<h2 id="cpu版本caffe">cpu版本caffe</h2>
+<p>可以直接使用bvlc的版本 <a href="https://github.com/BVLC/caffe/tree/master/docker">bvlc/caffe</a></p>
+<pre><code>sudo docker pull bvlc/caffe:cpu
+</code></pre>
+<h2 id="gpu版本caffe">GPU版本caffe</h2>
+<p>这个容易出问题，暂时按下不表</p>
+<h1 id="ubuntu其他软件安装一键式脚本">ubuntu其他软件安装一键式脚本</h1>
+<pre><code>#!/bin/bash
+
+
+install_sougou(){
+echo &quot;开始安装搜狗输入法&quot;
+wget -O ~/Downloads/sougoupinyinETC.deb http://pinyin.sogou.com/linux/download.php?f=linux&amp;bit=64  
+sudo dpkg -i ~/Downloads/sougoupinyinETC.deb
+echo &quot;安装搜狗输入法完成&quot;
+}
+hehe(){
+echo 没安装成
+}
+
+install_chrome(){
+echo &quot;开始安装chrome&quot;
+wget -O ~/Downloads/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
+sudo dpkg -i ~/Downloads/google-chrome.deb
+echo &quot;安装chrome完成&quot;
+}
+
+install_shadowsocker(){
+echo &quot;开始安装install_shadowsocker&quot;
+sudo apt-get install python-pip python-dev build-essential
+sudo pip installl pip
+sudo apt-get install python-m2crypto
+sudo pip install shadowsocks
+
+sudo add-apt-repository ppa:hzwhuang/ss-qt5
+sudo apt-get update
+sudo apt-get install shadowsocks-qt5
+
+echo &quot;安装shadowsockers安装完成，请打开图形界面进行配置&quot;
+}
+
+install_conda(){
+echo &quot;开始安装anaconda&quot;
+bash ~/Downloads/Anaconda*.sh
+echo &quot;安装chrome完成&quot;
+}
+
+install_nvidia(){
+echo &quot;开始安装nvidiadriver&quot;
+sudo apt-get remove --purge nvidia*
+sudo add-apt-repository ppa:xorg-edgers/ppa
+sudo apt-get update
+sudo apt-get install nvidia-375
+sudo nvidia-smi
+echo &quot;安装shadowsockers安装完成，请确认&quot;
+}
+
+
+
+install_cuda(){
+echo &quot;开始安装cuda,请把安装文件放在downloads下面&quot;
+echo &quot;输入n不装驱动，输入y安装cuda8工具，回车确认默认安装位置，y使用sudo权限，y创建符号链接，y安装阳历&quot;
+sudo sh ~/Downloads/cuda*linux.run --override
+
+tar xzvf ~/Downloads/cudnn*tgz
+cd /usr/local/cuda/lib64/ 
+sudo rm -rf /usr/local/cuda/lib64/libcudnn.so /usr/local/cuda/lib64/libcudnn.so.5 
+sudo ln -s /usr/local/cuda/lib64/libcudnn.so.5.1.10 /usr/local/cuda/lib64/libcudnn.so.5 
+sudo ln -s /usr/local/cuda/lib64/libcudnn.so.5 /usr/local/cuda/lib64/libcudnn.so
+sudo echo PATH=/usr/local/cuda/bin:$PATH &gt;&gt; /etc/profile
+sudo echo export PATH &gt;&gt; /etc/profile
+sudo echo /usr/local/cuda/lib64 &gt;&gt; /etc/ld.so.conf.d/cuda.conf
+sudo ldconfig
+sudo apt-get install libcupti-dev
+echo &quot;安装cuda安装完成，请确认&quot;
+}
+
+ubuntu_etc(){
+echo &quot;下面准备安装搜狗输入法，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_sougou
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+echo &quot;下面准备安装chrome，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_chrome
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+echo &quot;下面准备安装shadowsocker，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_shadowsocker
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+echo &quot;下面准备安装anaconda，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_conda
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+echo &quot;下面准备安装nvidia_driver，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_nvidia
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+echo &quot;下面准备安装cuda，是否安装？(y|n)&quot;
+read ans
+case $ans in
+	y|Y|yes|Yes)
+		install_cuda
+		;;
+	n|N|no|No)
+		hehe
+		;;
+esac
+
+
+}
+
+
+ubuntu_etc
+
+</code></pre>
+<h1 id="参考资料">参考资料</h1>
+<p>《TensorFlow实战》</p>
+<p><a href="http://www.jianshu.com/p/2f3be7781451">Anaconda使用总结</a></p>
+<p><a href="http://www.afox.cc/archives/390">Anaconda使用教程（使用Anaconda配置多python开发环境）</a></p>
+<p><a href="http://tensorlayercn.readthedocs.io/zh/latest/user/installation.html">tensorlayer安装教程中文版</a></p>
+<p><a href="https://www.tensorflow.org/install/install_linux#nvidia_requirements_to_run_tensorflow_with_gpu_support">tensorflow安装教程</a></p>
+<p><a href="https://keras-cn.readthedocs.io/en/latest/">keras中文教程</a></p>
+<p>[keras速查表](</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://DragonFive.github.io//tag/LoClL4RQ1" class="tag">
+                    linux
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/deeplearning_book">
+                  <h3 class="post-title">
+                    深度学习中译本-节选
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
