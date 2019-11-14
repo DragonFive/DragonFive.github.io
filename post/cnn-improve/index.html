@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CNN中卷积计算的内存和速度优化 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573699019424">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://DragonFive.github.io/">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573699019424" class="site-logo">
+        <h1 class="site-title">dragon</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Code is cheap, show me the theory
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
+            <div class="post-date">2017-09-20</div>
+            
+              <div class="feature-container" style="background-image: url('https://static.oschina.net/uploads/space/2018/0210/002637_Apbt_876354.png')">
+              </div>
+            
+            <div class="post-content">
+              <hr>
+<p>title: CNN中卷积计算的内存和速度优化</p>
+<p>date: 2017/9/20 12:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>网络优化</li>
+<li>神经网络</li>
+</ul>
+<hr>
+<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
+<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
+<!--more-->
+<h1 id="以往的卷积计算方法">以往的卷积计算方法</h1>
+<h2 id="sum循环法">sum循环法</h2>
+<p>时间复杂度最高，为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>H</mi><mi>W</mi><mi>M</mi><mi>K</mi><mi>K</mi><mi>C</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(HWMKKC)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span> 最笨的方法，只是用来理解。</p>
+<pre><code>input[C][H][W];
+kernels[M][K][K][C];
+output[M][H][W];
+for h in 1 to H do
+	for w in 1 to W do
+		for o in 1 to M do
+			sum = 0;
+			for x in 1 to K do
+				for y in 1 to K do
+					for i in 1 to C do
+						sum += input[i][h+y][w+x]
+						*kernels[o][x][y][i];
+			output[o][w][h] = sum;
+</code></pre>
+<h2 id="patch-building-dnn-convolution-algorithms">patch-building DNN convolution algorithms</h2>
+<p>based on gemm convolution algorithm</p>
+<p>优点是：比较简单，方便理解和计算</p>
+<p>缺点是：需要大量的内存做中间存储</p>
+<h3 id="im2col过程">im2col过程</h3>
+<p>图片来自 ：贾扬清的demo convolution in caffe<br>
+<a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1"><br>
+把卷积的第一个感受野里的矩阵转化成一个vector，并把各个channel的feature连接起来。<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2"><br>
+随着划窗的进行，把接下来的窗口都转化乘vector,并排放在下面<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3"></p>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4"><br>
+最后把有Cout个卷积核，每个卷积核有C个channel,那么转化乘Cout行的vector组。最后卷积就编程矩阵乘法了。</p>
+<h2 id="各种方法占用内存量">各种方法占用内存量</h2>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here"></figure>
+<h1 id="reference">reference</h1>
+<p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://DragonFive.github.io//post/network_compression">
+                  <h3 class="post-title">
+                    神经网络的压缩优化方法总结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

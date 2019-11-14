@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573698238705">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573699019424">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573698238705" class="site-logo">
+        <img src="https://DragonFive.github.io//images/avatar.png?v=1573699019424" class="site-logo">
         <h1 class="site-title">dragon</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -93,6 +93,40 @@
           
             <article class="post-item">
               <div class="left">
+                <a href="https://DragonFive.github.io//post/cnn-improve">
+                  <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
+                </a>
+                <div class="post-date">
+                  2017-09-20
+                </div>
+                <div class="post-abstract">
+                  <hr>
+<p>title: CNN中卷积计算的内存和速度优化</p>
+<p>date: 2017/9/20 12:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>网络优化</li>
+<li>神经网络</li>
+</ul>
+<hr>
+<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
+<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
+
+                </div>
+              </div>
+              
+                <a class="right" href="https://DragonFive.github.io//post/cnn-improve">
+                  <div class="feature-container" style="background-image: url('https://static.oschina.net/uploads/space/2018/0210/002637_Apbt_876354.png')">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item">
+              <div class="left">
                 <a href="https://DragonFive.github.io//post/network_compression">
                   <h2 class="post-title">神经网络的压缩优化方法总结</h2>
                 </a>
@@ -120,6 +154,48 @@ tags:</li>
               
                 <a class="right" href="https://DragonFive.github.io//post/network_compression">
                   <div class="feature-container" style="background-image: url('https://ask.qcloudimg.com/http-save/yehe-1754229/kucn8ker6f.jpeg')">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item">
+              <div class="left">
+                <a href="https://DragonFive.github.io//post/cnn_history">
+                  <h2 class="post-title">神经网络模型演化</h2>
+                </a>
+                <div class="post-date">
+                  2017-07-05
+                </div>
+                <div class="post-abstract">
+                  <hr>
+<p>title: 神经网络模型演化<br>
+date: 2017/7/5 17:38:58</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>alexnet</li>
+<li>googlenet</li>
+<li>caffenet</li>
+<li>caffe</li>
+</ul>
+<hr>
+<p>[TOC]</p>
+<ol>
+<li>Lenet，1986年</li>
+<li>Alexnet，2012年</li>
+<li>GoogleNet，2014年</li>
+<li>VGG，2014年</li>
+<li>Deep Residual Learning，2015年</li>
+</ol>
+
+                </div>
+              </div>
+              
+                <a class="right" href="https://DragonFive.github.io//post/cnn_history">
+                  <div class="feature-container" style="background-image: url('http://images2015.cnblogs.com/blog/673793/201512/673793-20151228170208120-1856567090.jpg')">
                   </div>
                 </a>
               
