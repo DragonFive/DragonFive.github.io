@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-05-28T03:42:58.220Z</updated>
+    <updated>2021-05-28T03:44:40.500Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -1161,9 +1161,7 @@ c++11标准规定，允许将变量声明为constexpr类型，以便由编译器
         <link href="https://DragonFive.github.io/post/deeplearning-parrel/">
         </link>
         <updated>2018-08-11T08:17:26.000Z</updated>
-        <summary type="html"><![CDATA[<hr>
-<p>title: 深度学习框架的并行优化方法小结<br>
-date: 2018/8/11 17:38:58</p>
+        <summary type="html"><![CDATA[<p>title: 深度学习框架的并行优化方法小结</p>
 <p>categories:</p>
 <ul>
 <li>深度学习<br>
@@ -1172,14 +1170,11 @@ tags:</li>
 <li>mpi</li>
 <li>caffe</li>
 </ul>
-<hr>
 <p>目前的深度学习领域就是海量的数据加上大量的数学运算，所以计算量相当的大，训练一个模型跑上十天半个月啥的是常事。那此时分布式的意义就出现了，既然一张GPU卡跑得太慢就来两张，一台机器跑得太慢就用多台机器。</p>
 <p><strong>数据并行</strong></p>
 <p>![数据并行][1]</p>
 ]]></summary>
-        <content type="html"><![CDATA[<hr>
-<p>title: 深度学习框架的并行优化方法小结<br>
-date: 2018/8/11 17:38:58</p>
+        <content type="html"><![CDATA[<p>title: 深度学习框架的并行优化方法小结</p>
 <p>categories:</p>
 <ul>
 <li>深度学习<br>
@@ -1188,7 +1183,6 @@ tags:</li>
 <li>mpi</li>
 <li>caffe</li>
 </ul>
-<hr>
 <p>目前的深度学习领域就是海量的数据加上大量的数学运算，所以计算量相当的大，训练一个模型跑上十天半个月啥的是常事。那此时分布式的意义就出现了，既然一张GPU卡跑得太慢就来两张，一台机器跑得太慢就用多台机器。</p>
 <p><strong>数据并行</strong></p>
 <figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505026360037.jpg" alt="数据并行" loading="lazy"></figure>
