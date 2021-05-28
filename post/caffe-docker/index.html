@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>零门槛玩坏caffe | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,103 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">零门槛玩坏caffe</h2>
-            <div class="post-date">2017-05-26</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">零门槛玩坏caffe</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-05-26</span>
             
-              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.rxZDDDwhClqbkfdJrGaoJgHaE8&amp;pid=Api&amp;rs=1')">
-              </div>
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/uCHl6QLvI/">
+                    docker
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                    神经网络
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/584K3DWjv/">
+                    caffe
+                    
+                  </a>
+                
+              </span>
             
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: 零门槛玩坏caffe<br>
 date: 2017/5/26 15:04:12</p>
 <p>categories:</p>
@@ -115,7 +133,7 @@ tags:</li>
 </ul>
 <hr>
 <p>DL如今已经快成为全民玄学了，感觉离民科入侵不远了。唯一的门槛可能是环境不好配，特别是caffe这种依赖数10种其它软件打框架。不过有了docker之后，小学生也能站撸DL了。</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1496650170493.jpg" alt="enter description here"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1496650170493.jpg" alt="enter description here" loading="lazy"></figure>
 <!--more-->
 <h1 id="从nvidia-docker到docker需要有这样的操作">从nvidia-docker到docker，需要有这样的操作</h1>
 <p>大致流程如下，入门版通过docker pull一个GPU版本的caffe 的image,然后安装nvidia-docker 和 nvidia-docker-plugin 来映射宿主机的nvidia-driver并通过共享volume的方式来支持容器里面能“看到”宿主机的GPU。进阶版通过curl -s命令列出宿主机的配置显卡配置，并通过docker run的方式来启动。总结完成。纸上得来终觉浅，绝知此事要躬行，光说不练空把式，唯有实践出真知。<br>
@@ -190,52 +208,43 @@ c.NotebookApp.port =8888                      #指定一个访问端口，默认
 <p><a href="https://segmentfault.com/a/1190000007448177">把jupyter-notebook装进docker里</a><br>
 <a href="https://xuxinkun.github.io/2016/10/08/tensorflow-kubernetes/">tensorflow gpu in docker</a></p>
 
-            </div>
-            
-              <div class="tag-container">
-                
-                  <a href="https://DragonFive.github.io//tag/uCHl6QLvI" class="tag">
-                    docker
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
-                    神经网络
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/584K3DWjv" class="tag">
-                    caffe
-                  </a>
-                
-              </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/ubuntu">
-                  <h3 class="post-title">
-                    懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/ubuntu/">
+              <h3 class="post-title">
+                下一篇：懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

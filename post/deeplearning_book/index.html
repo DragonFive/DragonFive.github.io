@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>深度学习中译本-节选 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,89 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">深度学习中译本-节选</h2>
-            <div class="post-date">2017-04-08</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">深度学习中译本-节选</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-04-08</span>
             
-              <div class="feature-container" style="background-image: url('http://www.ourwen.com/upload/material/img/20170520/SdrIiK85.png')">
-              </div>
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                    神经网络
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
             
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: 深度学习中译本-节选</p>
 <p>date: 2017/4/8 17:38:58</p>
 <p>categories:</p>
@@ -110,7 +114,7 @@ tags:</li>
 </ul>
 <hr>
 <p>[TOC]</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491645781301.jpg" alt="AI" title="1491645781301"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491645781301.jpg" alt="AI" title="1491645781301" loading="lazy"></figure>
 <!--more-->
 <h1 id="前言">前言</h1>
 <p>一个人的日常生活需要关于世界的巨量知识。很多这方面的知识是<strong>主观的</strong>、直观的，因此很难通过<strong>形式化的方式表达</strong>清楚。计算机需要获取同样的知识才能表现出智能。<br>
@@ -118,9 +122,9 @@ AI 系统需要具备自己<strong>获取知识的能力</strong>，即从原始
 <p><strong>对表示的依赖</strong>都是一个普遍现象。在计算机科学中，如果数据集合被精巧地结构化并被智能地索引，那么诸如搜索之类的操作的处理速度就可以成指数级地加快。</p>
 <p>使用机器学习来<strong>发掘表示本身</strong>，而不仅仅把表示映射到输出。这种方法我们称之为 <strong>表示学习</strong>（representation learning）。学习到的表示往往比手动设计的表示表现得更好。并且它们只需<strong>最少的人工干预</strong>，就能让AI系统迅速适应新的任务。表示学习算法的典型例子是 自编码器(autoencoder)。</p>
 <p>深度学习（deep learning）通过其他较简单的表示来表达复杂表示，解决了表示学习中的核心问题。下图展示了深度学习系统如何通过<strong>组合较简单的概念</strong>，获得不同层次的抽象（例如转角和轮廓，它们转而由边线定义）来表示图像中人的概念。第一层可以轻易地通过<strong>比较相邻像素的亮度来识别边缘</strong>。有了第一隐藏层描述的边缘，第二隐藏层可以容易地<strong>搜索可识别为角和扩展轮廓</strong>的边集合。给定第二隐藏层中关于角和轮廓的图像描述，第三隐藏层可以找到轮廓和角的特定集合来检测特定对象的整个部分。最后，根据图像描述中包含的对象部分，可以识别图像中存在的对象。</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491647505456.jpg" alt="enter description here" title="1491647505456"></figure>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491647505456.jpg" alt="enter description here" title="1491647505456" loading="lazy"></figure>
 <p>深度学习与其他学习的区别。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491648776897.jpg" alt="深度学习与其他的区别" title="1491648776897"></p>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491648776897.jpg" alt="深度学习与其他的区别" title="1491648776897" loading="lazy"></p>
 <h1 id="应用数学与机器学习基础">应用数学与机器学习基础</h1>
 <h2 id="线性代数部分">线性代数部分</h2>
 <p>坐标超过两维度的数组称为<strong>张量（tensor）</strong>，一个数组中的元素分布在若干维坐标的规则网络中。</p>
@@ -173,7 +177,7 @@ $ \left | x \right |_2 = 1 $，</p>
 SVD分解可以把矩阵求逆拓展到非方矩阵上面。</p>
 <h3 id="行列式">行列式</h3>
 <p>行列式的绝对值可以衡量矩阵参与矩阵乘法后空间扩大或者缩小了多少。如果行列式是0，那么空间至少沿着某一维完全收缩了，使其失去了所有的体积。</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491899762309.jpg" alt="enter description here" title="1491899762309"></figure>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491899762309.jpg" alt="enter description here" title="1491899762309" loading="lazy"></figure>
 <h2 id="概率与信息论">概率与信息论</h2>
 <p>概率分布用来描述随机变量在每一个可能取值的可能性的大小。</p>
 <h3 id="边缘概率">边缘概率</h3>
@@ -191,14 +195,14 @@ SVD分解可以把矩阵求逆拓展到非方矩阵上面。</p>
 <h3 id="常用函数的有用性质">常用函数的有用性质</h3>
 <p><strong>logistic sigmoid函数</strong>：$ \sigma(x) = \frac{1}{1+exp(-x)} $，在变量的绝对值很大的情况下回出现饱和现象，这时候就会对输入的微小变化不敏感。</p>
 <p>另一个经常遇到的函数是<strong>softplus函数</strong>：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ζ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>l</mi><mi>o</mi><mi>g</mi><mo>(</mo><mn>1</mn><mo>+</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\zeta(x) = log(1+exp(x))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.07378em;">ζ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">e</span><span class="mord mathdefault">x</span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span>，它的值域是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mn>0</mn><mo separator="true">,</mo><mi mathvariant="normal">∞</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(0,\infty)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∞</span><span class="mclose">)</span></span></span></span>,他是对max函数的平滑max(0,x).</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491965737743.jpg" alt="softplus函数" title="1491965737743"></figure>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491965737743.jpg" alt="softplus函数" title="1491965737743" loading="lazy"></figure>
 <p>一些性质：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>+</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mn>0</mn><mo>)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\sigma(x) = \frac{exp(x)}{exp(x)+exp(0)}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.53em;vertical-align:-0.52em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.01em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mathdefault mtight">x</span><span class="mclose mtight">)</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mtight">0</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.485em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">x</span><span class="mord mathdefault mtight">p</span><span class="mopen mtight">(</span><span class="mord mathdefault mtight">x</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.52em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span><br>
 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mi>d</mi><mrow><mi>d</mi><mi>x</mi></mrow></mfrac><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\frac{d}{dx}\sigma(x)=\sigma(x)(1-\sigma(x))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">d</span><span class="mord mathdefault mtight">x</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span><br>
 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>σ</mi><mo>(</mo><mo>−</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">1-\sigma(x)=\sigma(-x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span><br>
 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>o</mi><mi>g</mi><mi>σ</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>−</mo><mi>ζ</mi><mo>(</mo><mo>−</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">log\sigma(x)=-\zeta(-x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord mathdefault" style="margin-right:0.03588em;">σ</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">−</span><span class="mord mathdefault" style="margin-right:0.07378em;">ζ</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span></p>
 <h2 id="数值计算">数值计算</h2>
 <h3 id="梯度下降法">梯度下降法</h3>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491968682477.jpg" alt="三种临界点" title="1491968682477"></figure>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1491968682477.jpg" alt="三种临界点" title="1491968682477" loading="lazy"></figure>
 <p><strong>鞍点</strong>是拐点的一种。其二阶导数为0</p>
 <h3 id="jacobian矩阵和hessian矩阵">jacobian矩阵和hessian矩阵</h3>
 <p>f的Jacobian矩阵定义为 $ J_{i,j} = \frac{\partial }{\partial x_j}f(x)<em>i <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">当</mi><mi mathvariant="normal">我</mi><mi mathvariant="normal">们</mi><mi mathvariant="normal">的</mi><mi mathvariant="normal">函</mi><mi mathvariant="normal">数</mi><mi mathvariant="normal">有</mi><mi mathvariant="normal">多</mi><mi mathvariant="normal">维</mi><mi mathvariant="normal">输</mi><mi mathvariant="normal">入</mi><mi mathvariant="normal">时</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">把</mi><mi mathvariant="normal">二</mi><mi mathvariant="normal">阶</mi><mi mathvariant="normal">导</mi><mi mathvariant="normal">数</mi><mi mathvariant="normal">合</mi><mi mathvariant="normal">并</mi><mi mathvariant="normal">成</mi><mi mathvariant="normal">一</mi><mi mathvariant="normal">个</mi><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">称</mi><mi mathvariant="normal">为</mi><mo>∗</mo><mo>∗</mo><mi>H</mi><mi>e</mi><mi>s</mi><mi>s</mi><mi>i</mi><mi>a</mi><mi>n</mi><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">矩</mi><mi mathvariant="normal">阵</mi><mi mathvariant="normal">。</mi></mrow><annotation encoding="application/x-tex">
@@ -296,44 +300,43 @@ SVD分解可以把矩阵求逆拓展到非方矩阵上面。</p>
 <p><a href="http://blog.csdn.net/zouxy09/article/details/8782018">邹晓艺汇总的深度学习学习资料</a></p>
 <p><a href="http://blog.csdn.net/zouxy09/article/details/8775360">Deep Learning（深度学习）学习笔记整理系列之（一）</a></p>
 
-            </div>
-            
-              <div class="tag-container">
-                
-                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
-                    神经网络
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-              </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/deeplearning_basic">
-                  <h3 class="post-title">
-                    深度学习基础知识
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/deeplearning_basic/">
+              <h3 class="post-title">
+                下一篇：深度学习基础知识
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

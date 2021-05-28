@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>linux | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,131 +20,137 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: linux</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/linux-bash">
-                  <h2 class="post-title">linux常用脚本</h2>
-                </a>
-                <div class="post-date">
-                  2018-02-13
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/linux-bash">
-                  <div class="feature-container" style="background-image: url('https://www.skinatech.com/portal/wp-content/uploads/2017/05/original.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/vimrc">
-                  <h2 class="post-title">简洁的vim配置</h2>
-                </a>
-                <div class="post-date">
-                  2017-06-09
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/vimrc">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.3FdItXkvycrBBNClTdTUFgHaHa&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/ubuntu">
-                  <h2 class="post-title">懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</h2>
-                </a>
-                <div class="post-date">
-                  2017-04-27
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      <div class="content-container">
+
+        <div class="current-tag-container">
+          <h2 class="title">
+            <i class="icon icon-pricetags-outline"></i> linux
+          </h2> 
+        </div>
+
+        
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/linux-bash/">
+        <h2 class="post-title">linux常用脚本</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2018-02-13</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                linux
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/vimrc/">
+        <h2 class="post-title">简洁的vim配置</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-06-09</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/q862sw3DI/">
+                vim
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                linux
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/ubuntu/">
+        <h2 class="post-title">懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</p>
 <p>date: 2017/4/27 15:04:12</p>
 <p>categories:</p>
@@ -162,31 +171,55 @@ tags:</li>
 <hr>
 <p>[TOC]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/ubuntu">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.zfUcH2PwfENIUHzkRiAzvgHaEK&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-04-27</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                linux
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
 
-          <div class="pagination-container">
+
+<div class="pagination-container">
   
   
 </div>
 
-        </div>
+
       </div>
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>深度学习基础知识 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,96 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">深度学习基础知识</h2>
-            <div class="post-date">2017-03-20</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">深度学习基础知识</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-03-20</span>
             
-              <div class="feature-container" style="background-image: url('http://data.useit.com.cn/forum/201503/01/101436udfrfdgobkdoff7f.jpg')">
-              </div>
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/MLJqs9GOQ/">
+                    networker
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                    神经网络
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
             
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: DL从入门到放弃</p>
 <p>date: 2017/3/20 22:04:12</p>
 <p>categories:</p>
@@ -113,7 +124,7 @@ tags:</li>
 <hr>
 <p>[TOC]</p>
 <p>Yann Lecun, Geoffrey Hinton, Yoshua Bengio, Andrew Ng</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490521285112.jpg" alt="四大巨头" title="1490521285112"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490521285112.jpg" alt="四大巨头" title="1490521285112" loading="lazy"></figure>
 <!--more-->
 <p><a href="http://www.nature.com/nature/journal/v521/n7553/pdf/nature14539.pdf">参考资料-nature上的DL综述</a></p>
 <p>Conventional machine-learning techniques were <strong>limited</strong> in their ability to <strong>process natural data in their raw form</strong>  传统的机器学习不能处理原始形式的自然数据，</p>
@@ -133,11 +144,11 @@ tags:</li>
 <p>The key insight is that the derivative (or gradient)of the objective with respect to the input of a module can be computed by** working backwards from the gradient with respect to the output of that module**</p>
 <h2 id="梯度下降法">梯度下降法</h2>
 <p>目标函数关于模型输入的梯度可以通过关于输出的梯度逆向算出。反正在用损失函数求权重偏导的时候由于<strong>激活函数</strong>的存在，导致<strong>梯度消失</strong>. 参考自<a href="http://zhihu.com/question/26006703/answer/135825424">深度学习如何入门？ - 回答作者: Deeper</a></p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490147713221.jpg" alt="激活函数造成梯度消失" title="1490147713221"></figure>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490147713221.jpg" alt="激活函数造成梯度消失" title="1490147713221" loading="lazy"></figure>
 <p><a href="http://blog.csdn.net/heyongluoyao8/article/details/52478715">梯度下降优化算法综述 An overview of gradient descent optimization algorithms</a></p>
 <p>梯度下降算法是通过沿着<strong>目标函数</strong>J(θ)参数θ∈ℜ的梯度(一阶导数)<strong>相反方向</strong>−∇θJ(θ)来不断更新模型参数来到达<strong>目标函数的极小值点（收敛）</strong>，更新步长为η。</p>
 <p><strong>随机梯度下降</strong>最大的缺点在于每次更新可能并<strong>不会按照正确</strong>的方向进行，因此可以带来<strong>优化波动</strong>(扰动) 波动的特点可能会使得优化的方向从当前的局部极小值点跳到另一个更好的局部极小值点，这样便可能对于<strong>非凸函数</strong>，最终收敛于一个较好的局部极值点，甚至全局极值点。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490149294773.jpg" alt="随机梯度下降扰动" title="1490149294773"><br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490149294773.jpg" alt="随机梯度下降扰动" title="1490149294773" loading="lazy"><br>
 相对于随机梯度下降，<strong>Mini-batch梯度下降</strong>降低了收敛波动性，即降低了参数更新的方差，使得更新更加稳定。相对于全量梯度下降，其提高了每次学习的速度。并且其不用<strong>担心内存瓶颈从而可以利用矩阵运算进行高效计算</strong>。一般而言每次更新<strong>随机选择[50,256]个样本</strong>进行学习，但是也要根据具体问题而选择，实践中可以进行多次试验，选择一个更新速度与更次次数都较适合的样本数。mini-batch梯度下降常用于神经网络中。</p>
 <p>而梯度下降法虽然效果很好但还是存在一些问题</p>
 <ul>
@@ -153,7 +164,7 @@ tags:</li>
 <p>解决SGD在某些极值点附近<strong>震荡</strong>，导致收敛速度慢，可以让SGD有机会离开局部极值点达到更好的极值点。在更新模型参数时，对于那些当前的梯度方向与上一次<strong>梯度方向相同的参数，那么进行加强</strong>，即这些方向上更快了；对于那些当前的梯度方向与上一次梯度方向不同的参数，那么进行削减，即这些方向上减慢了。因此可以获得<strong>更快的收敛速度与减少振荡</strong>。</p>
 <h3 id="nag">NAG</h3>
 <p>不仅增加了动量项，并且在计算参数的梯度时，在损失函数中减去了动量项.</p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490149958729.jpg" alt="动量与NAG" title="1490149958729"><br>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490149958729.jpg" alt="动量与NAG" title="1490149958729" loading="lazy"><br>
 假设动量因子参数γ=0.9，首先计算当前梯度项，如上图小蓝色向量，然后加上动量项，这样便得到了大的跳跃，如上图大蓝色的向量。这便是只包含动量项的更新。而NAG首先来一个大的跳跃（动量项)，然后加上一个小的使用了动量计算的当前梯度（上图红色向量）进行修正得到上图绿色的向量。这样可以<strong>阻止过快更新来提高响应</strong></p>
 <p>上面两个方法每次更新的时候所有的模型参数都使用同一个学习速率，能够根据损失函数的斜率做到<strong>自适应更新</strong>来加速SGD的收敛。</p>
 <h3 id="adagrad">adagrad</h3>
@@ -163,7 +174,7 @@ tags:</li>
 <p>adadelta是对adagrad的一种扩展，为了降低adagrad中学习速率衰减过快问题</p>
 <h3 id="adam">Adam</h3>
 <p>adaptive moment estimation 也是不同参数自适应不同学习速率的方法</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%90%84SGD%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E5%9C%A8%E9%9E%8D%E7%82%B9%E5%A4%84%E7%9A%84%E8%A1%A8%E7%8E%B0.gif" alt="深度学习各SGD优化方法在鞍点处的表现" title="深度学习各SGD优化方法在鞍点处的表现"></figure>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%90%84SGD%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E5%9C%A8%E9%9E%8D%E7%82%B9%E5%A4%84%E7%9A%84%E8%A1%A8%E7%8E%B0.gif" alt="深度学习各SGD优化方法在鞍点处的表现" title="深度学习各SGD优化方法在鞍点处的表现" loading="lazy"></figure>
 <p>在鞍点（saddle points）处(即某些维度上梯度为零，某些维度上梯度不为零)，SGD、Momentum与NAG一直在鞍点梯度为零的方向上振荡，很难打破鞍点位置的对称性；Adagrad、RMSprop与Adadelta能够很快地向梯度不为零的方向上转移。</p>
 <h3 id="如何选择sgd优化器">如何选择SGD优化器</h3>
 <p>如果你的数据特征是稀疏的，那么你最好使用自适应学习速率SGD优化方法(Adagrad、Adadelta、RMSprop与Adam)，因为你不需要在迭代过程中对学习速率进行人工调整。adam可能是目前最好的SGD优化方法。</p>
@@ -184,7 +195,7 @@ Batch normalization[18]在每次mini-batch反向传播之后重新对参数进�
 <p><a href="https://www.zhihu.com/question/20700829/answer/119314862">为什么正则化项就可以防止过拟合-邓子明</a></p>
 <p>如果发生了过拟合问题，我们应该如何处理？</p>
 <p><strong>过多的变量（特征），同时只有非常少的训练数据</strong>，会导致出现过度拟合的问题。因此为了解决过度拟合，有以下两个办法。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490521030446.jpg" alt="过拟合了怎么办" title="1490521030446"></p>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490521030446.jpg" alt="过拟合了怎么办" title="1490521030446" loading="lazy"></p>
 <ol>
 <li>尽量减少</li>
 </ol>
@@ -243,16 +254,16 @@ L2正则项起到使得参数w变小加剧的效果，但是为什么可以防�
 <p><a href="https://www.zhihu.com/question/20700829">机器学习中使用「正则化来防止过拟合」到底是一个什么原理？为什么正则化项就可以防止过拟合？</a></p>
 <p>比如L2正则，相当于给模型参数W添加了一个协方差为<code>!$ \frac{n}{\lambda} $</code>的零均值高斯分布先验，而对于<code>!$ \lambda=0 $</code>,则表示方差为无穷大，表明模型参数的变化可以很大不受约束。而随着<code>!$\alpha$</code>的增大，模型约束变大，模型就更稳定了。（因为模型参数选择范围小了，模型参数的已知条件变多了，模型复杂度就降低了）</p>
 <p>L2与L1的区别在于，<strong>L1正则是拉普拉斯先验，而L2正则则是高斯先验</strong>。它们都是服从均值为0，协方差为1λ。当λ=0时，即没有先验<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490176366325.jpg" alt="正则化" title="1490176366325"><br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490176366325.jpg" alt="正则化" title="1490176366325" loading="lazy"><br>
 上图中的模型是线性回归，有两个特征，要优化的参数分别是w1和w2，左图的正则化是l2，右图是l1。蓝色线就是优化过程中遇到的等高线，一圈代表一个目标函数值，圆心就是样本观测值（假设一个样本），半径就是误差值，受限条件就是红色边界（就是正则化那部分），二者相交处，才是最优参数。可见右边的最优参数只可能在坐标轴上，所以就会出现0权重参数，使得模型稀疏。</p>
 <p>加入正则化是 在<strong>bias和variance之间做一个tradeoff</strong>. bias就是训练误差呀,variance就是各个特征之间的权值差别了。</p>
 <p><a href="https://www.zhihu.com/question/20700829/answer/21156998">作者：刑无刀</a><br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490176507628.jpg" alt="高斯分布" title="1490176507628"></p>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490176507628.jpg" alt="高斯分布" title="1490176507628" loading="lazy"></p>
 <h4 id="dropout">dropout</h4>
 <p><a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf">ImageNet Classification with Deep Convolutional Neural Networks </a><br>
 通过修改神经网络本身结构来实现的<br>
 训练开始时，随机得删除一些（可以设定为一半，也可以为1/3，1/4等）隐藏层神经元，即认为这些神经元不存在，同时保持输入层与输出层神经元的个数不变，这样便得到如下的ANN：</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490183037687.jpg" alt="droupout" title="1490183037687"></figure>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490183037687.jpg" alt="droupout" title="1490183037687" loading="lazy"></figure>
 <p>按照BP学习算法对ANN中的参数进行学习更新（虚线连接的单元不更新，因为认为这些神经元被临时删除了）。这样一次迭代更新便完成了。下一次迭代中，同样随机删除一些神经元，与上次不一样，做随机选择</p>
 <h2 id="激活函数">激活函数</h2>
 <p><a href="https://www.zhihu.com/question/22334626">神经网络激励函数的作用是什么？有没有形象的解释</a></p>
@@ -263,22 +274,22 @@ L2正则项起到使得参数w变小加剧的效果，但是为什么可以防�
 <h3 id="激活函数的作用">激活函数的作用</h3>
 <p>神经网络中激活函数的主要作用是提供网络的非线性建模能力。假设一个示例神经网络中仅包含线性卷积和全连接运算，那么该网络仅能够表达线性映射，即便增加网络的深度也依旧还是线性映射，难以有效建模实际环境中非线性分布的数据。</p>
 <h3 id="sigmoid">Sigmoid</h3>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184239110.jpg" alt="sigmoid函数" title="1490184239110"></figure>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184259652.jpg" alt="sigmoid函数图像" title="1490184259652"></figure>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184239110.jpg" alt="sigmoid函数" title="1490184239110" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184259652.jpg" alt="sigmoid函数图像" title="1490184259652" loading="lazy"></figure>
 <p>sigmoid 在定义域内处处可导，且两侧导数逐渐趋近于0。benjo将这类激活函数定义为 <strong>软饱和激活函数</strong>，饱和就像极限一样，也分为左饱和和右饱和。</p>
-<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184401385.jpg" alt="sigmoid函数处处可导" title="1490184401385"></figure>
+<figure data-type="image" tabindex="7"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490184401385.jpg" alt="sigmoid函数处处可导" title="1490184401385" loading="lazy"></figure>
 <p>常见的 ReLU 就是一类左侧硬饱和激活函数。<br>
 由于在后向传递过程中，<strong>sigmoid向下传导的梯度包含了一个f'(x) 因子</strong>（sigmoid关于输入的导数），因此一旦输入落入饱和区，f'(x) 就会变得接近于0，导致了向底层传递的梯度也变得非常小。此时，网络参数很难得到有效训练。这种现象被称为<strong>梯度消失</strong>。一般来说， sigmoid 网络在 5 层之内就会产生梯度消失现象<br>
 sigmoid (0, 1) 的输出还可以被表示作概率，或用于<strong>输入的归一化</strong></p>
 <h3 id="tanh-函数">tanh 函数</h3>
-<figure data-type="image" tabindex="8"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490244926736.jpg" alt="tanh函数 " title="1490244926736"></figure>
-<figure data-type="image" tabindex="9"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490244945123.jpg" alt="函数曲线" title="1490244945123"></figure>
+<figure data-type="image" tabindex="8"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490244926736.jpg" alt="tanh函数 " title="1490244926736" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490244945123.jpg" alt="函数曲线" title="1490244945123" loading="lazy"></figure>
 <p><code>!$ tanh(x) = 2sigmoid(2x) - 1 $</code>,也具有软饱和性，收敛速度比sigmoid快。</p>
 <h3 id="relu">ReLU</h3>
 <p>2006年Hinton教授提出通过<strong>逐层贪心预训练</strong>解决深层网络训练困难的问题，但是深度网络的直接监督式训练的最终突破，最主要的原因是采用了新型激活函数<strong>ReLU</strong><br>
 与传统的sigmoid激活函数相比，ReLU能够<strong>有效缓解梯度消失</strong>问题，从而直接以监督的方式训练深度神经网络</p>
-<figure data-type="image" tabindex="10"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490254499923.jpg" alt="relu定义" title="1490254499923"></figure>
-<figure data-type="image" tabindex="11"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490254518999.jpg" alt="relu函数曲线" title="1490254518999"></figure>
+<figure data-type="image" tabindex="10"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490254499923.jpg" alt="relu定义" title="1490254499923" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490254518999.jpg" alt="relu函数曲线" title="1490254518999" loading="lazy"></figure>
 <p>ReLU 在<code>!$x&lt;0$</code> 时硬饱和。由于 <code>!$x&gt;0$</code>时导数为 1，所以，ReLU 能够在<code>!$x&gt;0$</code>时<strong>保持梯度不衰减，从而缓解梯度消失问题</strong>。但随着训练的推进，部分输入会落入<strong>硬饱和区，导致对应权重无法更新。这种现象被称为“神经元死亡</strong>”。</p>
 <p>ReLU还经常被“诟病”的一个问题是输出具有<strong>偏移现象<a href="https://www.github.com/DragonFive/CVBasicOp/raw/master/1490521030446.jpg" title="1490521030446">7</a>，即输出均值恒大于零</strong>。偏移现象和 神经元死亡会共同影响网络的收敛性。</p>
 <p>还有 PReLU 、maxout、elu等，不同的激活函数搭配不同的参数初始化策略</p>
@@ -297,48 +308,43 @@ sigmoid (0, 1) 的输出还可以被表示作概率，或用于<strong>输入的
 <p><a href="http://blog.csdn.net/zouxy09/article/details/8775360">Deep Learning（深度学习）学习笔记整理系列之（一）</a></p>
 <p><a href="https://github.com/songrotek/Deep-Learning-Papers-Reading-Roadmap">深度学习论文集</a></p>
 
-            </div>
-            
-              <div class="tag-container">
-                
-                  <a href="https://DragonFive.github.io//tag/MLJqs9GOQ" class="tag">
-                    networker
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
-                    神经网络
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-              </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/computer-basic">
-                  <h3 class="post-title">
-                    计算机基础
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/computer-basic/">
+              <h3 class="post-title">
+                下一篇：计算机基础
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

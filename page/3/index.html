@@ -1,15 +1,17 @@
-<!DOCTYPE html>
+
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,130 +19,145 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/caffe_study">
-                  <h2 class="post-title">caffe-源码学习——只看一篇就够了</h2>
-                </a>
-                <div class="post-date">
-                  2017-06-12
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/caffe_study">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.2Oby-7i5_SC_9zNLoD9wNAHaGe&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/vimrc">
-                  <h2 class="post-title">简洁的vim配置</h2>
-                </a>
-                <div class="post-date">
-                  2017-06-09
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/vimrc">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.3FdItXkvycrBBNClTdTUFgHaHa&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/caffe-docker">
-                  <h2 class="post-title">零门槛玩坏caffe</h2>
-                </a>
-                <div class="post-date">
-                  2017-05-26
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      <div class="content-container">
+        
+        
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/caffe_study/">
+        <h2 class="post-title">caffe-源码学习——只看一篇就够了</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-06-12</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/584K3DWjv/">
+                caffe
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o-bbnxhfM8/">
+                python
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/vimrc/">
+        <h2 class="post-title">简洁的vim配置</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-06-09</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/q862sw3DI/">
+                vim
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                linux
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/caffe-docker/">
+        <h2 class="post-title">零门槛玩坏caffe</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 零门槛玩坏caffe<br>
 date: 2017/5/26 15:04:12</p>
 <p>categories:</p>
@@ -159,26 +176,53 @@ tags:</li>
 <p>DL如今已经快成为全民玄学了，感觉离民科入侵不远了。唯一的门槛可能是环境不好配，特别是caffe这种依赖数10种其它软件打框架。不过有了docker之后，小学生也能站撸DL了。</p>
 <p>![enter description here][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/caffe-docker">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.rxZDDDwhClqbkfdJrGaoJgHaE8&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/ubuntu">
-                  <h2 class="post-title">懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</h2>
-                </a>
-                <div class="post-date">
-                  2017-04-27
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-05-26</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/uCHl6QLvI/">
+                docker
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/584K3DWjv/">
+                caffe
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/ubuntu/">
+        <h2 class="post-title">懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 懒人单手配ubuntu大法-快速翻墙装驱动配置开发环境</p>
 <p>date: 2017/4/27 15:04:12</p>
 <p>categories:</p>
@@ -199,26 +243,32 @@ tags:</li>
 <hr>
 <p>[TOC]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/ubuntu">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.zfUcH2PwfENIUHzkRiAzvgHaEK&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/deeplearning_book">
-                  <h2 class="post-title">深度学习中译本-节选</h2>
-                </a>
-                <div class="post-date">
-                  2017-04-08
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-04-27</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                linux
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/deeplearning_book/">
+        <h2 class="post-title">深度学习中译本-节选</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 深度学习中译本-节选</p>
 <p>date: 2017/4/8 17:38:58</p>
 <p>categories:</p>
@@ -232,26 +282,39 @@ tags:</li>
 <p>[TOC]</p>
 <p>![AI][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/deeplearning_book">
-                  <div class="feature-container" style="background-image: url('http://www.ourwen.com/upload/material/img/20170520/SdrIiK85.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/deeplearning_basic">
-                  <h2 class="post-title">深度学习基础知识</h2>
-                </a>
-                <div class="post-date">
-                  2017-03-20
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-04-08</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/deeplearning_basic/">
+        <h2 class="post-title">深度学习基础知识</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: DL从入门到放弃</p>
 <p>date: 2017/3/20 22:04:12</p>
 <p>categories:</p>
@@ -268,70 +331,115 @@ tags:</li>
 <p>Yann Lecun, Geoffrey Hinton, Yoshua Bengio, Andrew Ng</p>
 <p>![四大巨头][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/deeplearning_basic">
-                  <div class="feature-container" style="background-image: url('http://data.useit.com.cn/forum/201503/01/101436udfrfdgobkdoff7f.jpg')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/computer-basic">
-                  <h2 class="post-title">计算机基础</h2>
-                </a>
-                <div class="post-date">
-                  2017-02-15
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/hello-gridea">
-                  <h2 class="post-title">Hello Gridea</h2>
-                </a>
-                <div class="post-date">
-                  2012-12-13
-                </div>
-                <div class="post-abstract">
-                  <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-03-20</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/MLJqs9GOQ/">
+                networker
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/computer-basic/">
+        <h2 class="post-title">计算机基础</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-02-15</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/kcZ7gT9amr/">
+                编程
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/hello-gridea/">
+        <h2 class="post-title">Hello Gridea</h2>
+      </a>
+      <div class="post-abstract">
+        <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
 ✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/hello-gridea">
-                  <div class="feature-container" style="background-image: url('https://DragonFive.github.io//post-images/hello-gridea.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2012-12-13</span>
+        
+      </div>
+    </div>
+    
+  </section>
 
-          <div class="pagination-container">
+
+<div class="pagination-container">
   
-    <a href="https://DragonFive.github.io//page/2/" class="prev"><i class="icon-arrow-ios-back-outline"></i> 上一页</a>
+    <a href="https://DragonFive.github.io/page/2/" class="prev"><i class="icon-arrow-ios-back-outline"></i> 上一页</a>
   
   
 </div>
 
-        </div>
+
       </div>
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

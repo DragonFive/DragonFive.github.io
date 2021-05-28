@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>CNN中卷积计算的内存和速度优化 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,72 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
-            <div class="post-date">2017-09-20</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-09-20</span>
             
-              <div class="feature-container" style="background-image: url('https://static.oschina.net/uploads/space/2018/0210/002637_Apbt_876354.png')">
-              </div>
-            
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: CNN中卷积计算的内存和速度优化</p>
 <p>date: 2017/9/20 12:04:12</p>
 <p>categories:</p>
@@ -136,44 +123,55 @@ for h in 1 to H do
 <h3 id="im2col过程">im2col过程</h3>
 <p>图片来自 ：贾扬清的demo convolution in caffe<br>
 <a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1"><br>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1" loading="lazy"><br>
 把卷积的第一个感受野里的矩阵转化成一个vector，并把各个channel的feature连接起来。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2"><br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2" loading="lazy"><br>
 随着划窗的进行，把接下来的窗口都转化乘vector,并排放在下面<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3"></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4"><br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3" loading="lazy"></p>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4" loading="lazy"><br>
 最后把有Cout个卷积核，每个卷积核有C个channel,那么转化乘Cout行的vector组。最后卷积就编程矩阵乘法了。</p>
 <h2 id="各种方法占用内存量">各种方法占用内存量</h2>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here" loading="lazy"></figure>
 <h1 id="reference">reference</h1>
 <p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
 
-            </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/machinelearning">
-                  <h3 class="post-title">
-                    机器学习算法小结与对比 
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/machinelearning/">
+              <h3 class="post-title">
+                下一篇：机器学习算法小结与对比 
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

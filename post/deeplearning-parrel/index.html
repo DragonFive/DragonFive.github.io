@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>深度学习框架的并行优化方法小结 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,89 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">深度学习框架的并行优化方法小结</h2>
-            <div class="post-date">2018-08-11</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">深度学习框架的并行优化方法小结</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2018-08-11</span>
             
-              <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.SI3hsb1vjY34zTj_0V1cegHaEk&amp;pid=Api&amp;rs=1')">
-              </div>
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                    神经网络
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
             
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: 深度学习框架的并行优化方法小结<br>
 date: 2018/8/11 17:38:58</p>
 <p>categories:</p>
@@ -112,7 +116,7 @@ tags:</li>
 <hr>
 <p>目前的深度学习领域就是海量的数据加上大量的数学运算，所以计算量相当的大，训练一个模型跑上十天半个月啥的是常事。那此时分布式的意义就出现了，既然一张GPU卡跑得太慢就来两张，一台机器跑得太慢就用多台机器。</p>
 <p><strong>数据并行</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505026360037.jpg" alt="数据并行"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505026360037.jpg" alt="数据并行" loading="lazy"></figure>
 <!--more-->
 <p>每一个节点（或者叫进程）都有一份模型，然后各个节点取不同的数据，通常是一个batch_size，然后各自完成前向和后向的计算得到梯度，这些进行训练的进程我们成为<strong>worker</strong>，除了worker，还有<strong>参数服务器</strong>，简称ps server，这些worker会把各自计算得到的梯度送到ps server，然后由ps server来进行update操作，然后把update后的模型再传回各个节点。因为在这种并行模式中，被划分的是数据，所以这种并行方式叫<strong>数据并行</strong>。</p>
 <p>数据并行有<strong>同步模式和异步模式</strong>之分。同步模式中，所有训练程序同时训练一个批次的训练数据，完成后经过同步，再同时交换参数。参数交换完成后所有的训练程序就有了共同的新模型作为起点，再训练下一个批次。而异步模式中，训练程序完成一个批次的训练数据，立即和参数服务器交换参数，不考虑其他训练程序的状态。异步模式中一个训练程序的最新结果不会立刻体现在其他训练程序中，直到他们进行下次参数交换。</p>
@@ -180,7 +184,7 @@ c、可靠性差，一个进程出错，整个程序崩溃。第一感觉就是�
 </code></pre>
 <h3 id="mpi_scatter-数据分发">MPI_Scatter 数据分发</h3>
 <p>MPI_Scatter与MPI_Bcast非常相似，都是<strong>一对多</strong>的通信方式，不同的是后者的<strong>0号进程</strong>将相同的信息发送给所有的进程，而前者则是将一段array 的不同部分发送给所有的进程</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761049076.jpg" alt="scatter与bcast的区别"></figure>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761049076.jpg" alt="scatter与bcast的区别" loading="lazy"></figure>
 <pre><code class="language-cpp">MPI_Scatter(
     void* send_data,//存储在0号进程的数据，array
     int send_count,//具体需要给每个进程发送的数据的个数
@@ -195,7 +199,7 @@ c、可靠性差，一个进程出错，整个程序崩溃。第一感觉就是�
 <p>通常send_count等于array的元素个数除以进程个数。</p>
 <h3 id="mpi_gather">MPI_Gather</h3>
 <p>MPI_Gather和MPI_scatter刚好相反，他的作用是从所有的进程中将每个进程的数据集中到根进程中，<strong>同样根据进程的编号对array元素排序</strong></p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761558789.jpg" alt="mpi_gather"></figure>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761558789.jpg" alt="mpi_gather" loading="lazy"></figure>
 <pre><code class="language-cpp">MPI_Gather(
     void* send_data,
     int send_count,
@@ -208,7 +212,7 @@ c、可靠性差，一个进程出错，整个程序崩溃。第一感觉就是�
 </code></pre>
 <h3 id="mpi_allgather-多对多通信">MPI_Allgather 多对多通信</h3>
 <p>当数据分布在所有的进程中时，MPI_Allgather将所有的数据聚合到每个进程中。</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761637900.jpg" alt="mpi_Allgather"></figure>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761637900.jpg" alt="mpi_Allgather" loading="lazy"></figure>
 <h2 id="数据归约-reduce">数据归约 Reduce</h2>
 <p>Reduce——规约是来自函数式编程的一个经典概念。数据规约包含通过一个函数将一批数据分成较小的一批数据。比如将一个数组的元素通过加法函数规约为一个数字。</p>
 <h3 id="mpi_reduce">mpi_reduce</h3>
@@ -242,9 +246,9 @@ MPI_MAXLOC - 返回最大值和拥有该值的进程编号<br>
 MPI_MINLOC - 返回最小值和拥有该值的进程编号.```</p>
 </blockquote>
 <p>如果每个进程中的数组拥有两个元素，那么规约结果是对两个对位的元素进行规约的。</p>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762764619.jpg" alt="两个元素的归约结果"></figure>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762764619.jpg" alt="两个元素的归约结果" loading="lazy"></figure>
 <h3 id="mpi_allreduce">mpi_allReduce</h3>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762804609.jpg" alt="归约后分发给所有的进程"></figure>
+<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762804609.jpg" alt="归约后分发给所有的进程" loading="lazy"></figure>
 <h1 id="parameter-server-2">parameter-server</h1>
 <h1 id="cuda-c编程">CUDA C编程</h1>
 <h2 id="cuda运行时函数">cuda运行时函数</h2>
@@ -331,44 +335,43 @@ cudaMemcpyDeviceToDevice = 0;
 <p><a href="http://blog.csdn.net/xbinworld/article/details/74781605">分布式机器学习系统笔记（一）——模型并行，数据并行，参数平均，ASGD</a></p>
 <p><a href="http://djt.qq.com/article/view/1245">深度学习及并行化实现概述</a></p>
 
-            </div>
-            
-              <div class="tag-container">
-                
-                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
-                    神经网络
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-              </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/ci-advance">
-                  <h3 class="post-title">
-                    CI进阶
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/ci-advance/">
+              <h3 class="post-title">
+                下一篇：CI进阶
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

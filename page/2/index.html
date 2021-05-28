@@ -1,15 +1,17 @@
-<!DOCTYPE html>
+
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,130 +19,128 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/tensorflow-note">
-                  <h2 class="post-title">tensorflow学习笔记</h2>
-                </a>
-                <div class="post-date">
-                  2017-11-20
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/tensorflow-note">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.l3IsbJb0oeZxrLbgAEy6DgHaGL&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/cnn-improve">
-                  <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
-                </a>
-                <div class="post-date">
-                  2017-09-20
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/cnn-improve">
-                  <div class="feature-container" style="background-image: url('https://static.oschina.net/uploads/space/2018/0210/002637_Apbt_876354.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/machinelearning">
-                  <h2 class="post-title">机器学习算法小结与对比 </h2>
-                </a>
-                <div class="post-date">
-                  2017-09-10
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      <div class="content-container">
+        
+        
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/tensorflow-note/">
+        <h2 class="post-title">tensorflow学习笔记</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-11-20</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/ufT52llrR/">
+                tensorflow
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o-bbnxhfM8/">
+                python
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/cnn-improve/">
+        <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-09-20</span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/machinelearning/">
+        <h2 class="post-title">机器学习算法小结与对比 </h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 机器学习算法小结与对比</p>
 <p>date: 2017/9/10 12:04:12</p>
 <p>categories:</p>
@@ -154,66 +154,119 @@ tags:</li>
 <hr>
 <p>![机器学习][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/machinelearning">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.uokrFEs3KvSXmsbIDACzggHaEQ&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/interview">
-                  <h2 class="post-title">面试问题小结</h2>
-                </a>
-                <div class="post-date">
-                  2017-08-15
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/interview">
-                  <div class="feature-container" style="background-image: url('http://www.walre.com/uploads/allimg/150805/1453421B7-0.jpg')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/network_compression">
-                  <h2 class="post-title">神经网络的压缩优化方法总结</h2>
-                </a>
-                <div class="post-date">
-                  2017-08-05
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/network_compression">
-                  <div class="feature-container" style="background-image: url('https://ask.qcloudimg.com/http-save/yehe-1754229/kucn8ker6f.jpeg')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/cpp11-newfeature">
-                  <h2 class="post-title">c++使用7年后的经验总结</h2>
-                </a>
-                <div class="post-date">
-                  2017-07-31
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-09-10</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/TzNXsQX20/">
+                机器学习
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/interview/">
+        <h2 class="post-title">面试问题小结</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-08-15</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/0pbfrYPWq/">
+                面试
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/kcZ7gT9amr/">
+                编程
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/network_compression/">
+        <h2 class="post-title">神经网络的压缩优化方法总结</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-08-05</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/MLJqs9GOQ/">
+                networker
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/LI4Uk3FeTa/">
+                网络压缩
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/cpp11-newfeature/">
+        <h2 class="post-title">c++使用7年后的经验总结</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: c++使用7年后的经验总结<br>
 date: 2017/7/31 17:38:58</p>
 <p>categories:</p>
@@ -227,26 +280,32 @@ tags:</li>
 <p>一年前写了一篇<a href="https://zhuanlan.zhihu.com/p/21930436">c++11新特性详解</a>, 这里总结了一些c++的编程经验。</p>
 <p>![enter description here][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/cpp11-newfeature">
-                  <div class="feature-container" style="background-image: url('https://image.slidesharecdn.com/c11-150622015602-lva1-app6892/95/c11-1-638.jpg?cb=1434938204')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/mobile_net">
-                  <h2 class="post-title">mobile_net的模型优化</h2>
-                </a>
-                <div class="post-date">
-                  2017-07-23
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-07-31</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/Tl2aOZ6vP/">
+                cpp
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/mobile_net/">
+        <h2 class="post-title">mobile_net的模型优化</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: mobile_net的模型优化</p>
 <p>date: 2017/7/23 12:04:12</p>
 <p>categories:</p>
@@ -264,26 +323,39 @@ tags:</li>
 <p>![enter description here][1]</p>
 <p>mobilenet 对于alexnet运行速度提高了10倍，参数量降低了50倍！而squeezenet虽然参数量也降低了50倍，但是速度提升很小。</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/mobile_net">
-                  <div class="feature-container" style="background-image: url('https://cn.bing.com/th?id=OIP.KuTvstHE-apHqHjy9jXHUAHaFV&amp;pid=Api&amp;rs=1')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/squeeze_net">
-                  <h2 class="post-title">squeeze_net的模型优化</h2>
-                </a>
-                <div class="post-date">
-                  2017-07-20
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-07-23</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/LI4Uk3FeTa/">
+                网络压缩
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/squeeze_net/">
+        <h2 class="post-title">squeeze_net的模型优化</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: squeeze_net的模型优化</p>
 <p>date: 2017/7/20 12:04:12</p>
 <p>categories:</p>
@@ -300,26 +372,46 @@ tags:</li>
 <div class="github-widget" data-repo="DragonFive/deep-learning-exercise"></div>
 <p>SqueezeNet主要是为了降低CNN模型参数数量而设计的。没有提高运行速度。</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/squeeze_net">
-                  <div class="feature-container" style="background-image: url('https://image.slidesharecdn.com/forrestiandolatinymlpresentation-171007214051/95/small-deepneuralnetworks-their-advantages-and-theirdesign-12-638.jpg?cb=1510284537')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/deeplearning-theory">
-                  <h2 class="post-title">深度学习理论问题小结</h2>
-                </a>
-                <div class="post-date">
-                  2017-07-10
-                </div>
-                <div class="post-abstract">
-                  <hr>
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-07-20</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/LI4Uk3FeTa/">
+                网络压缩
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+                  ，
+                
+              </a>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/deeplearning-theory/">
+        <h2 class="post-title">深度学习理论问题小结</h2>
+      </a>
+      <div class="post-abstract">
+        <hr>
 <p>title: 深度学习理论问题小结</p>
 <p>date: 2017/7/10 12:04:12</p>
 <p>categories:</p>
@@ -337,55 +429,85 @@ tags:</li>
 <p>Michael Nielsen的《Neural Network and Deep Learning》<br>
 ![神经网络和深度学习][1]</p>
 
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/deeplearning-theory">
-                  <div class="feature-container" style="background-image: url('https://p3-tt.bytecdn.cn/large/2372/6792494822')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://DragonFive.github.io//post/cnn_history">
-                  <h2 class="post-title">神经网络模型演化</h2>
-                </a>
-                <div class="post-date">
-                  2017-07-05
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://DragonFive.github.io//post/cnn_history">
-                  <div class="feature-container" style="background-image: url('http://images2015.cnblogs.com/blog/673793/201512/673793-20151228170208120-1856567090.jpg')">
-                  </div>
-                </a>
-              
-            </article>
-          
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-07-10</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                深度学习
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
 
-          <div class="pagination-container">
+<section class="post-item">
+    <div class="content">
+      <a href="https://DragonFive.github.io/post/cnn_history/">
+        <h2 class="post-title">神经网络模型演化</h2>
+      </a>
+      <div class="post-abstract">
+        
+      </div>
+      <div class="post-info">
+        <span><i class="icon icon-calendar-outline"></i> 2017-07-05</span>
+        
+          <span>
+            <i class="icon icon-pricetags-outline"></i>
+            
+              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                神经网络
+                
+              </a>
+            
+          </span>
+        
+      </div>
+    </div>
+    
+  </section>
+
+
+<div class="pagination-container">
   
-    <a href="https://DragonFive.github.io//" class="prev"><i class="icon-arrow-ios-back-outline"></i> 上一页</a>
+    <a href="https://DragonFive.github.io/" class="prev"><i class="icon-arrow-ios-back-outline"></i> 上一页</a>
   
   
-    <a href="https://DragonFive.github.io//page/3/" class="next">下一页 <i class="icon-arrow-ios-forward-outline"></i></a>
+    <a href="https://DragonFive.github.io/page/3/" class="next">下一页 <i class="icon-arrow-ios-forward-outline"></i></a>
   
 </div>
 
-        </div>
+
       </div>
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 

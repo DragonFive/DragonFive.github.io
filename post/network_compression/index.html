@@ -1,15 +1,18 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" >
+    
+<meta charset="utf-8" >
 
 <title>神经网络的压缩优化方法总结 | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1573720219905">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1622172574397">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -17,88 +20,103 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
 
 
   </head>
   <body>
     <div id="app" class="main">
-
-      <div class="sidebar" :class="{ 'full-height': menuVisible }">
-  <div class="top-container" data-aos="fade-right">
-    <div class="top-header-container">
-      <a class="site-title-container" href="https://DragonFive.github.io/">
-        <img src="https://DragonFive.github.io//images/avatar.png?v=1573720219905" class="site-logo">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1622172574397" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
       </a>
-      <div class="menu-btn" @click="menuVisible = !menuVisible">
-        <div class="line"></div>
-      </div>
     </div>
-    <div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
       
         
-          <a href="/" class="site-nav">
+          <a href="/" class="menu purple-link">
             首页
           </a>
         
       
         
-          <a href="/archives" class="site-nav">
+          <a href="/archives" class="menu purple-link">
             归档
           </a>
         
       
         
-          <a href="/tags" class="site-nav">
+          <a href="/tags" class="menu purple-link">
             标签
           </a>
         
       
         
-          <a href="/post/about" class="site-nav">
+          <a href="/post/about" class="menu purple-link">
             关于
           </a>
         
       
     </div>
   </div>
-  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-    <div class="site-description">
-      Code is cheap, show me the theory
-    </div>
-    <div class="site-footer">
-      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-    </div>
-  </div>
-</div>
+</transition>
 
 
-      <div class="main-container">
-        <div class="content-container" data-aos="fade-up">
-          <div class="post-detail">
-            <h2 class="post-title">神经网络的压缩优化方法总结</h2>
-            <div class="post-date">2017-08-05</div>
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">神经网络的压缩优化方法总结</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-08-05</span>
             
-              <div class="feature-container" style="background-image: url('https://ask.qcloudimg.com/http-save/yehe-1754229/kucn8ker6f.jpeg')">
-              </div>
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/MLJqs9GOQ/">
+                    networker
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/LI4Uk3FeTa/">
+                    网络压缩
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
+                    神经网络
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
             
-            <div class="post-content">
-              <hr>
+          </div>
+          <div class="post-content">
+            <hr>
 <p>title: 神经网络的压缩优化方法总结</p>
 <p>date: 2017/8/5 12:04:12</p>
 <p>categories:</p>
@@ -111,7 +129,7 @@ tags:</li>
 </ul>
 <hr>
 <p>这里回顾一下几个经典模型，我们主要看看深度和caffe模型大小，<a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a>。并总结一些模型压缩优化的方法。</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502693251377.jpg" alt="各种CNN模型"></figure>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502693251377.jpg" alt="各种CNN模型" loading="lazy"></figure>
 <p>模型大小(参数量)和模型的深浅并非是正相关。</p>
 <h1 id="一些经典的模型-修改网络架构">一些经典的模型-修改网络架构</h1>
 <h2 id="fully-connect-to-local-connect-全连接到卷积神经网络-1x1卷积">fully connect to local connect 全连接到卷积神经网络  1x1卷积</h2>
@@ -133,7 +151,7 @@ tags:</li>
 <p>(3) SqueezeNet</p>
 <p>squeezenet将上面1×1降维的思想进一步拓展。通过减少3×3的filter数量，将其一部分替换为1×1来实现压缩。</p>
 <p>具体的一个子结构如下：一个squeeze模块加上一个expand模块，使squeeze中的通道数量，少于expand通道数量就行。</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694686047.jpg" alt="squeezenet网络的expand模块"></figure>
+<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694686047.jpg" alt="squeezenet网络的expand模块" loading="lazy"></figure>
 <p>假如输入为M维，如果直接接3×3卷积，输出为7个通道，则参数量：M×3×3×7。</p>
 <p>如果按上图的做法，则参数量为M×1×1×3+3×4×1×1+3×4×3×3，压缩比为：(40+M)/21M，当M比较大时，约0.05。</p>
 <p>文章最终<strong>将AlexNet压缩到原来1/50</strong>，而性能几乎不变。</p>
@@ -144,7 +162,7 @@ tags:</li>
 <p>这一策略很好理解，因为1个1x1卷积核的参数是3x3卷积核参数的1/9，这一改动理论上可以将模型尺寸压缩9倍。</p>
 <p>策略 2. 减小输入到3x3卷积核的输入通道数。</p>
 <p>我们知道，对于一个采用3x3卷积核的卷积层，该层所有卷积参数的数量（不考虑偏置）为：<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507038803077.jpg" alt="enter description here"></p>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507038803077.jpg" alt="enter description here" loading="lazy"></p>
 <p>N是卷积核的数量，也即输出通道数，C是输入通道数。因此，为了保证减小网络参数，<strong>不仅仅需要减少3x3卷积核的数量，还需减少输入到3x3卷积核的输入通道数量</strong>，即式中C的数量。</p>
 <p>策略 3.尽可能的将降采样放在网络后面的层中。</p>
 <p>分辨率越大的特征图（延迟降采样）可以带来更高的分类精度，而这一观点从直觉上也可以很好理解，因为分辨率越大的输入能够提供的信息就越多。</p>
@@ -155,10 +173,10 @@ tags:</li>
 SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的提升的，对于类似caffe这样的深度学习框架，在卷积层的前向计算中，采用1x1卷积核可避免额外的im2col操作，而直接利用gemm进行矩阵加速运算，因此对速度的优化是有一定的作用的。</p>
 <p>(4) mobilenet</p>
 <p>mobilenet也是用卷积拆分的方法</p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694868072.jpg" alt="mobilenet"></figure>
+<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502694868072.jpg" alt="mobilenet" loading="lazy"></figure>
 <p>作出更多共享的是有一个width Multiplier宽度参数和resolution Multiplier 分辨率参数 ，可以降低更多的参数。</p>
 <p>没使用这两个参数的mobilenet是VGGNet的1/30.<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502695760857.jpg" alt="mobilenet"></p>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502695760857.jpg" alt="mobilenet" loading="lazy"></p>
 <h1 id="权重参数量化与剪枝">权重参数量化与剪枝</h1>
 <p>主要是通过权重剪枝，量化编码等方法来实现模型压缩。deep compression是float到uint的压缩,Binarized Neural Networks是 uint 到bool的压缩。</p>
 <p>一些技巧：</p>
@@ -171,7 +189,7 @@ SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的�
 增加L2权重可以让更多的权重，靠近0，这样每次修剪的比例大大增加。</li>
 </ol>
 <h2 id="deepcompresion">DeepCompresion</h2>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507039484844.jpg" alt="deep compression pipeline"></figure>
+<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507039484844.jpg" alt="deep compression pipeline" loading="lazy"></figure>
 <p>文章早期的工作，是Network Pruning，就是去除网络中权重低于一定阈值的参数后，重新<strong>finetune一个稀疏网络</strong>。在这篇文章中，则进一步添加了量化和编码，思路很清晰简单如下。</p>
 <h3 id="网络剪枝移除不重要的连接">网络剪枝：移除不重要的连接</h3>
 <p>（1） 普通网络训练；</p>
@@ -181,12 +199,12 @@ SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的�
 <p>此处的权值量化基于<strong>权值聚类</strong>，将连续分布的权值<strong>离散化</strong>，从而减小需要存储的权值数量。</p>
 <p>让许多连接共享同一权重，使原始存储整个网络权重变为只需要存储码本(有效的权重)和索引；</p>
 <p>对于一个4×4的权值矩阵，量化权重为4阶（-1.0，0，1.5，2.0）。</p>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698285109.jpg" alt="量化过程"></figure>
+<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698285109.jpg" alt="量化过程" loading="lazy"></figure>
 <p>对weights采用<strong>cluster index进行存储</strong>后，原来需要16个32bit float，现在只需要4个32bit float码字，与16个2bit uint索引，参数量为原来的(16×2+4×32)/(16×32)=0.31。</p>
 <p>存储是没问题了，那如何对量化值进行更新呢？事实上，文中仅对码字进行更新。如上图：<strong>将索引相同的地方梯度求和乘以学习率</strong>，叠加到码字。</p>
 <p>这样的效果，就等价于不断求取weights的聚类中心。原来有成千上万个weights，现在经过一个有效的聚类后，每一个weights都用其<strong>聚类中心进行替代</strong>.</p>
 <p>看下表就知道最终的压缩效率非常可观，把500M的VGG压缩到到了11M，1/50。</p>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698400878.jpg" alt="压缩VGG"></figure>
+<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502698400878.jpg" alt="压缩VGG" loading="lazy"></figure>
 <h3 id="霍夫曼编码更高效利用了权重的有偏分布">霍夫曼编码：更高效利用了权重的有偏分布；</h3>
 <h2 id="binarized-neural-networks">Binarized Neural Networks</h2>
 <ul>
@@ -203,52 +221,43 @@ SqueezeNet在网络结构中大量采用1x1和3x3卷积核是有利于速度的�
 <p><a href="https://dragonfive.github.io/2017-07-20/squeeze_net/">squeeze_net的模型优化</a></p>
 <p><a href="https://dragonfive.github.io/2017-07-05/deep_learning_model/">神经网络模型演化</a></p>
 
-            </div>
-            
-              <div class="tag-container">
-                
-                  <a href="https://DragonFive.github.io//tag/MLJqs9GOQ" class="tag">
-                    networker
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/LI4Uk3FeTa" class="tag">
-                    网络压缩
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/o9zBQ9B4NY" class="tag">
-                    神经网络
-                  </a>
-                
-                  <a href="https://DragonFive.github.io//tag/WzibKNMac" class="tag">
-                    深度学习
-                  </a>
-                
-              </div>
-            
-            
-              <div class="next-post">
-                <div class="next">下一篇</div>
-                <a href="https://DragonFive.github.io//post/cpp11-newfeature">
-                  <h3 class="post-title">
-                    c++使用7年后的经验总结
-                  </h3>
-                </a>
-              </div>
-            
-
-            
-
           </div>
-
         </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/cpp11-newfeature/">
+              <h3 class="post-title">
+                下一篇：c++使用7年后的经验总结
+              </h3>
+            </a>
+          </div>
+          
       </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
     </div>
-
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
+    <script type="application/javascript">
 
 hljs.initHighlightingOnLoad()
 
