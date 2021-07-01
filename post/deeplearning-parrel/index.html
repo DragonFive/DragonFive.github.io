@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625141848822">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625143201174">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625141848822" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625143201174" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -114,7 +114,6 @@ tags:</li>
 <p>目前的深度学习领域就是海量的数据加上大量的数学运算，所以计算量相当的大，训练一个模型跑上十天半个月啥的是常事。那此时分布式的意义就出现了，既然一张GPU卡跑得太慢就来两张，一台机器跑得太慢就用多台机器。</p>
 <p><strong>数据并行</strong></p>
 <figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505026360037.jpg" alt="数据并行" loading="lazy"></figure>
-<!--more-->
 <p>每一个节点（或者叫进程）都有一份模型，然后各个节点取不同的数据，通常是一个batch_size，然后各自完成前向和后向的计算得到梯度，这些进行训练的进程我们成为<strong>worker</strong>，除了worker，还有<strong>参数服务器</strong>，简称ps server，这些worker会把各自计算得到的梯度送到ps server，然后由ps server来进行update操作，然后把update后的模型再传回各个节点。因为在这种并行模式中，被划分的是数据，所以这种并行方式叫<strong>数据并行</strong>。</p>
 <p>数据并行有<strong>同步模式和异步模式</strong>之分。同步模式中，所有训练程序同时训练一个批次的训练数据，完成后经过同步，再同时交换参数。参数交换完成后所有的训练程序就有了共同的新模型作为起点，再训练下一个批次。而异步模式中，训练程序完成一个批次的训练数据，立即和参数服务器交换参数，不考虑其他训练程序的状态。异步模式中一个训练程序的最新结果不会立刻体现在其他训练程序中，直到他们进行下次参数交换。</p>
 <p><a href="http://blog.csdn.net/xsc_c/article/details/42420167"> 卷积神经网络的并行化模型</a></p>

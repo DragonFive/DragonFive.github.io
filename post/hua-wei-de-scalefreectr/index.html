@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>华为的ScaleFreeCTR  | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625143201174">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625143201174" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">华为的ScaleFreeCTR </h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-06-15</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/gd01ID-F3/">
+                    论文阅读
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>华为诺亚方舟提出了SFCTR <a href="https://arxiv.org/pdf/2104.08542.pdf">ScaleFreeCTR: a MixCache-based distributed training system for CTR</a>，scalefree 可能是因为数据规模对训练吞吐没有影响，后面实验部分有具体的数据。</p>
+<h1 id="一-动机与主要创新">一、动机与主要创新</h1>
+<p>现有的分布式CTR训练框架使用CPU内存来保存和更新参数，使用gpu 进行前向和反向计算（也有用CPU的），会有两个瓶颈</p>
+<ol>
+<li>
+<p>CPU 和 gpu 之间的pull 和 push 操作有一定的延迟</p>
+</li>
+<li>
+<p>cpu 进行参数的同步和更新比较慢</p>
+</li>
+</ol>
+<p>分布式训练的关键在于</p>
+<ol>
+<li>关键在于减少host_gpu之间的延迟</li>
+<li>减少host-gpu 及gpu之间的数据传输量也很重要</li>
+</ol>
+<p>推荐中的参数有两个特点：</p>
+<ol>
+<li>实际 working parameters 比较少，sparse 参数和 MLP参数都很少</li>
+<li>sparse 特征符合幂律分布，小部分特征被高频访问</li>
+</ol>
+<p>根据两个特点，可以有两个方法</p>
+<ol>
+<li>使用缓存机制减少 host-gpu 延迟</li>
+<li>通过重组batch数据来减少参数传输量(unique?)</li>
+</ol>
+<p>由此提出了 SFCTR:<br>
+在CPU中通过 虚拟sparse id op 来减少host-gpu 和gpu-gpu 的数据传输量，使用 mixcache 实验特征预取来减少传输延迟，使用3级pipeline 来减少整体训练时长。</p>
+<p>系统将会在MindSpore 上开源，现在看似乎还没有开源。</p>
+<h1 id="二-相关工作">二、相关工作</h1>
+<h2 id="一业界前沿">（一）业界前沿</h2>
+<p>为了充分利用GPU的能力和高速带宽<br>
+英伟达的 hugeCtr 和 脸书 的 DLRM 把emb参数分成不同的份放在GPU HMB中，需要需要昂贵的GPU，不实用。<br>
+腾讯的DES 和 百度的 HierPs 使用主存保存emb ，DES采用 field-aware 分片策略来reduce(减少or规约)GPU间的数据通信，但没有进行主存和GPU之间通信优化。<br>
+HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输延时。</p>
+<p>Tensorflow, MxNet 和 PyTorch 并不能很好的支持大规模embedding的训练:</p>
+<ul>
+<li>PyTorch 中没有官方支持的ps</li>
+<li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
+<li>tensorflow 使用它的ps后吞吐会严重下降</li>
+</ul>
+<p>为了提升tensorflow, money, pytorch较差的分布式性能，百度的horovod和字节的byteps 都支持不同的平台:</p>
+<ul>
+<li>horovod 使用百度的Ring-AllReduce实现来加速dense模型的训练</li>
+<li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
+</ul>
+<h2 id="二论文介绍的跟sfctr无关但挺有用的经验知识">（二）论文介绍的跟SFCTR无关，但挺有用的经验知识</h2>
+<p>为了提高训练效率，有两种通用的做法：</p>
+<ol>
+<li>增量学习（batch训练的补充，用最近的数据更新模型）</li>
+<li>分布式训练（使用额外的训练资源）</li>
+</ol>
+<p>CTR模型稀疏部分参数量太大，所以不能使用reduce 数据并行，大多数考虑用了模型并行。<br>
+模型并行解决方案ps 架构的局限性：<br>
+Ps server 保存并同步参数，worker执行前向和反向计算，</p>
+<ul>
+<li>worker pull and push from ps</li>
+<li>Ps 从worker接收梯度之后进行同步<br>
+分布式训练包括两个阶段：计算和参数同步。</li>
+</ul>
+<p>百度的综述 <a href="https://arxiv.org/abs/2003.05622">Distributed Hierarchical GPU Parameter Server for Massive Scale Deep Learning Ads Systems</a> 介绍了三种同步模式：</p>
+<ul>
+<li>BSP(bulk sync parallel)，严格对所有worker的更新进行同步</li>
+<li>SSP(stale sync parallel)，对快worker 进行同步</li>
+<li>ASP（async parallel）, 不同步gradient</li>
+</ul>
+<p>后两种方式虽然提升了训练效率，但是降低了模型性能。SFCTR 使用的是BSP，XDL使用的是ASP。</p>
+<h1 id="三-sfctr-架构">三、SFCTR 架构</h1>
+<p>SFCTR 由三部分构成</p>
+<ul>
+<li>Data-Loader, 提出虚拟sparse id op 来减少batch中重复的特征emb(unique?)</li>
+<li>Host-Manager, 使用混合缓存策略来减少host-gpu延迟，MixCache 的管理器部分在 CPU 的内存中，MixCache 的缓冲区在 GPU 的 HBM 中</li>
+<li>GPU-WORKER<br>
+<img src="https://DragonFive.github.io//post-images/1625142600332.png" alt="" loading="lazy"></li>
+</ul>
+<p><strong>3级pipeline</strong><br>
+把 Data-Loader,Host-Manager 和gpu worker 中，三阶段资源不同 Disk, CPU and GPU在三个不同的线程里完成</p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625142730082.png" alt="" loading="lazy"></figure>
+<h2 id="1data-loader">（1）data loader</h2>
+<p>sparse id op 来减少batch中重复的特征emb，就是xdl中的unique。减少host-gpu 和gpu-gpu 的数据传输量。</p>
+<h2 id="2host-manager">（2）HOST-MANAGER</h2>
+<p>MixCache用来减少延迟，在每个GPU的HBM 上申请一个cache buffer，使用modulo 哈希方法对 working parameters 进行分组，放在不同的GPU 上，embedding参数在data loader执行完VSI op 之后检查哪些参数 gpu 上没有就把那些参数传输到gpu 上。</p>
+<p>当cache满了之后，满足两种情况的emb 会回传到host。</p>
+<ol>
+<li>参数完成了更新</li>
+<li>下个batch不需要这个参数</li>
+</ol>
+<h2 id="3gpu-worker">（3）GPU-WORKER</h2>
+<p>不同的GPU保存了不同的参数，所以前向和反向的时候都需要同步。<br>
+前向传播，每个worekr从其它worker拿到batch所需要的参数，使用all-reduce 通信方式，一个gpu只需要跟另外两个gpu通信两次，首先通过gather_cache ，从cache buffer 中获得local common emb, 因为global_id 顺序一致，所以可以做all_reduce同步, 然后通过all_reduce 或者 global common emb，最后通过vis 算出来自己worker需要执行的batch emb<br>
+<img src="https://DragonFive.github.io//post-images/1625142803471.png" alt="" loading="lazy"></p>
+<p>梯度更新<br>
+<img src="https://DragonFive.github.io//post-images/1625142812224.png" alt="" loading="lazy"></p>
+<h1 id="四-sfctr-执行流程">四、SFCTR 执行流程</h1>
+<p>执行流程<br>
+<img src="https://DragonFive.github.io//post-images/1625142836322.png" alt="" loading="lazy"></p>
+<ul>
+<li>
+<p>2-3行是 data loader 部分，有个虚拟Sparse Id OP，对batch Sparse ID 去重后形成 global_id，对于batch 中每个实例有个virtual_id，可以找到其对应的global_id ，跟XDL 的unique 操作很像。使用global_id, 各个gpu在同步的时候数据量就会少很多。</p>
+</li>
+<li>
+<p>4-7行是 Host-Manager 部分，负责在主存中报错embedding参数（存得下吗？），使用mixcache把working parameters 放到 gpu 的cache buffer中。mixcache 还更新gpu cache buffer， 检查下一个batch需要哪些embedding ，预测哪些embedding未来一段时间不需要，在buffer满的时候进行pull, 发送数据到gpu，并对每个特征在gpu设置一个local_id (?)</p>
+</li>
+<li>
+<p>9-15行是GPU部分，包括embedding查表，前向反向和参数更新</p>
+</li>
+</ul>
+<p>host 和 gpu 是生产者与消费者模式</p>
+<h1 id="五-一些对我们有用的实验">五、一些对我们有用的实验：</h1>
+<h2 id="1环境">（1）环境</h2>
+<p>GPU 集群使用 InfiniBand 连接，4台GPU服务器通过100Gb  RDMA提速</p>
+<p>Intel Xeon Gold-5118 CPUs with 18 cores (36 threads), 8 Tesla V100 GPUs with 32 GB HBM，1GB内存。GPU之间PCI连接<br>
+使用 Criteo-TB 数据库，使用filter构造10GB和100GB两个数据集，因为包括了优化器的信息，33×4B×80=10GB，所以实际parameter table是embedding table的3倍，所以实际上是 30GB和300GB的模型参数。</p>
+<p>使用 DeepFM 模型，与 hugectr与ps mxnet对比</p>
+<h2 id="2框架对比实验">（2）框架对比实验</h2>
+<p>基于VSI OP，混合缓存机制，和三级pipeline，在10GB数据上SFCTR 在4机32卡上的吞吐量是psmxnet的1.6倍，hugectr的5.6倍，100GB 数据上是1.3倍和6.9倍<br>
+如果GPU卡只有8个，hugectr在100GB数据上根本无法训练</p>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625143001706.png" alt="" loading="lazy"></figure>
+<h2 id="3vsi-op">（3）vsi op</h2>
+<p>Host-gpu 数据传输量减少 94% ，g pu-gpu数据量减少88%</p>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1625143009606.png" alt="" loading="lazy"></figure>
+<h2 id="4mixcache">（4）mixcache</h2>
+<p>Cache 大小对传数据的影响<br>
+2GB的cache可以把数据传输推迟到1000步之后<br>
+如果cache 大小比较大，batch中要传输的数据的比例就会小，因为可以存更多高频特征<br>
+12%（2GB）, 27%（0.5GB） and 29%（0.25GB）</p>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1625143020154.png" alt="" loading="lazy"></figure>
+<h2 id="53级pipeline">（5）3级pipeline</h2>
+<p>GPU-Worker 训练时间在pipeline中占比最高<br>
+一个节点跑100GB数据，使用pipeline需要 75 s，不用pipeline就需要150s</p>
+<h1 id="六-总结与思考">六、总结与思考</h1>
+<p>文章写的通俗易懂，很有条理，related worker 也总结了很多训练的经验，工作很有实用性。<br>
+作者提到未来的工作有两个方向</p>
+<ol>
+<li>提升通信效率，（使用all2all）</li>
+<li>调查提升收敛速度的方法</li>
+</ol>
+<p>思考借鉴意义</p>
+<ol>
+<li>
+<p>SFCTR相当于把图完全放在GPU中执行，没有进行图的分隔，所以实现起来更容易一些。CPU只是一个ps的存储和更新后落盘以及dataloader</p>
+</li>
+<li>
+<p>CPU内存1T，而实验中的数据最大的为300GB，所以可以放在CPU内存中，其实我们的模型大小似乎也在几百GB，如果可以放在worker内存中，就没有必要单独弄一个ps server；<br>
+如果模型超过1T，也可以融合AIBox的做法，使用SSD做cpu mem的缓存</p>
+</li>
+<li>
+<p>pipeline 和 vsiop 其实 XDL 都有，只缺了缓存机制，但XDL如果不动ps这一块，参数的更新其实是在ps 上完成的，所以 ps 的 push 也会继续有延迟，参数预取只能解决pull 的问题，</p>
+</li>
+<li>
+<p>但如果都在本地更新，那不同worker之间参数同步就会比较麻烦，所以缓存预取、更新后缓存失效再回传的机制必然依赖多机间 RDMA  单机allreduce 同步通信技术，ps存在的意义不大</p>
+</li>
+</ol>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/deeplearning-parrel/">
+              <h3 class="post-title">
+                下一篇：深度学习框架的并行优化方法小结
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
