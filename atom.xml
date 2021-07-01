@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-01T12:52:50.682Z</updated>
+    <updated>2021-07-01T13:18:13.247Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -46,23 +46,7 @@
 在CPU中通过 虚拟sparse id op 来减少host-gpu 和gpu-gpu 的数据传输量，使用 mixcache 实验特征预取来减少传输延迟，使用3级pipeline 来减少整体训练时长。</p>
 <p>系统将会在MindSpore 上开源，现在看似乎还没有开源。</p>
 <h1 id="二-相关工作">二、相关工作</h1>
-<h2 id="一业界前沿">（一）业界前沿</h2>
-<p>为了充分利用GPU的能力和高速带宽<br>
-英伟达的 hugeCtr 和 脸书 的 DLRM 把emb参数分成不同的份放在GPU HMB中，需要需要昂贵的GPU，不实用。<br>
-腾讯的DES 和 百度的 HierPs 使用主存保存emb ，DES采用 field-aware 分片策略来reduce(减少or规约)GPU间的数据通信，但没有进行主存和GPU之间通信优化。<br>
-HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输延时。</p>
-<p>Tensorflow, MxNet 和 PyTorch 并不能很好的支持大规模embedding的训练:</p>
-<ul>
-<li>PyTorch 中没有官方支持的ps</li>
-<li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
-<li>tensorflow 使用它的ps后吞吐会严重下降</li>
-</ul>
-<p>为了提升tensorflow, money, pytorch较差的分布式性能，百度的horovod和字节的byteps 都支持不同的平台:</p>
-<ul>
-<li>horovod 使用百度的Ring-AllReduce实现来加速dense模型的训练</li>
-<li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
-</ul>
-<h2 id="二论文介绍的跟sfctr无关但挺有用的经验知识">（二）论文介绍的跟SFCTR无关，但挺有用的经验知识</h2>
+<h2 id="一论文介绍的跟sfctr无关但挺有用的经验知识">（一）论文介绍的跟SFCTR无关，但挺有用的经验知识</h2>
 <p>为了提高训练效率，有两种通用的做法：</p>
 <ol>
 <li>增量学习（batch训练的补充，用最近的数据更新模型）</li>
@@ -169,6 +153,39 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 <p>但如果都在本地更新，那不同worker之间参数同步就会比较麻烦，所以缓存预取、更新后缓存失效再回传的机制必然依赖多机间 RDMA  单机allreduce 同步通信技术，ps存在的意义不大</p>
 </li>
 </ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[业界CTR深度学习框架的一些新的进展 ]]></title>
+        <id>https://DragonFive.github.io/post/ye-jie-ctr-shen-du-xue-xi-kuang-jia-de-yi-xie-xin-de-jin-zhan/</id>
+        <link href="https://DragonFive.github.io/post/ye-jie-ctr-shen-du-xue-xi-kuang-jia-de-yi-xie-xin-de-jin-zhan/">
+        </link>
+        <updated>2021-05-31T13:03:49.000Z</updated>
+        <content type="html"><![CDATA[<p>为了充分利用GPU的能力和高速带宽<br>
+英伟达的 hugeCtr https://github.com/NVIDIA/HugeCTR 和 脸书 的 DLRM<br>
+<a href="https://arxiv.org/abs/1906.00091">【CoRR2019】Deep Learning Recommendation Model for Personalization and Recommendation Systems</a><br>
+把emb参数分成不同的份放在GPU HMB中，需要需要昂贵的GPU，不实用。</p>
+<p>腾讯的DES<br>
+<a href="https://arxiv.org/abs/1909.04823">Distributed Equivalent Substitution Training for Large-Scale Recommender Systems</a><br>
+和 百度的 HierPs<br>
+<a href="https://arxiv.org/abs/2003.05622">Distributed Hierarchical GPU Parameter Server for Massive Scale Deep Learning Ads System</a><br>
+使用主存保存emb ，DES采用 field-aware 分片策略来reduce(减少or规约)GPU间的数据通信，但没有进行主存和GPU之间通信优化。<br>
+HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输延时。</p>
+<p>Tensorflow, MxNet 和 PyTorch 并不能很好的支持大规模embedding的训练:</p>
+<ul>
+<li>PyTorch 中没有官方支持的ps</li>
+<li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
+<li>tensorflow 使用它的ps后吞吐会严重下降</li>
+</ul>
+<p>为了提升tensorflow, money, pytorch较差的分布式性能，百度的horovod<br>
+<a href="https://arxiv.org/abs/1802.05799">Horovod: fast and easy distributed deeplearninginTensorFlow</a><br>
+和字节的byteps<br>
+<a href="https://arxiv.org/abs/1807.00311">Product-based Neural Networks for User Response Prediction over Multi-field Categorical Data</a><br>
+都支持不同的平台:</p>
+<ul>
+<li>horovod 使用百度的Ring-AllReduce实现来加速dense模型的训练</li>
+<li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
+</ul>
 ]]></content>
     </entry>
     <entry>
@@ -541,7 +558,7 @@ tags:</p>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[gluon学习笔记]]></title>
+        <title type="html"><![CDATA[mxnet gluon ]]></title>
         <id>https://DragonFive.github.io/post/gluon-study/</id>
         <link href="https://DragonFive.github.io/post/gluon-study/">
         </link>
@@ -1985,63 +2002,6 @@ fig.savefig(&quot;&quot;)
 <h1 id="reference">reference</h1>
 <p><a href="https://groups.google.com/a/tensorflow.org/forum/#!topic/discuss/TX32t7NHkpA">google group, kl 散度 讨论</a></p>
 <p><a href="https://stackoverflow.com/questions/41863814/kl-divergence-in-tensorflow">KL Divergence in TensorFlow</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CNN中卷积计算的内存和速度优化]]></title>
-        <id>https://DragonFive.github.io/post/cnn-improve/</id>
-        <link href="https://DragonFive.github.io/post/cnn-improve/">
-        </link>
-        <updated>2017-09-20T02:31:37.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: CNN中卷积计算的内存和速度优化</p>
-<p>date: 2017/9/20 12:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>网络优化</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
-<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
-<h1 id="以往的卷积计算方法">以往的卷积计算方法</h1>
-<h2 id="sum循环法">sum循环法</h2>
-<p>时间复杂度最高，为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>H</mi><mi>W</mi><mi>M</mi><mi>K</mi><mi>K</mi><mi>C</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(HWMKKC)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span> 最笨的方法，只是用来理解。</p>
-<pre><code>input[C][H][W];
-kernels[M][K][K][C];
-output[M][H][W];
-for h in 1 to H do
-	for w in 1 to W do
-		for o in 1 to M do
-			sum = 0;
-			for x in 1 to K do
-				for y in 1 to K do
-					for i in 1 to C do
-						sum += input[i][h+y][w+x]
-						*kernels[o][x][y][i];
-			output[o][w][h] = sum;
-</code></pre>
-<h2 id="patch-building-dnn-convolution-algorithms">patch-building DNN convolution algorithms</h2>
-<p>based on gemm convolution algorithm</p>
-<p>优点是：比较简单，方便理解和计算</p>
-<p>缺点是：需要大量的内存做中间存储</p>
-<h3 id="im2col过程">im2col过程</h3>
-<p>图片来自 ：贾扬清的demo convolution in caffe<br>
-<a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1" loading="lazy"><br>
-把卷积的第一个感受野里的矩阵转化成一个vector，并把各个channel的feature连接起来。<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2" loading="lazy"><br>
-随着划窗的进行，把接下来的窗口都转化乘vector,并排放在下面<br>
-<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3" loading="lazy"></p>
-<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4" loading="lazy"><br>
-最后把有Cout个卷积核，每个卷积核有C个channel,那么转化乘Cout行的vector组。最后卷积就编程矩阵乘法了。</p>
-<h2 id="各种方法占用内存量">各种方法占用内存量</h2>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here" loading="lazy"></figure>
-<h1 id="reference">reference</h1>
-<p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
 ]]></content>
     </entry>
 </feed>

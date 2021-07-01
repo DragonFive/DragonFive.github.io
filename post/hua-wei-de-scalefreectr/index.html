@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625143965108">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625145490492">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625143965108" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625145490492" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -132,23 +132,7 @@
 在CPU中通过 虚拟sparse id op 来减少host-gpu 和gpu-gpu 的数据传输量，使用 mixcache 实验特征预取来减少传输延迟，使用3级pipeline 来减少整体训练时长。</p>
 <p>系统将会在MindSpore 上开源，现在看似乎还没有开源。</p>
 <h1 id="二-相关工作">二、相关工作</h1>
-<h2 id="一业界前沿">（一）业界前沿</h2>
-<p>为了充分利用GPU的能力和高速带宽<br>
-英伟达的 hugeCtr 和 脸书 的 DLRM 把emb参数分成不同的份放在GPU HMB中，需要需要昂贵的GPU，不实用。<br>
-腾讯的DES 和 百度的 HierPs 使用主存保存emb ，DES采用 field-aware 分片策略来reduce(减少or规约)GPU间的数据通信，但没有进行主存和GPU之间通信优化。<br>
-HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输延时。</p>
-<p>Tensorflow, MxNet 和 PyTorch 并不能很好的支持大规模embedding的训练:</p>
-<ul>
-<li>PyTorch 中没有官方支持的ps</li>
-<li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
-<li>tensorflow 使用它的ps后吞吐会严重下降</li>
-</ul>
-<p>为了提升tensorflow, money, pytorch较差的分布式性能，百度的horovod和字节的byteps 都支持不同的平台:</p>
-<ul>
-<li>horovod 使用百度的Ring-AllReduce实现来加速dense模型的训练</li>
-<li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
-</ul>
-<h2 id="二论文介绍的跟sfctr无关但挺有用的经验知识">（二）论文介绍的跟SFCTR无关，但挺有用的经验知识</h2>
+<h2 id="一论文介绍的跟sfctr无关但挺有用的经验知识">（一）论文介绍的跟SFCTR无关，但挺有用的经验知识</h2>
 <p>为了提高训练效率，有两种通用的做法：</p>
 <ol>
 <li>增量学习（batch训练的补充，用最近的数据更新模型）</li>
@@ -261,9 +245,9 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 
         
           <div class="next-post">
-            <a class="purple-link" href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
+            <a class="purple-link" href="https://DragonFive.github.io/post/ye-jie-ctr-shen-du-xue-xi-kuang-jia-de-yi-xie-xin-de-jin-zhan/">
               <h3 class="post-title">
-                下一篇：百度的《AIBox: CTR Prediction Model Training on a Single Node》
+                下一篇：业界CTR深度学习框架的一些新的进展 
               </h3>
             </a>
           </div>
