@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-01T12:41:32.006Z</updated>
+    <updated>2021-07-01T12:51:28.597Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -169,6 +169,119 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 <p>但如果都在本地更新，那不同worker之间参数同步就会比较麻烦，所以缓存预取、更新后缓存失效再回传的机制必然依赖多机间 RDMA  单机allreduce 同步通信技术，ps存在的意义不大</p>
 </li>
 </ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[百度的《AIBox: CTR Prediction Model Training on a Single Node》]]></title>
+        <id>https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/</id>
+        <link href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
+        </link>
+        <updated>2021-02-25T12:43:07.000Z</updated>
+        <content type="html"><![CDATA[<p>AIBox 是百度提出的训练框架，论文 AIBox: CTR Prediction Model Training on a Single Node 进行了相关介绍。</p>
+<h1 id="一-aibox-的技术创新及优势">一、AIBox 的技术创新及优势</h1>
+<p>创新点与动机：<br>
+AIBox 的核心想法就是想在一台机器上用GPU加速训练，但是参数实在太大了，所以就把计算密集的模型运算部分（joint learning）放在GPU完成，把取embedding 部分放在cpu部分完成(embedding learning)，这就是AiBox 的第一个创新：把网络切分为两部分。</p>
+<p>但即便主存用了1TB 的内存，embedding 还是太大了，10^12 个key，每个key 的 weight 即使用8个字节存，key用8个字节存，也需要1.6TB , 所以论文提出了第二个创新：把embedding 存在SSD上，同时为了降低延迟和减少写操作对ssd寿命的影响，建立了二级缓存机制。</p>
+<p>为了提高速度，AIBOX使用了流水线，把从hdfs 读数据(socket IO)，从SSD查Embedding （SSD io） 和 cpu+gpu 计算组成3阶段的 pipeline</p>
+<p>优势：<br>
+AIBOX不存在像分布式系统普遍存在的网络通信开销问题，然后在系统稳定性方面AIBOX与具有数千台机器的分布式集群相比更加稳定不会轻易宕机，而且在同步开销方面AIBOX只是涉及到一些内存锁和GPU片之间的少量通信。</p>
+<h1 id="二-关于网络结构切分">二、关于网络结构切分</h1>
+<p>the first module focuses on the embedding learning with high-dimensional &amp; sparse features and the second module is for joint learning with dense features resulted from the first module.</p>
+<p>The embedding learning is processed on CPUs to help learn low dimensional dense embedding representations.</p>
+<p>By transferring the learned embedding vectors from CPUs to GPUs, the computation-intensive joint learning module can make full use of the powerful GPUs for CTR prediction.</p>
+<p>CPU 部分把数据从稀疏特征转化成 embedding （embedding learning），然后把embedding 传到 GPU，GPU进行一轮训练 (joint learning)</p>
+<p>论文这部分讲了一些网络的设计细节，但这块感觉跟 AIBox本身没什么关系，论文写到：</p>
+<p>把第一隐含层和最后一层隐含层的结果合并起来，第一层包含了low-level 的与输入信息最相关的feature，最后一层包含了high-level 的最抽象和有用的信息。这样会得到更准确的CTR预估结果。</p>
+<p>训练两阶段(cpu+gpu)，梯度更新也是两阶段(gpu+cpu)。</p>
+<h1 id="三-aibox-架构划分">三、AIBox 架构划分</h1>
+<p><strong>架构：</strong><br>
+分为三部分：CPU、GPU和 sparse table buff</p>
+<ul>
+<li>
+<p>cpu模块：协调调度和embedding学习<br>
+从hdfs读数据(一个pass)，向Sparse Table模块查embedding，然后发给GPU<br>
+拿到gpu传来的梯度，更新sparse table<br>
+定期save ckpt 到 hdfs</p>
+</li>
+<li>
+<p>sparse table：把10^12 的离散特征的数据存储到ssd上的kv系统里<br>
+内存中的key hash 索引存了特征到文件的映射关系，<br>
+in-memory cache strategy 构造cache 和 buffer 来减少延迟</p>
+</li>
+<li>
+<p>gpu模块：联合学习<br>
+cpu传来的 embedding 被放入 HBMs 中，然后被fed 给 dense 联合学习网络<br>
+emb通过pci-e总线进行传输<br>
+一个CUDA stream进行数据传输，另一个cuda stream 进行学习计算<br>
+HBMs如同片上ps一样工作，<br>
+每个pass 在每个gpu 上计算新的参数，各gpu通过NVLink进行同步</p>
+</li>
+</ul>
+<p><strong>3阶段流水线：network, SSDs and CPUs + GPUs</strong></p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625143570973.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625143575338.png" alt="" loading="lazy"></figure>
+<h1 id="四-sparsetable-架构">四、sparseTable 架构</h1>
+<p>由两部分构成：key hash index and bi-level cache management</p>
+<h2 id="一key-hash-index">（一）key hash index</h2>
+<p>Key Hash Index 存的是 10^12 个 feature key 到 ssd 文件的映射关系，直接每个key 存一个文件需要1.6TB大小的内存，放不下。</p>
+<p>通过对key 取模进行分组建立 group 与 file 的对应关系，放在内存中。</p>
+<p>group(key) → key mod 1012/m. We set m = ⌊BLOCK/(8 + sizeof(value))⌋,其中Block 是每次从ssd取数据的最小单元。</p>
+<p>hash函数可以通过预训练一个模型来最大化feature 共现，把共现的feature 分到同样的桶里面。</p>
+<h2 id="二二级缓存机制">（二）二级缓存机制</h2>
+<p>ssd 的延迟是内存的1000倍，ssd是微秒级别延迟，内存是纳秒级别延迟</p>
+<p>在一个 pass of mini batch 中只有1%的参数会被用到，所以我们可以用in-memory cache 来存储高频访问的hot parameters</p>
+<p>SSD有物理性能限制：每个存储单元只能被写入（擦除）数千次，cache机制可以作为参数缓存，来减少更新参数对SSD使用寿命的影响</p>
+<p>使用两个分离的链表进行拉链来提升探测性能。对每个ssd文件使用Bloom filter来减少不必要的读取。</p>
+<p><strong>第一级缓存</strong></p>
+<p>使用 si =hash1(g_id) 来算出一个 cache slot 槽，对应一个ssd 文件，对于参数并未进行真正初始化，而是在第一次访问到参数的时候，先用 bloom filter 探测key 是否在 slot 集合里，如果不在就不用读取这个文件，而是直接使用默认值，以此来减少不必要的ssd读取。</p>
+<p><strong>二级缓存</strong></p>
+<p>hash2(g_id, bucket)</p>
+<p>对 一级的槽进行分桶bucket，来使得拉的链比较短。bucket 参数通过调节可以权衡空间和探测效率</p>
+<p><strong>两条拉链</strong></p>
+<ul>
+<li>LRU 链用于保存最近访问过的key，以此来减少探测次数</li>
+<li>LFU链按访问频次来保存key，用于缓存管理，只有当LFU满了需要删除低频key时，相应的数据才会写回到ssd上面</li>
+</ul>
+<p>由于经常有链条中的节点进行增删，所以使用线程池以Slab memory allocation mechanism机制 进行管理。</p>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1625143705399.png" alt="" loading="lazy"></figure>
+<p><strong>文件管理系统</strong><br>
+batch产生的小文件对于先有的文件系统有很大的压力，把许多小文件组成一个组来创建较少的文件。小文件的名字由大文件的名字加上offset构成，保存在第一级cache slot 中</p>
+<p>监控文件系统的大小，合并访问量少的小问题，当model_size 达到最大冗余度的时候删掉访问少的文件，MAX_REPLICATION=SSD capacity ∗ (85% + overprovisioning)/model size<br>
+<img src="https://DragonFive.github.io//post-images/1625143710125.png" alt="" loading="lazy"></p>
+<h1 id="五-实验部分">五、实验部分</h1>
+<p><strong>实验</strong><br>
+AIBox 8 个GPU， 服务器级别的cpu, 1T 内存，Raid 0 nvme ssd<br>
+MPI集群方式用75个计算节点</p>
+<ul>
+<li>
+<p>AIBox 的硬件和维护费用比集群训练方式少 10%，执行时间多25%</p>
+</li>
+<li>
+<p>AIBox 的auc 比集群方式稍好，可能是因为AIBox 这种单节点的方式，同步参数频率更高</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1625143749656.png" alt="" loading="lazy"></figure>
+<p>六、总结与一些细节问题：<br>
+论文介绍了 AIBox 架构的一些细节方面，借助一系列系统设计方案如缓存机制来解决问题，通过这些并不是很fashion的技术合并，论文实现了集中式训练的技术突破，这种通过技术积累然后撬动难题的解决问题的方式值得我们学习。</p>
+<p>但是还有一些细节没有讲清楚：</p>
+<ol>
+<li>
+<p>AIBox 有几个worker 进行工作，他们是数据并行，还是使用同样的数据进行训练（文中提到AIBox 会在每个pass of mini batch 进行同步，所以应该不是一个worker 在参与训练）</p>
+</li>
+<li>
+<p>AIBox 使用集中的训练方式，那如果这台机器挂掉，是不是根本没有办法进行恢复，只能另找一个机器从 ckpt 训练</p>
+</li>
+<li>
+<p>文章没有介绍使用的具体计算引擎 (怀疑跟 horovod 接近）</p>
+</li>
+<li>
+<p>同样文章没有介绍参数同步的细节，没有相关 all_reduce 的介绍（可以是使用了一个开源的框架，而这部分论文没有进行改进，所以没有做深入介绍）</p>
+</li>
+<li>
+<p>文章开头提到使用 in-HBM ps 来减少数据传输，但是后面没有详细进行介绍</p>
+</li>
+</ol>
+<p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
 ]]></content>
     </entry>
     <entry>
@@ -1929,169 +2042,6 @@ for h in 1 to H do
 <figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here" loading="lazy"></figure>
 <h1 id="reference">reference</h1>
 <p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[c++ 的类型回顾]]></title>
-        <id>https://DragonFive.github.io/post/cpp-innnertype/</id>
-        <link href="https://DragonFive.github.io/post/cpp-innnertype/">
-        </link>
-        <updated>2017-09-10T04:13:39.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>Title: c++ 的类型回顾<br>
-date: 2017/9/10 17:38:58<br>
-categories:</p>
-<ul>
-<li>编程<br>
-tags:</li>
-<li>cpp</li>
-<li>类型</li>
-</ul>
-<hr>
-<p>C++标准规定了每个算术类型的最小存储空间，但它并不阻止编译器使用更大的存储空间。事实上，对于 int 类型，几乎所有的编译器使用的存储空间都比所要求的(16字节)大。</p>
-<h1 id="c语言和c的内存管理">c语言和c++的内存管理</h1>
-<p><a href="https://www.cnblogs.com/JCSU/articles/1051579.html">c语言和c++的内存管理 </a></p>
-<ul>
-<li>c语言分四个区：堆，栈，全局区和常量区</li>
-<li>c++分五个区: 堆、栈、全局区、常量区和自由存储区<br>
-c++的自由存取区类似于c语言的堆，存放的是malloc创建的内存，</li>
-</ul>
-<h1 id="基本类型">基本类型</h1>
-<p><strong>字符类型</strong><br>
-字符类型有两种：char 和 wchar_t。char 类型保证了有足够的空间，能够存储机器基本字符集中任何字符相应的数值，因此，char 类型通常是单个机器字节（byte）。wchar_t 类型用于扩展字符集，比如汉字和日语，这些字符集中的一些字符不能用单个 char 表示。<br>
-<strong>整数型</strong><br>
-short、int 和 long 类型都表示整型值，存储空间的大小不同。一般， short类型为半个机器字长，int 类型为一个机器字长，而 long 类型为一个或两个机器字长（在 32 位机器中 int 类型和 long 类型通常字长是相同的）。<br>
-<strong>浮点型</strong><br>
-对于实际的程序来说，float 类型精度通常是不够的——float 型只能保证 6 位有效数字，而 double 型至少可以保证 10 位有效数字，能满足大多数计算的需要。</p>
-<h1 id="字面量">字面量</h1>
-<p>只有<strong>内置类型存在字面值</strong>，没有类类型的字面值。因此，也没有任何标准库类型的字面值。<br>
-<strong>整型字面值</strong><br>
-整型字面量可以有三种进制的表示：十进制、八进制和十六进制。以 0（零）开头的字面值整数常量表示八进制，以 0x 或 0X 开头的表示十六进制。</p>
-<p>字面值整数常量的类型默认为 int 或 long 类型。其精度类型决定于字面值——其值适合 int 就是 int 类型，比 int 大的值就是 long 类型。通过<strong>增加后缀</strong>，能够强制将字面值整数常量转换，在数值后面加 L 或者 l（字母“l”大写或小写）指定常量为 long 类型。在数值后面加 U 或 u 定义 unsigned 类型。同时加 L 和 U就能够得到 unsigned long 类型的字面值常量 。</p>
-<p>用十进制或者科学计数法来表示浮点字面值常量。使用科学计数法时，指数用 E 或者 e 表示。默认的浮点字面值常量为 double 类型。在数值的后面加上 F 或 f 表示单精度。同样加上 L 或者 l 表示扩展精度.  1e-3f  表示的是0.001.<br>
-<strong>字符型字面量</strong><br>
-在字符字面值前加 L 就能够得到 wchar_t类型的宽字符字面值。L'a'<br>
-<strong>字符串字面值</strong><br>
-字符串字面值常量用双引号括起来的零个或者多个字符表示。为了兼容 C 语言，C++ 中所有的字符串字面值都由<em>编译器</em>自动在末尾添加一个空字符。&quot;A&quot; 表示包含字母 A 和空字符两个字符的字符串。 也存在宽字符串字面值，一样在前面加“L”，如 L&quot;a wide string literal&quot;宽字符串字面值是一串常量宽字符，同样以一个宽空字符结束。</p>
-<p>两个相邻的仅由空格、制表符或换行符分开的字符串字面值（或宽字符串字面值），可连接成一个新字符串字面值。这使得多行书写长字符串字面值变得简单：</p>
-<pre><code class="language-CPP">string a = &quot;123&quot;
-           &quot;456&quot;;
-</code></pre>
-<h1 id="变量">变量</h1>
-<p><strong>变量名规则</strong><br>
-变量名必须以字母或下划线开头，并且区分大小写字母。<code>char _；</code><br>
-<strong>初始化多个变量</strong><br>
-当一个定义中定义了两个以上变量的时候，每个变量都可能有自己的初始化式。 对象的名字立即变成可见，所以可以用同一个定义中前面已定义变量的值初始化后面的变量。</p>
-<pre><code class="language-CPP">double salary = 9999.99, wage(salary + 0.01); 
-</code></pre>
-<p>内置类型的变量只有在全局定义时才会被自动初始化为0， 而类的对象定义时如果没有指定构造函数，不管是全局定义还是局部定义都会调用默认构造函数。</p>
-<h1 id="引用类型">引用类型</h1>
-<p>引用(非const型)必须用与该引用同类型的对象初始化。<br>
-<strong>定义多个引用</strong><br>
-在一行中定义多个引用时，每个名字签名前都必须带&amp;，这一点与指针相似，因为它们都是复合类型</p>
-<pre><code class="language-CPP">int i=1024, j=2048;
-int &amp;a=i, &amp;b=j;
-</code></pre>
-<p><strong>const引用</strong><br>
-const引用是指向const对象的引用，不能用非const引用指向const对象，const引用当然也可以指向非const对象的引用。</p>
-<blockquote>
-<p>非const引用只能绑定到与该引用同类型的对象。const引用则可以绑定到不同但相关类型的对象（多态或支持隐式类型转换）或绑定到字面值常量上（这就是有限的两个引用不同类型的例子）。</p>
-</blockquote>
-<pre><code class="language-cpp">const int a = 1;
-int b = 2;
-int &amp;c=a; //会报错
-const int &amp;d=b ; //正确
-const int &amp;e = a; //正确
-const int &amp;f = 1; // 正确
-int &amp;g = 1; // 错误
-auto &amp;h=a; //正确 auto会保留底层const 
-auto &amp;i=b; // 正确
-auto &amp;j=1; //错误，字面值需要指明const
-const auto &amp;k=1; //正确
-</code></pre>
-<p>对比，最后两个表达式，我们知道编译器可以从右值的对象中推断出底层const，却无法从字面量中推出，所以字面量必须显式指出const auto；</p>
-<p>当指向不同类型的对象时，会临时创建一个对象进行类型转换。</p>
-<h1 id="指针类型">指针类型</h1>
-<p><strong>指针与引用的区别</strong></p>
-<ol>
-<li>指针是一个对象，所以可以有赋值、取地址等操作，所以可以有指向指针的引用。</li>
-<li>不强制必须初始化</li>
-</ol>
-<p>除了两种例外情况外，其它所有指针的类型都要和它所指向的对象严格匹配<br>
-例外1. const对象的指针指向同类型的非const对象（比引用严格，引用可以不同类型）<br>
-例外2. 多态的场合</p>
-<p><strong>空指针</strong><br>
-c++11建议 使用字面值常量nullptr来将一个指针初始化为空指针</p>
-<pre><code class="language-cpp">int *a=nullptr;
-</code></pre>
-<p>等价于 int *a=0;<br>
-以前的程序用的NULL其实是一个预处理变量，这个变量定义在头文件cstdlib中，<br>
-c++建议初始化所有的指针，而常量指针在定义的时候必须初始化。</p>
-<h1 id="class与-struct">class与 struct</h1>
-<blockquote>
-<p>用class和struct关键字定义类的唯一差别在于默认访问级别：默认情况下，struct的成员为public，而class的成员为private——《c++ primer》</p>
-</blockquote>
-<p><strong>类的定义</strong><br>
-类的定义可以放在头文件里面。</p>
-<blockquote>
-<p>头文件一般不包含定义，只包含extern 变量的声明和函数的声明。有三个例外：类的定义、值在编译时就知道的const对象和inline函数——《c++ primer》</p>
-</blockquote>
-<p>当我们在头文件中定义了const变量后，每个包含这个头文件的源文件都有了自己的const变量，当该const变量是用常量表达式初始化时，编译器在编译时会用常量表达式替换这些const变量，所以不会为每个源文件创建const对象的存储空间。而当是用函数返回值或其它内容对const变量进行初始化时，编译期间并不知道其值，所以就必须为其分配存储空间，同时该const变量也不能定义在头文件中。</p>
-<h1 id="类型别名">类型别名</h1>
-<p>typedef和using都能定义类型别名</p>
-<pre><code class="language-CPP">typedef double wages;
-using wages=double;
-</code></pre>
-<p>如果某个类型别名指代的是符合类型或常量，那么把它用到声明语句中就会产生意想不到的后果。</p>
-<pre><code class="language-CPP">char tmp='a';
-typedef char *  pstring;
-const pstring cstr=&amp;tmp;
-*cstr='b';
-cstr=nullptr;
-pstring const cstr2=&amp;tmp;
-*cstr2='b';
-cstr2=nullptr;
-</code></pre>
-<p>其实cstr1和cstr2是同样类型的对象。</p>
-<h1 id="auto">auto</h1>
-<blockquote>
-<p>C++ 是静态类型（statically typed）语言，在编译时执行类型检查。结果是程序中使用某个名字之前，必须先告知编译器该名字的类型——《c++ primer》</p>
-</blockquote>
-<p>auto的对象必须初始化，auto能在一条语句中，声明多个变量。一条声明语句只能由一个基本数据类型。auto可以推断出指针，却推不出引用，必须用auto &amp;来定义一个引用。</p>
-<pre><code class="language-cpp">auto i = 0, *p = &amp;i;
-</code></pre>
-<p>auto的对象的类型有时候会和初始值的类型不完全一致<br>
-<strong>auto与引用</strong><br>
-当用来为auto对象初始化的值是引用类型的时候，auto对象的类型是真正参与初始化的对象的值。<br>
-设置一个类型为auto的引用时，初始值终点顶层常量属性仍然保留</p>
-<pre><code class="language-cpp">const int a = 0;
-int b = 0;
-auto &amp;b = a; // b是const int 类型的引用
-auto c = a;   // c是int类型
-auto *d = &amp;a, &amp;e = b; // 编译出出错，因为&amp;a是const int的地址，而b是int
-
-</code></pre>
-<p><strong>auto与const</strong><br>
-auto一般会忽略掉顶层const，同时底层const会被保留，比如当初始值是一个指向常量的指针时。</p>
-<pre><code class="language-cpp">const int ci = 0, &amp;cr = ci; 
-auto a = &amp;ci; // 这时候a是const int * 类型的
-auto b = cr; // b是int类型的 
-auto &amp;c = ci; // c是const int &amp; 类型的，因为是底层const 
-
-</code></pre>
-<p>如果希望推断出的auto类型是一个顶层const，则需要明确指出。</p>
-<pre><code class="language-cpp">const auto f = ci;
-
-</code></pre>
-<h1 id="decltype">decltype</h1>
-<p>c++11 引入了第二种类型说明符 decltype，它的作用是返回表达式返回值的类型，但是不会实际计算表达式的值。</p>
-<p>decltype 遇到解引用操作将返回引用类型，引用类型的变量定义的时候必须初始化</p>
-<pre><code class="language-cpp">int a;
-int *p=&amp;a;
-decltype(*p) c=a; //注意这里必须初始化
-
-</code></pre>
-<p>decltype与变量，decltype((var))返回的是引用类型，decltype(var)返回的是正常类型。</p>
 ]]></content>
     </entry>
 </feed>
