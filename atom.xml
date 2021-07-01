@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-01T12:40:06.765Z</updated>
+    <updated>2021-07-01T12:41:32.006Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -11,7 +11,7 @@
     <icon>https://DragonFive.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, dragon</rights>
     <entry>
-        <title type="html"><![CDATA[华为的ScaleFreeCTR ]]></title>
+        <title type="html"><![CDATA[华为的ScaleFreeCTR:a MixCache-based distributed training system for CTR]]></title>
         <id>https://DragonFive.github.io/post/hua-wei-de-scalefreectr/</id>
         <link href="https://DragonFive.github.io/post/hua-wei-de-scalefreectr/">
         </link>
