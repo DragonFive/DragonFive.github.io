@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>分布式架构：ring all-reduce算法 | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625210309701">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625210309701" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">分布式架构：ring all-reduce算法</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-07-02</span>
+            
+          </div>
+          <div class="post-content">
+            <blockquote>
+<p>注：本文内容多参考自 <a href="https://zhuanlan.zhihu.com/p/56991108">一文说清楚Tensorflow分布式训练必备知识 - 知乎</a></p>
+</blockquote>
+<p>PS架构中，当worker数量较多时，ps节点的网络带宽将成为系统的瓶颈。</p>
+<p>AllReduce 架构是指不带有参数服务器的分布式集群架构。在该架构中，集群中的所有节点都作为 worker 来执行计算操作，该架构会在每个 batch 训练完成后使用 AllReduce 算法在所有 worker 节点间进行模型变量的同步更新。</p>
+<p>目前应用于深度学习的 AllReduce 算法有多种，如 Ring AllReduce 以及 NCCL 等</p>
+<p>传统的同步更新方法（各个gpu卡算好梯度，求和算平均的方式），在融合梯度时，会产生巨大的通信数据量，这种通信压力往往在模型参数量很大时，显得很明显。因此我们需要找到一种方法，来解决同步更新的网络瓶颈问题。其中最具代表性的一种方法就是：ring all-reduce。</p>
+<p>Ring AllReduce架构中各个设备都是worker，没有中心节点来聚合所有worker计算的梯度。Ring AllReduce算法将 device 放置在一个逻辑环路（logical ring）中。每个 device 从上行的device 接收数据，并向下行的 deivce 发送数据，因此可以充分利用每个 device 的上下行带宽。</p>
+<figure data-type="image" tabindex="1"><img src="https://flomo.oss-cn-shanghai.aliyuncs.com/file/2021-07-02/32821/a35b8c839e5f9c0a9853cc98c5453b9e.png" alt="图片来自知乎-杨旭东" loading="lazy"></figure>
+<p>梯度融合过程分为两阶段：</p>
+<ol>
+<li>
+<p>Scatter Reduce：在这个 Scatter Reduce阶段，GPU 会逐步交换彼此的梯度并融合，最后每个 GPU 都会包含完整融合梯度的一部分</p>
+</li>
+<li>
+<p>Allgather：GPU 会逐步交换彼此不完整的融合梯度，最后所有 GPU 都会得到完整的融合梯度</p>
+</li>
+</ol>
+<p>使用 Ring Allreduce 算法进行某个稠密梯度的平均值的基本过程如下：</p>
+<p>将每个设备上的梯度 tensor 切分成长度大致相等的 num_devices 个分片；</p>
+<p>ScatterReduce 阶段：通过 num_devices - 1 轮通信和相加，在每个 device 上都计算出一个 tensor 分片的和；</p>
+<p>AllGather 阶段：通过 num_devices - 1 轮通信和覆盖，将上个阶段计算出的每个 tensor 分片的和广播到其他 device；</p>
+<p>在每个设备上合并分片，得到梯度和，然后除以 num_devices，得到平均梯度；</p>
+<p>以 4 个 device上的梯度求和过程为例：</p>
+<p>ScatterReduce 阶段：</p>
+<figure data-type="image" tabindex="2"><img src="https://flomo.oss-cn-shanghai.aliyuncs.com/file/2021-07-02/32821/5db30ccec04cc0cb08d547fd89e42022.png" alt="图片来自知乎-杨旭东" loading="lazy"></figure>
+<p>经过 num_devices - 1 轮后，每个 device 上都有一个 tensor 分片进得到了这个分片各个 device 上的和；</p>
+<p>AllGather 阶段：</p>
+<figure data-type="image" tabindex="3"><img src="https://flomo.oss-cn-shanghai.aliyuncs.com/file/2021-07-02/32821/05493e10065ea1d444da13f1f354798a.png" alt="图片来自知乎-杨旭东" loading="lazy"></figure>
+<p>经过 num_devices - 1 轮后，每个 device 上都每个 tensor 分片都得到了这个分片各个 device 上的和；</p>
+<p>相比PS架构，Ring Allreduce架构是带宽优化的，因为集群中每个节点的带宽都被充分利用。此外，在深度学习训练过程中，计算梯度采用BP算法，其特点是后面层的梯度先被计算，而前面层的梯度慢于前面层，Ring-allreduce架构可以充分利用这个特点，在前面层梯度计算的同时进行后面层梯度的传递，从而进一步减少训练时间。Ring Allreduce的训练速度基本上线性正比于GPUs数目（worker数）。</p>
+<p>通信代价分析：每个 GPU 在Scatter Reduce 阶段，接收 N-1 次数据，N 是 GPU 数量；每个 GPU 在allgather 阶段，接收 N-1 次 数据；每个 GPU 每次发送 K/N 大小数据块，K 是总数据大小；所以，Data Transferred=2(N−1)*K/N ，随着 GPU 数量 N 增加，总传输量恒定。也就是理论上，随着gpu数量的增加，ring all-reduce有线性加速能力。</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/69797852">浅谈Tensorflow分布式架构：ring all-reduce算法 - 知乎</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/56991108">一文说清楚Tensorflow分布式训练必备知识 - 知乎</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/34172340">【第一期】AI Talk：TensorFlow 分布式训练的线性加速实践 - 知乎</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/79030485">腾讯机智团队分享--AllReduce算法的前世今生 - 知乎</a></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/hua-wei-de-scalefreectr/">
+              <h3 class="post-title">
+                下一篇：华为的《ScaleFreeCTR:a MixCache-based distributed training system for CTR》
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
