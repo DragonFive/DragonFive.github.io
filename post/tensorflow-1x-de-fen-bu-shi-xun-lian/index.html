@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625210309701">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625210440480">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625210309701" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625210440480" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -127,7 +127,7 @@
 <h1 id="tensorflow-1-分布式架构">tensorflow 1 分布式架构</h1>
 <p>2017年2月百度在PaddlePaddle平台上首次引入了ring-allreduce的架构，随后将其提交到tensorflow的contrib package中。同年8月，Uber为tensorflow平台开源了一个更加易用和高效的ring allreduce分布式训练库Horovod。<br>
 最后，tensorflow官方终于也在1.11版本中支持了allreduce的分布式训练策略CollectiveAllReduceStrategy，其跟estimator配合使用非常方便，只需要构造tf.estimator.RunConfig 对象时传入CollectiveAllReduceStrategy参数即可。</p>
-<p>关于 ring-allreduce 之前总结在 <a href="yyy">xxx</a>。</p>
+<p>关于 ring-allreduce 之前总结在 <a href="https://dragonfive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/">分布式架构：ring all-reduce算法</a>。</p>
 <h2 id="使用-tensorflow-estimator-api-来编写分布式训练代码">使用 TensorFlow Estimator API 来编写分布式训练代码</h2>
 <p>要让tensorflow分布式运行，首先我们需要定义一个由参与分布式计算的机器组成的集群，如下：</p>
 <pre><code class="language-py">cluster = {'chief': ['host0:2222'], 'ps': ['host1:2222', 'host2:2222'], 'worker': ['host3:2222', 'host4:2222', 'host5:2222']}
@@ -154,9 +154,9 @@ os.environ['TF_CONFIG'] = json.dumps( {'cluster': cluster, 'task': {'type': 'eva
 
         
           <div class="next-post">
-            <a class="purple-link" href="https://DragonFive.github.io/post/deeplearning-parrel/">
+            <a class="purple-link" href="https://DragonFive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/">
               <h3 class="post-title">
-                下一篇：深度学习框架的并行优化方法小结
+                下一篇：分布式架构：ring all-reduce算法
               </h3>
             </a>
           </div>
