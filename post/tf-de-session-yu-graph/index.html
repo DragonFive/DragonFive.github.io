@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625232336482">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625232582907">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625232336482" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625232582907" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -186,7 +186,7 @@ class Graph(object):
 使用name_scope对graph中的节点进行层次化管理，上下层之间通过斜杠分隔。</p>
 <h1 id="后端graph">后端Graph</h1>
 <h2 id="graph-2">Graph</h2>
-<pre><code class="language-python">class Graph {
+<pre><code class="language-cpp">class Graph {
      private:
       // 所有已知的op计算函数的注册表
       FunctionLibraryDefinition ops_;
@@ -214,7 +214,7 @@ class Graph(object):
 </code></pre>
 <p>后端中的Graph主要成员也是节点node和边edge。节点node为计算算子Operation，边为算子所需要的数据，或者代表节点间的依赖关系。这一点和Python中的定义相似。边Edge的持有它的源节点和目标节点的指针，从而将两个节点连接起来。</p>
 <h2 id="edge">Edge</h2>
-<pre><code class="language-python">class Edge {
+<pre><code class="language-cpp">class Edge {
      private:
       Edge() {}
 
@@ -239,7 +239,7 @@ class Graph(object):
 </code></pre>
 <p>Edge既可以承载tensor数据，提供给节点Operation进行运算，也可以用来表示节点之间有依赖关系。对于表示节点依赖的边，其src_output_, dst_input_均为-1，此时边不承载任何数据。</p>
 <h2 id="node">Node</h2>
-<pre><code class="language-python">class Node {
+<pre><code class="language-cpp">class Node {
  public:
     // NodeDef,节点算子Operation的信息，比如op分配到哪个设备上了，op的名字等，运行时有可能变化。
   	const NodeDef&amp; def() const;
