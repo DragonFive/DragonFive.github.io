@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-02T07:20:43.050Z</updated>
+    <updated>2021-07-02T08:21:27.259Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -193,7 +193,7 @@ HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输
         <id>https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/</id>
         <link href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
         </link>
-        <updated>2021-02-25T12:43:07.000Z</updated>
+        <updated>2021-03-11T12:43:07.000Z</updated>
         <content type="html"><![CDATA[<p>AIBox 是百度提出的训练框架，论文 AIBox: CTR Prediction Model Training on a Single Node 进行了相关介绍。</p>
 <h1 id="一-aibox-的技术创新及优势">一、AIBox 的技术创新及优势</h1>
 <p>创新点与动机：<br>
@@ -299,6 +299,131 @@ MPI集群方式用75个计算节点</p>
 </li>
 </ol>
 <p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[tensorflow2.x 分布式训练]]></title>
+        <id>https://DragonFive.github.io/post/tensorflow2x-fen-bu-shi-xun-lian/</id>
+        <link href="https://DragonFive.github.io/post/tensorflow2x-fen-bu-shi-xun-lian/">
+        </link>
+        <updated>2020-06-24T07:41:26.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>去年五月份总了一些 tensorflow 1.x 分布式训练的一些知识（<a href="https://dragonfive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/">tensorflow 1.x 的分布式训练</a>）。最近总结了一些 tf2.x 的分布式训练相关知识。</p>
+</blockquote>
+<h1 id="tf2x-分布式训练策略">tf2.x 分布式训练策略</h1>
+<p>TensorFlow 的 tf.distribute 模块下包含有一系列分布式训练策略，它们都是基于数据并行模式实现的。有些策略目前还在 experimental 模块下，表示它们是实验性质的策略，未来可能会发生变动。</p>
+<p>训练分布式模型，只需要将原先的模型代码置于distribution Strategy的Scope()下，即可。</p>
+<pre><code class="language-py">import tensorflow as tf
+data_train, _ = tf.keras.datasets.mnist.load_data()
+dataset = tf.data.Dataset.from_tensor_slices(data_train) # 该处可接收numpy数组
+dataset = dataset.shuffle(buffer_size=60000) # 该处要大于data_train的长度
+dataset = dataset.batch(32)
+ 
+mirrored_strategy = tf.distribution.MirroredStrategy()
+ 
+# mirrored_strategy策略: 在每一个gpu上训练一个模型，每次更新时需要汇总所有gpu上的梯度。
+with mirrored_strategy.scope():
+  model = tf.keras.Sequential([...])
+# tf 2.0中，所有的optimizer都在tf.keras.optimizer下
+model.compile(optimizer=tf.keras.optimizer.adam(lr=...))， 
+              loss = &quot;sparse_categorical_crossentropy&quot;,
+              metrics = ['accuracy'])
+model.fit(dataset, epoch=5)
+</code></pre>
+<h1 id="单机多卡训练">单机多卡训练</h1>
+<h2 id="mirrored">Mirrored</h2>
+<p>MirroredStrategy 是一种单机的同步的分布式训练策略。它支持在一台机器的多个 GPU 之间进行分布式训练，它会在每个 GPU 上创建一个模型副本，模型中的每个变量 (Variables) 都会进行镜像复制并放置到相应的 GPU 上，这些变量被称作镜像变量 (MirroredVariable)。</p>
+<p>MirroredStrategy 策略通过 AllReduce 算法使得所有镜像变量在每个 GPU 之间保持同步更新， AllReduce 算法默认使用英伟达的 NcclAllReduce ，也可以通过 cross_device_ops 参数修改为其他的 AllReduce 算法，如 HierarchicalCopyAllReduce 。</p>
+<p>MirroredStrategy 策略会自动使用所有能被 TensorFlow 发现的 GPU 来做分布式训练，如果只想使用部分的 GPU 则可以通过 devices 参数来指定。</p>
+<p>MirroredStrategy 实例的创建代码如下所示：</p>
+<pre><code class="language-py">mirrored_strategy = tf.distribute.MirroredStrategy(
+    devices=[&quot;/gpu:0&quot;, &quot;/gpu:1&quot;],
+    cross_device_ops=tf.distribute.HierarchicalCopyAllReduce(),
+)
+
+</code></pre>
+<p>如果 TensorFlow 没有发现 GPU 则默认会退化为使用 CPU 来进行训练。 MirroredStrategy 的典型使用场景为单机多 GPU 。</p>
+<p><strong>MirroredStrategy 的步骤如下：</strong></p>
+<ul>
+<li>
+<p>训练开始前，该策略在所有 N 个计算设备上均各复制一份完整的模型；</p>
+</li>
+<li>
+<p>每次训练传入一个批次的数据时，将数据分成 N 份，分别传入 N 个计算设备（即数据并行）；</p>
+</li>
+<li>
+<p>N 个计算设备使用本地变量（镜像变量）分别计算自己所获得的部分数据的梯度；</p>
+</li>
+<li>
+<p>使用分布式计算的 All-reduce 操作，在计算设备间高效交换梯度数据并进行求和，使得最终每个设备都有了所有设备的梯度之和；</p>
+</li>
+<li>
+<p>使用梯度求和的结果更新本地变量（镜像变量）；</p>
+</li>
+<li>
+<p>当所有设备均更新本地变量后，进行下一轮训练（即该并行策略是同步的）。</p>
+</li>
+</ul>
+<h2 id="centralstorage">CentralStorage</h2>
+<p>CentralStorageStrategy 也是一种单机的同步的分布式训练策略。但与 MirroredStrategy 策略不同的是，它会将模型的所有变量保存在 CPU 内存上，而不是通过镜像复制的方式保存在每个 GPU 上，所有的计算操作则会在每个 GPU 上以同样的方式执行。</p>
+<p>如果机器只有一个 GPU ， 那么所有的变量和计算操作都会放在该 GPU 上。在对 CPU 上的变量进行更新前，该策略会先将所有 GPU 副本的上的变量梯度进行聚合，然后应用到 CPU 变量更新中。</p>
+<p>CentralStorageStrategy 实例的创建代码如下所示：</p>
+<pre><code class="language-py">central_storage_strategy = tf.distribute.experimental.CentralStorageStrategy()
+</code></pre>
+<p>CentralStorageStrategy 策略在 CPU 与 GPU 通信代价远低于 GPU 与 GPU 之间的通信代价时，较为适用，基本上很少会有这种情况出现。</p>
+<h1 id="多机训练策略">多机训练策略</h1>
+<h2 id="multiworkermirroredstrategy">MultiWorkerMirroredStrategy</h2>
+<p>MultiWorkerMirroredStrategy 策略因为要涉及到多个 worker 节点之间的通信交互，因此每个 worker 节点需要提前获知集群中各节点配置信息以便在变量更新时使用。</p>
+<p>TensorFlow 中定义集群配置信息的标准方式是使用 TF_CONFIG 环境变量来实现的，该环境变量定义了集群中所有节点的配置信息，包括所有 worker 节点的网络地址，当前 worker 节点的索引 (index) 以及当前 worker 节点的角色 (type)。</p>
+<p>示例如下:</p>
+<pre><code class="language-python">os.environ['TF_CONFIG'] = json.dumps({
+    'cluster': {
+        'worker': [&quot;localhost:20000&quot;, &quot;localhost:20001&quot;]
+    },
+    'task': {'type': 'worker', 'index': 0}
+})
+</code></pre>
+<p>TF_CONFIG 由 cluster 和 task 两部分组成：</p>
+<p>cluster 说明了整个多机集群的结构和每台机器的网络地址（IP + 端口号）。对于每一台机器，cluster 的值都是相同的；</p>
+<p>task 说明了当前机器的角色。例如， {'type': 'worker', 'index': 0} 说明当前机器是 cluster 中的第 0 个 worker（即 localhost:20000 ）。每一台机器的 task 值都需要针对当前主机进行分别的设置。</p>
+<p>以上内容设置完成后，在所有的机器上逐个运行训练代码即可。先运行的代码在尚未与其他主机连接时会进入监听状态，待整个集群的连接建立完毕后，所有的机器即会同时开始训练。</p>
+<p>MultiWorkerMirroredStrategy 策略与 MirroredStrategy 策略很相似，可以理解为是 MirroredStrategy 策略的多机的同步的分布式训练版本，它也会在每一台机器上创建所有变量的副本。</p>
+<p>多个 worker 节点之间使用 AllReduce 算法来保持模型变量的同步更新， TensorFlow 里将这一操作称为 CollectiveOps。 CollectiveOps 会在 TensorFlow 模型运行时自动根据硬件，网络拓扑以及张量的大小来自动选择合适的 AllReduce 算法来进行网络通信以完成变量更新。</p>
+<p>MultiWorkerMirroredStrategy 策略目前有两种可供选择的 CollectiveOps 。 一种为 CollectiveCommunication.RING ，它使用 gRPC 作为通信层实现了基于环的 AllReduce 操作。 另一种为 CollectiveCommunication.NCCL， 它使用了英伟达的 NCCL 库来实现 AllReduce 操作。在实际使用中，可以基于自己的运行环境选择合适的 CollectiveOps，或者使用 CollectiveCommunication.AUTO 交由 TensorFlow 运行时自行选择。</p>
+<p>MultiWorkerMirroredStrategy 实例的创建代码如下所示:</p>
+<pre><code class="language-python">multiworker_strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(
+    tf.distribute.experimental.CollectiveCommunication.RING)
+</code></pre>
+<p>如果所有 worker 节点都不包含 GPU ，则该策略会退化为使用 CPU 在多个 worker 节点间进行分布式训练。如果集群中的 worker 节点数量只有一个则该策略会退化为 MirroredStrategy 策略。</p>
+<h2 id="parameterserverstrategy">ParameterServerStrategy</h2>
+<p>ParameterServerStrategy 是一种多机的异步的分布式训练策略。所以它也需要提前指定 TF_CONFIG 环境变量信息，与 MultiWorkerMirroredStrategy 策略不同的是集群中的节点不全是 worker ，有一部分节点会被指定为 ps 用来存储变量信息。模型的每一个变量都会存储在一个 ps 节点上，所有的计算操作会在所有的 worker 节点上以同样的方式执行。 ParameterServerStrategy 实例的创建代码如下所示：</p>
+<pre><code class="language-python">ps_strategy = tf.distribute.experimental.ParameterServerStrategy()
+</code></pre>
+<h1 id="分布式集群定义">分布式集群定义</h1>
+<p>一个典型的 TF_CONFIG 环境变量的值如下所示：</p>
+<pre><code class="language-json">{
+  &quot;cluster&quot;: {
+    &quot;chief&quot;: [&quot;host1:port&quot;],
+    &quot;worker&quot;: [&quot;host2:port&quot;, &quot;host3:port&quot;],
+    &quot;ps&quot;: [&quot;host4:port&quot;],
+    &quot;evaluator&quot;: [&quot;host5:port&quot;]
+  },
+  &quot;task&quot;: {
+    &quot;type&quot;: &quot;worker&quot;,
+    &quot;index&quot;: 0
+  }
+}
+
+</code></pre>
+<p>chief 节点的作用和 worker 节点大致相同，不过它还会做一些额外的工作，比如保存检查点文件 (checkpoints) 以及为 Tensorboard 记录日志文件等，如果不指定 cheif 节点，则默认会以 worker 列表中的第一个节点作为 chief 节点； worker 节点用来执行训练操作； ps 节点用来存储变量，只有在使用 ParameterServerStrategy 训练策略时才需要指定； evaluator 用来执行交叉验证操作，一般也是在使用 ParameterServerStrategy 策略时才会指定。</p>
+<p>注意所有节点的 TF_CONFIG 环境变量中的 cluster 信息都是相同的，不同的地方在于 task 部分，而且所有角色 (task type) 的 index 必须从 0 开始，因为 TensorFlow 会根据该 index 从 cluster 下相应角色的列表中读取节点信息。</p>
+<p>TF_CONFIG 环境变量可以写入到系统的环境变量中，但前提是该物理节点上只会同时启动一个集群节点实例，在大多数情况下，我们会在 python 程序中通过 os.environ[&quot;TF_CONFIG&quot;] 来指定集群的信息以实现按需创建，TensorFlow 运行时会自动解析其中的信息并启动训练任务。</p>
+<h1 id="tf-集群分布式训练的难点">TF 集群分布式训练的难点</h1>
+<p>集群分布式训练的难点在于每个节点的 TF_CONFIG 环境变量的构建，因为我们不能在每次训练时都去手动指定 ip 和端口（还需确定该端口是否被占用），一两个节点还可以忍受，可如果同时运行多个训练任务，并且每个任务都会使用几十个集群节点，那么手动构造这个环境变量的工作量是巨大的。</p>
+<p>我们需要找到一种自动构建 TF_CONFIG 环境变量的方法，一些分布式训练框架可以为我们排忧解难。比如阿里的 x-deeplearning。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://tf.wiki/zh_hans/appendix/distributed.html">TensorFlow分布式训练 — 简单粗暴 TensorFlow 2 0.4 beta 文档</a></p>
+<p><a href="https://juejin.cn/post/6885151250124374023">TensorFlow 篇 | TensorFlow 2.x 分布式训练概览</a></p>
 ]]></content>
     </entry>
     <entry>
@@ -678,10 +803,10 @@ tags:</p>
         <id>https://DragonFive.github.io/post/gluon-study/</id>
         <link href="https://DragonFive.github.io/post/gluon-study/">
         </link>
-        <updated>2018-03-20T03:39:08.000Z</updated>
+        <updated>2018-03-22T03:39:08.000Z</updated>
         <content type="html"><![CDATA[<hr>
 <p>title: gluon学习笔记<br>
-date: 2018/3/20 12:04:12<br>
+date: 2018/3/22 12:04:12<br>
 categories:</p>
 <ul>
 <li>深度学习<br>
@@ -1208,832 +1333,6 @@ c++11标准规定，允许将变量声明为constexpr类型，以便由编译器
 <p><strong>参考资料</strong><br>
 <a href="https://www.cnblogs.com/yc_sunniwell/archive/2010/07/14/1777416.html">c/c++中的const关键字</a><br>
 《c++ primer 第五版》</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[从编译器的辅助信息看c++对象内存布局]]></title>
-        <id>https://DragonFive.github.io/post/cpp-memory/</id>
-        <link href="https://DragonFive.github.io/post/cpp-memory/">
-        </link>
-        <updated>2018-02-17T04:16:29.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>Title: 从编译器的辅助信息看c++对象内存布局<br>
-date: 2018/02/17 14:28:58<br>
-categories:</p>
-<ul>
-<li>编程<br>
-tags:</li>
-<li>cpp</li>
-</ul>
-<hr>
-<h1 id="预知识">预知识</h1>
-<p>本文的内容使用的是32位的编译器编译出的结果，可以打印出类的内存布局信息</p>
-<h2 id="devcpp-ide">DevCPP IDE</h2>
-<p>这个IDE是我比较喜欢的windows下的cpp的IDE之一，它有一个工具-&gt;编译选项，可以选择编译器类型，也可以在编译选项中加入一些信息，为了能够输出内存布局信息，我在编译时加入以下命令</p>
-<pre><code class="language-cpp">--std=c++11  -fdump-class-hierarchy 
-</code></pre>
-<p>-fdump-class-hierarchy 这个选项能够在gcc编译时生成类的布局信息，生成的文件名类似为6.cpp.002t.class</p>
-<h2 id="vs2017">vs2017</h2>
-<p>vs使用的编译器是cl，它的命令为<br>
-/d1reportAllClassLayout： 输出所有类相关布局</p>
-<h2 id="clang">clang</h2>
-<p>clang -Xclang -fdump-record-layouts</p>
-<h2 id="理解内存布局信息">理解内存布局信息</h2>
-<p>测试代码如下</p>
-<pre><code class="language-cpp">class father{
-	int a;
-	int b;
-};
-
-class child: public father{
-};
-
-int main(){
-	return 0;
-}
-</code></pre>
-<p>使用 g++ -fdump-class-hierarchy test.cpp 生成了 test.cpp.002t.class内容如下</p>
-<pre><code>Class father
-   size=8 align=4
-   base size=8 base align=4
-father (0x0x16662d8) 0
-
-Class child
-   size=8 align=4
-   base size=8 base align=4
-child (0x0x3984e00) 0
-  father (0x0x1666310) 0
-</code></pre>
-<p>显示了类的大小和对齐信息。</p>
-<h2 id="题话外-理解内存对齐">题话外: 理解内存对齐</h2>
-<ol>
-<li>结构体第一个成员的偏移量（offset）为0，以后每个成员相对于结构体首地址的 offset 都是该成员大小与有效对齐值中较小那个的整数倍，如有需要编译器会在成员之间加上填充字节。</li>
-<li>结构体的总大小为 有效对齐值 的整数倍，如有需要编译器会在最末一个成员之后加上填充字节。</li>
-</ol>
-<h1 id="多态与虚表">多态与虚表</h1>
-<p>多态，简单来说，是指在继承层次中，父类的指针可以具有多种形态——当它指向某个子类对象时，通过它能够调用到子类的函数，而非父类的函数。</p>
-<p>虚函数指针一般都放在对象内存布局的第一个位置上，这是为了保证在多层继承或多重继承的情况下能以最高效率取到虚函数表。当vprt位于对象内存最前面时，<strong>对象的地址即为虚函数指针地址</strong>。我们可以取得<strong>虚函数指针的地址</strong>。</p>
-<p>下面的方式取得虚函数指针的地址（而非虚函数指针指向的地址）</p>
-<pre><code class="language-cpp">Base b(1000);
-int * vptrAdree = (int *)(&amp;b);
-</code></pre>
-<p>vptrAdree指向了虚函数指针（指向虚函数表），</p>
-<p>而我们可以通过如下的方式获得第一个虚函数的地址</p>
-<pre><code class="language-cpp">Base b(1000);
-using fun=void(*) ();
-fun fun1 = (fun)*((int *)*(int *)(&amp;b));
-fun fun2 = (fun)*((int *)*(int *)(&amp;c)+1);
-</code></pre>
-<h2 id="简单的情况单层继承与虚函数全覆盖">简单的情况，单层继承与虚函数全覆盖</h2>
-<p>通过查看编译器生成的内存布局信息来具体地看：</p>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-
-class Base{
-	int a;
-	virtual int print(){
-		cout&lt;&lt;&quot; i am base&quot;&lt;&lt;endl;
-	}
-	virtual int print2(){
-		cout&lt;&lt;&quot; i am base2&quot; &lt;&lt;endl;
-	}
-}; 
-
-class child: public Base{
-	int print(){
-		cout&lt;&lt; &quot; i am the child&quot; &lt;&lt;endl;	
-	}
-	int print2(){
-		cout&lt;&lt;&quot; i am the child2&quot; &lt;&lt;endl;
-	}
-};
-
-
-
-int  main(){
-	Base testBase;
-	//using fun=int(*)();
-	typedef int(*fun) (void);
-	fun print=(fun)*((int *)*(int *)(&amp;testBase));
-	print();
-	cout&lt;&lt;(int *)*(int *)(&amp;testBase)&lt;&lt;endl;
-	cout&lt;&lt;((int *)*(int *)(&amp;testBase))+1&lt;&lt;endl;
-	fun pprint2 = (fun)*((int *)*(int *)(&amp;testBase)+1);
-	pprint2();
-	return 0;
-} 
-</code></pre>
-<p>g++编译后生成的内存布局信息为：</p>
-<pre><code class="language-cpp">Vtable for Base
-Base::_ZTV4Base: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI4Base)
-8     (int (*)(...))Base::print
-12    (int (*)(...))Base::print2
-
-Class Base
-   size=8 align=4
-   base size=8 base align=4
-Base (0x0x4e057a8) 0
-    vptr=((&amp; Base::_ZTV4Base) + 8u)
-
-Vtable for child
-child::_ZTV5child: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI5child)
-8     (int (*)(...))child::print
-12    (int (*)(...))child::print2
-
-Class child
-   size=8 align=4
-   base size=8 base align=4
-child (0x0x4e4b280) 0
-    vptr=((&amp; child::_ZTV5child) + 8u)
-  Base (0x0x4e057e0) 0
-      primary-for child (0x0x4e4b280)
-</code></pre>
-<p>Vtable表示的是虚函数表，可以发现Vtable for Base里面保存了vptr， 而且位置是vptr=((&amp; Base::_ZTV4Base) + 8u)（注意这里加了8的偏移），这个位置的第一个内容就是(int (*)(...))Base::print。</p>
-<h2 id="复杂的情况多重继承与部分虚函数覆盖">复杂的情况：多重继承与部分虚函数覆盖</h2>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-class Parent {
-public:
-    int iparent;
-    Parent ():iparent (10) {}
-    virtual void g() { cout &lt;&lt; &quot; Parent::g()&quot; &lt;&lt; endl; }
-    virtual void f() { cout &lt;&lt; &quot; Parent::f()&quot; &lt;&lt; endl; }
-    virtual void h() { cout &lt;&lt; &quot; Parent::h()&quot; &lt;&lt; endl; }
- 
-};
- 
-class Child : public Parent {
-public:
-    int ichild;
-    Child():ichild(100) {}
-    virtual void g_child() { cout &lt;&lt; &quot;Child::g_child()&quot; &lt;&lt; endl; }
-    virtual void h_child() { cout &lt;&lt; &quot;Child::h_child()&quot; &lt;&lt; endl; }
-    virtual void f() { cout &lt;&lt; &quot;Child::f()&quot; &lt;&lt; endl; }
-};
- 
-class GrandChild : public Child{
-public:
-    int igrandchild;
-    GrandChild():igrandchild(1000) {}
-    virtual void g_child() { cout &lt;&lt; &quot;GrandChild::g_child()&quot; &lt;&lt; endl; }
-    virtual void f() { cout &lt;&lt; &quot;GrandChild::f()&quot; &lt;&lt; endl; }
-    virtual void h_grandchild() { cout &lt;&lt; &quot;GrandChild::h_grandchild()&quot; &lt;&lt; endl; }
-};
-int main(){
-	typedef void(*Fun)(void);
-	GrandChild gc;	 
-	int** pVtab = (int**)&amp;gc;
-	 
-	cout &lt;&lt; &quot;[0] GrandChild::_vptr-&gt;&quot; &lt;&lt; endl;
-	for (int i=0; (Fun)pVtab[0][i]!=NULL; i++){
-	    Fun pFun = (Fun)pVtab[0][i];
-	    cout &lt;&lt; &quot;    [&quot;&lt;&lt;i&lt;&lt;&quot;] &quot;;
-	    pFun();
-	}
-	cout &lt;&lt; &quot;[1] Parent.iparent = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[2] Child.ichild = &quot; &lt;&lt; (int)pVtab[2] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[3] GrandChild.igrandchild = &quot; &lt;&lt; (int)pVtab[3] &lt;&lt; endl;
-} 
-</code></pre>
-<p>内存布局信息如下</p>
-<pre><code class="language-cpp">Vtable for Parent
-Parent::_ZTV6Parent: 5u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI6Parent)
-8     (int (*)(...))Parent::g
-12    (int (*)(...))Parent::f
-16    (int (*)(...))Parent::h
-
-Class Parent
-   size=8 align=4
-   base size=8 base align=4
-Parent (0x0x4de37a8) 0
-    vptr=((&amp; Parent::_ZTV6Parent) + 8u)
-
-Vtable for Child
-Child::_ZTV5Child: 7u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI5Child)
-8     (int (*)(...))Parent::g
-12    (int (*)(...))Child::f
-16    (int (*)(...))Parent::h
-20    (int (*)(...))Child::g_child
-24    (int (*)(...))Child::h_child
-
-Class Child
-   size=12 align=4
-   base size=12 base align=4
-Child (0x0x4e2a5c0) 0
-    vptr=((&amp; Child::_ZTV5Child) + 8u)
-  Parent (0x0x4de37e0) 0
-      primary-for Child (0x0x4e2a5c0)
-
-Vtable for GrandChild
-GrandChild::_ZTV10GrandChild: 8u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI10GrandChild)
-8     (int (*)(...))Parent::g
-12    (int (*)(...))GrandChild::f
-16    (int (*)(...))Parent::h
-20    (int (*)(...))GrandChild::g_child
-24    (int (*)(...))Child::h_child
-28    (int (*)(...))GrandChild::h_grandchild
-
-Class GrandChild
-   size=16 align=4
-   base size=16 base align=4
-GrandChild (0x0x4e2aa80) 0
-    vptr=((&amp; GrandChild::_ZTV10GrandChild) + 8u)
-  Child (0x0x4e2aac0) 0
-      primary-for GrandChild (0x0x4e2aa80)
-    Parent (0x0x4de3818) 0
-        primary-for Child (0x0x4e2aac0)
-
-
-</code></pre>
-<p>通过查看可以发现，子类的虚函数表里面的优先级是先父类，再子类再孙类，同一优先级按照声明顺序排地址，即使父类的虚函数被覆盖了，也要写在原来的位置，这样能够保证，父类的指针能按照函数名找到那个地址。</p>
-<p>程序的执行结果为：</p>
-<pre><code class="language-cpp">[0] GrandChild::_vptr-&gt;
-&lt;pre&gt;    [0] GrandChild::f()
-    [1] Parent::g()
-    [2] Parent::h()
-    [3] GrandChild::g_child()
-    [4] Child::h1()
-    [5] GrandChild::h_grandchild()
-[1] Parent.iparent = 10
-[2] Child.ichild = 100
-[3] GrandChild.igrandchild = 1000
-
-</code></pre>
-<p>可知</p>
-<ol>
-<li>虚函数表在最前面的位置。</li>
-<li>成员变量根据其继承和声明顺序依次放在后面。</li>
-<li>在单一的继承中，被overwrite的虚函数在虚函数表中得到了更新。</li>
-</ol>
-<h2 id="多重继承">多重继承</h2>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-class Base1 {
-public:
-    int ibase1;
-    Base1():ibase1(10) {}
-    virtual void f() { cout &lt;&lt; &quot;Base1::f()&quot; &lt;&lt; endl; }
-    virtual void g() { cout &lt;&lt; &quot;Base1::g()&quot; &lt;&lt; endl; }
-    virtual void h() { cout &lt;&lt; &quot;Base1::h()&quot; &lt;&lt; endl; }
- 
-};
- 
-class Base2 {
-public:
-    int ibase2;
-    Base2():ibase2(20) {}
-    virtual void f() { cout &lt;&lt; &quot;Base2::f()&quot; &lt;&lt; endl; }
-    virtual void g() { cout &lt;&lt; &quot;Base2::g()&quot; &lt;&lt; endl; }
-    virtual void h() { cout &lt;&lt; &quot;Base2::h()&quot; &lt;&lt; endl; }
-};
- 
-class Base3 {
-public:
-    int ibase3;
-    Base3():ibase3(30) {}
-    virtual void f() { cout &lt;&lt; &quot;Base3::f()&quot; &lt;&lt; endl; }
-    virtual void g() { cout &lt;&lt; &quot;Base3::g()&quot; &lt;&lt; endl; }
-    virtual void h() { cout &lt;&lt; &quot;Base3::h()&quot; &lt;&lt; endl; }
-};
- 
-class Derive : public Base1, public Base2, public Base3 {
-public:
-    int iderive;
-    Derive():iderive(100) {}
-    virtual void f() { cout &lt;&lt; &quot;Derive::f()&quot; &lt;&lt; endl; }
-    virtual void g1() { cout &lt;&lt; &quot;Derive::g1()&quot; &lt;&lt; endl; }
-};
-int main(){
-	typedef void(*Fun)(void);
-	 
-	Derive d;
-	 
-	int** pVtab = (int**)&amp;d;
-	 
-	cout &lt;&lt; &quot;[0] Base1::_vptr-&gt;&quot; &lt;&lt; endl;
-	Fun pFun = (Fun)pVtab[0][0];
-	cout &lt;&lt; &quot;     [0] &quot;;
-	pFun();
-	 
-	pFun = (Fun)pVtab[0][1];
-	cout &lt;&lt; &quot;     [1] &quot;;pFun();
-	 
-	pFun = (Fun)pVtab[0][2];
-	cout &lt;&lt; &quot;     [2] &quot;;pFun();
-	 
-	pFun = (Fun)pVtab[0][3];
-	cout &lt;&lt; &quot;     [3] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[0][4];
-	cout &lt;&lt; &quot;     [4] &quot;; cout&lt;&lt;pFun&lt;&lt;endl;
-	 
-	cout &lt;&lt; &quot;[1] Base1.ibase1 = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
-	 
-	int s = sizeof(Base1)/4;
-	 
-	cout &lt;&lt; &quot;[&quot; &lt;&lt; s &lt;&lt; &quot;] Base2::_vptr-&gt;&quot;&lt;&lt;endl;
-	pFun = (Fun)pVtab[s][0];
-	cout &lt;&lt; &quot;     [0] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][1];
-	cout &lt;&lt; &quot;     [1] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][2];
-	cout &lt;&lt; &quot;     [2] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][3];
-	cout &lt;&lt; &quot;     [3] &quot;;
-	cout&lt;&lt;pFun&lt;&lt;endl;
-	 
-	cout &lt;&lt; &quot;[&quot;&lt;&lt; s+1 &lt;&lt;&quot;] Base2.ibase2 = &quot; &lt;&lt; (int)pVtab[s+1] &lt;&lt; endl;
-	 
-	s = s + sizeof(Base2)/4;
-	 
-	cout &lt;&lt; &quot;[&quot; &lt;&lt; s &lt;&lt; &quot;] Base3::_vptr-&gt;&quot;&lt;&lt;endl;
-	pFun = (Fun)pVtab[s][0];
-	cout &lt;&lt; &quot;     [0] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][1];
-	cout &lt;&lt; &quot;     [1] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][2];
-	cout &lt;&lt; &quot;     [2] &quot;; pFun();
-	 
-	pFun = (Fun)pVtab[s][3];
-	cout &lt;&lt; &quot;     [3] &quot;;
-	cout&lt;&lt;pFun&lt;&lt;endl;
-	 
-	s++;
-	cout &lt;&lt; &quot;[&quot;&lt;&lt; s &lt;&lt;&quot;] Base3.ibase3 = &quot; &lt;&lt; (int)pVtab[s] &lt;&lt; endl;
-	s++;
-	cout &lt;&lt; &quot;[&quot;&lt;&lt; s &lt;&lt;&quot;] Derive.iderive = &quot; &lt;&lt; (int)pVtab[s] &lt;&lt; endl;
-	return 0; 
-} 
-
-</code></pre>
-<p>内存分布情况如下</p>
-<pre><code class="language-cpp">Vtable for Base1
-Base1::_ZTV5Base1: 5u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI5Base1)
-8     (int (*)(...))Base1::f
-12    (int (*)(...))Base1::g
-16    (int (*)(...))Base1::h
-
-Class Base1
-   size=8 align=4
-   base size=8 base align=4
-Base1 (0x0x4d907a8) 0
-    vptr=((&amp; Base1::_ZTV5Base1) + 8u)
-
-Vtable for Base2
-Base2::_ZTV5Base2: 5u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI5Base2)
-8     (int (*)(...))Base2::f
-12    (int (*)(...))Base2::g
-16    (int (*)(...))Base2::h
-
-Class Base2
-   size=8 align=4
-   base size=8 base align=4
-Base2 (0x0x4d907e0) 0
-    vptr=((&amp; Base2::_ZTV5Base2) + 8u)
-
-Vtable for Base3
-Base3::_ZTV5Base3: 5u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI5Base3)
-8     (int (*)(...))Base3::f
-12    (int (*)(...))Base3::g
-16    (int (*)(...))Base3::h
-
-Class Base3
-   size=8 align=4
-   base size=8 base align=4
-Base3 (0x0x4d90818) 0
-    vptr=((&amp; Base3::_ZTV5Base3) + 8u)
-
-Vtable for Derive
-Derive::_ZTV6Derive: 16u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI6Derive)
-8     (int (*)(...))Derive::f
-12    (int (*)(...))Base1::g
-16    (int (*)(...))Base1::h
-20    (int (*)(...))Derive::g1
-24    (int (*)(...))-8
-28    (int (*)(...))(&amp; _ZTI6Derive)
-32    (int (*)(...))Derive::_ZThn8_N6Derive1fEv
-36    (int (*)(...))Base2::g
-40    (int (*)(...))Base2::h
-44    (int (*)(...))-16
-48    (int (*)(...))(&amp; _ZTI6Derive)
-52    (int (*)(...))Derive::_ZThn16_N6Derive1fEv
-56    (int (*)(...))Base3::g
-60    (int (*)(...))Base3::h
-
-Class Derive
-   size=28 align=4
-   base size=28 base align=4
-Derive (0x0x4ddeb40) 0
-    vptr=((&amp; Derive::_ZTV6Derive) + 8u)
-  Base1 (0x0x4d90850) 0
-      primary-for Derive (0x0x4ddeb40)
-  Base2 (0x0x4d90888) 8
-      vptr=((&amp; Derive::_ZTV6Derive) + 32u)
-  Base3 (0x0x4d908c0) 16
-      vptr=((&amp; Derive::_ZTV6Derive) + 52u)
-
-</code></pre>
-<p>程序的输出结果为</p>
-<pre><code class="language-cpp">[0] Base1::_vptr-&gt;
-     [0] Derive::f()
-     [1] Base1::g()
-     [2] Base1::h()
-     [3] Derive::g1()
-     [4] 1
-[1] Base1.ibase1 = 10
-[2] Base2::_vptr-&gt;
-     [0] Derive::f()
-     [1] Base2::g()
-     [2] Base2::h()
-     [3] 1
-[3] Base2.ibase2 = 20
-[4] Base3::_vptr-&gt;
-     [0] Derive::f()
-     [1] Base3::g()
-     [2] Base3::h()
-     [3] 0
-[5] Base3.ibase3 = 30
-[6] Derive.iderive = 100
-
-</code></pre>
-<p>结论：</p>
-<ol>
-<li>每个父类都有自己的虚表。</li>
-<li>子类的成员函数被放到了第一个父类的表中。</li>
-<li>内存布局中，其父类布局依次按声明顺序排列。</li>
-<li>每个父类的虚表中的f()函数都被overwrite成了子类的f()。这样做就是为了解决不同的父类类型的指针指向同一个子类实例，而能够调用到实际的函数。</li>
-</ol>
-<h2 id="多重继承-2">多重继承</h2>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-class B
-{
-    public:
-        int ib;
-        char cb;
-    public:
-        B():ib(0),cb('B') {}
- 
-        virtual void f() { cout &lt;&lt; &quot;B::f()&quot; &lt;&lt; endl;}
-        virtual void Bf() { cout &lt;&lt; &quot;B::Bf()&quot; &lt;&lt; endl;}
-};
-class B1 :  public B
-{
-    public:
-        int ib1;
-        char cb1;
-    public:
-        B1():ib1(11),cb1('1') {}
- 
-        virtual void f() { cout &lt;&lt; &quot;B1::f()&quot; &lt;&lt; endl;}
-        virtual void f1() { cout &lt;&lt; &quot;B1::f1()&quot; &lt;&lt; endl;}
-        virtual void Bf1() { cout &lt;&lt; &quot;B1::Bf1()&quot; &lt;&lt; endl;}
- 
-};
-class B2:  public B
-{
-    public:
-        int ib2;
-        char cb2;
-    public:
-        B2():ib2(12),cb2('2') {}
- 
-        virtual void f() { cout &lt;&lt; &quot;B2::f()&quot; &lt;&lt; endl;}
-        virtual void f2() { cout &lt;&lt; &quot;B2::f2()&quot; &lt;&lt; endl;}
-        virtual void Bf2() { cout &lt;&lt; &quot;B2::Bf2()&quot; &lt;&lt; endl;}
- 
-};
- 
-class D : public B1, public B2
-{
-    public:
-        int id;
-        char cd;
-    public:
-        D():id(100),cd('D') {}
- 
-        virtual void f() { cout &lt;&lt; &quot;D::f()&quot; &lt;&lt; endl;}
-        virtual void f1() { cout &lt;&lt; &quot;D::f1()&quot; &lt;&lt; endl;}
-        virtual void f2() { cout &lt;&lt; &quot;D::f2()&quot; &lt;&lt; endl;}
-        virtual void Df() { cout &lt;&lt; &quot;D::Df()&quot; &lt;&lt; endl;}
- 
-};
-int main(){
-	typedef void(*Fun)(void);
-	int** pVtab = NULL;
-	Fun pFun = NULL;
-	 
-	D d;
-	pVtab = (int**)&amp;d;
-	cout &lt;&lt; &quot;[0] D::B1::_vptr-&gt;&quot; &lt;&lt; endl;
-	pFun = (Fun)pVtab[0][0];
-	cout &lt;&lt; &quot;     [0] &quot;;    pFun();
-	pFun = (Fun)pVtab[0][1];
-	cout &lt;&lt; &quot;     [1] &quot;;    pFun();
-	pFun = (Fun)pVtab[0][2];
-	cout &lt;&lt; &quot;     [2] &quot;;    pFun();
-	pFun = (Fun)pVtab[0][3];
-	cout &lt;&lt; &quot;     [3] &quot;;    pFun();
-	pFun = (Fun)pVtab[0][4];
-	cout &lt;&lt; &quot;     [4] &quot;;    pFun();
-	pFun = (Fun)pVtab[0][5];
-	cout &lt;&lt; &quot;     [5] 0x&quot; &lt;&lt; pFun &lt;&lt; endl;
-	 
-	cout &lt;&lt; &quot;[1] B::ib = &quot; &lt;&lt; (int)pVtab[1] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[2] B::cb = &quot; &lt;&lt; static_cast&lt;char&gt;((int)(pVtab[2]))&lt;&lt; endl;
-	cout &lt;&lt; &quot;[3] B1::ib1 = &quot; &lt;&lt; (int)pVtab[3] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[4] B1::cb1 = &quot; &lt;&lt; (char)(int)pVtab[4] &lt;&lt; endl;
-	 
-	cout &lt;&lt; &quot;[5] D::B2::_vptr-&gt;&quot; &lt;&lt; endl;
-	pFun = (Fun)pVtab[5][0];
-	cout &lt;&lt; &quot;     [0] &quot;;    pFun();
-	pFun = (Fun)pVtab[5][1];
-	cout &lt;&lt; &quot;     [1] &quot;;    pFun();
-	pFun = (Fun)pVtab[5][2];
-	cout &lt;&lt; &quot;     [2] &quot;;    pFun();
-	pFun = (Fun)pVtab[5][3];
-	cout &lt;&lt; &quot;     [3] &quot;;    pFun();
-	pFun = (Fun)pVtab[5][4];
-	cout &lt;&lt; &quot;     [4] 0x&quot; &lt;&lt; pFun &lt;&lt; endl;
-	 
-	cout &lt;&lt; &quot;[6] B::ib = &quot; &lt;&lt; (int)pVtab[6] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[7] B::cb = &quot; &lt;&lt; (char)(int)pVtab[7] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[8] B2::ib2 = &quot; &lt;&lt; (int)pVtab[8] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[9] B2::cb2 = &quot; &lt;&lt; (char)(int)pVtab[9] &lt;&lt; endl;
-	 
-	cout &lt;&lt; &quot;[10] D::id = &quot; &lt;&lt; (int)pVtab[10] &lt;&lt; endl;
-	cout &lt;&lt; &quot;[11] D::cd = &quot; &lt;&lt; (char)(int)pVtab[11] &lt;&lt; endl;
-	return 0; 
-} 
-
-
-</code></pre>
-<p>内存分布情况如下</p>
-<pre><code class="language-cpp">Vtable for B
-B::_ZTV1B: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI1B)
-8     (int (*)(...))B::f
-12    (int (*)(...))B::Bf
-
-Class B
-   size=12 align=4
-   base size=9 base align=4
-B (0x0x4dc27a8) 0
-    vptr=((&amp; B::_ZTV1B) + 8u)
-
-Vtable for B1
-B1::_ZTV2B1: 6u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI2B1)
-8     (int (*)(...))B1::f
-12    (int (*)(...))B::Bf
-16    (int (*)(...))B1::f1
-20    (int (*)(...))B1::Bf1
-
-Class B1
-   size=20 align=4
-   base size=17 base align=4
-B1 (0x0x4e09780) 0
-    vptr=((&amp; B1::_ZTV2B1) + 8u)
-  B (0x0x4dc27e0) 0
-      primary-for B1 (0x0x4e09780)
-
-Vtable for B2
-B2::_ZTV2B2: 6u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI2B2)
-8     (int (*)(...))B2::f
-12    (int (*)(...))B::Bf
-16    (int (*)(...))B2::f2
-20    (int (*)(...))B2::Bf2
-
-Class B2
-   size=20 align=4
-   base size=17 base align=4
-B2 (0x0x4e09c40) 0
-    vptr=((&amp; B2::_ZTV2B2) + 8u)
-  B (0x0x4dc2818) 0
-      primary-for B2 (0x0x4e09c40)
-
-Vtable for D
-D::_ZTV1D: 14u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI1D)
-8     (int (*)(...))D::f
-12    (int (*)(...))B::Bf
-16    (int (*)(...))D::f1
-20    (int (*)(...))B1::Bf1
-24    (int (*)(...))D::f2
-28    (int (*)(...))D::Df
-32    (int (*)(...))-20
-36    (int (*)(...))(&amp; _ZTI1D)
-40    (int (*)(...))D::_ZThn20_N1D1fEv
-44    (int (*)(...))B::Bf
-48    (int (*)(...))D::_ZThn20_N1D2f2Ev
-52    (int (*)(...))B2::Bf2
-
-Class D
-   size=48 align=4
-   base size=45 base align=4
-D (0x0x4e27040) 0
-    vptr=((&amp; D::_ZTV1D) + 8u)
-  B1 (0x0x4e27080) 0
-      primary-for D (0x0x4e27040)
-    B (0x0x4dc2850) 0
-        primary-for B1 (0x0x4e27080)
-  B2 (0x0x4e270c0) 20
-      vptr=((&amp; D::_ZTV1D) + 40u)
-    B (0x0x4dc2888) 20
-        primary-for B2 (0x0x4e270c0)
-
-
-</code></pre>
-<p>输出结果为</p>
-<pre><code class="language-bash">[0] D::B1::_vptr-&gt;
-     [0] D::f()
-     [1] B::Bf()
-     [2] D::f1()
-     [3] B1::Bf1()
-     [4] D::f2()
-     [5] 0x1
-[1] B::ib = 0
-[2] B::cb = B
-[3] B1::ib1 = 11
-[4] B1::cb1 = 1
-[5] D::B2::_vptr-&gt;
-     [0] D::f()
-     [1] B::Bf()
-     [2] D::f2()
-     [3] B2::Bf2()
-     [4] 0x0
-[6] B::ib = 0
-[7] B::cb = B
-[8] B2::ib2 = 12
-[9] B2::cb2 = 2
-[10] D::id = 100
-[11] D::cd = D
-
-</code></pre>
-<p>运行结果为：</p>
-<pre><code class="language-cpp">
-</code></pre>
-<p>发现最顶端的父类B其成员变量和虚函数存在于B1和B2中，并被D给继承下去了。而在D中，其有B1和B2的实例，于是B的成员在D的实例中存在两份，一份是B1继承而来的，另一份是B2继承而来的，因此就会浪费内存。</p>
-<p>尽管我们可以通过明确指明调用路径以消除二义性，但二义性的潜在性还没有消除，我们可以通过虚继承来使D类只拥有一个ib实体。</p>
-<h1 id="虚继承">虚继承</h1>
-<p>虚继承解决了菱形继承中最派生类拥有多个间接父类实例的情况。虚继承的派生类的内存布局与普通继承很多不同，主要体现在：</p>
-<ol>
-<li>虚继承的子类，如果本身定义了新的虚函数，则编译器为其生成一个虚函数指针（vptr）以及一张虚函数表。该vptr位于对象内存最前面。vs非虚继承：直接扩展父类虚函数表。</li>
-<li>虚继承的子类也单独保留了父类的vprt与虚函数表。这部分内容接与子类内容以一个四字节的0来分界。</li>
-<li>虚继承的子类对象中，含有四字节的虚表指针偏移值。</li>
-</ol>
-<h2 id="简单虚继承">简单虚继承</h2>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-class B
-{
-public:
-    int ib;
-public:
-    B(int i=1) :ib(i){}
-    virtual void f() { cout &lt;&lt; &quot;B::f()&quot; &lt;&lt; endl; }
-    virtual void Bf() { cout &lt;&lt; &quot;B::Bf()&quot; &lt;&lt; endl; }
-};
- 
-class B1 : virtual public B
-{
-public:
-    int ib1;
-public:
-    B1(int i = 100 ) :ib1(i) {}
-    virtual void f() { cout &lt;&lt; &quot;B1::f()&quot; &lt;&lt; endl; }
-    virtual void f1() { cout &lt;&lt; &quot;B1::f1()&quot; &lt;&lt; endl; }
-    virtual void Bf1() { cout &lt;&lt; &quot;B1::Bf1()&quot; &lt;&lt; endl; }
-};
-int main(){
-	B1 b;
-	using Fun=void(*)();
-	Fun pFun = NULL;
-	int ** pvtable = (int**)&amp;b;
-	for (int i=0; i&lt;9; i++){
-		if (pvtable[0][i]==NULL) {
-			cout&lt;&lt;&quot;here:&quot;&lt;&lt;(int)pvtable[0][i]&lt;&lt;endl;
-			i+=4;
-			continue;
-		}
-		pFun = (Fun)pvtable[0][i];
-		pFun();
-	}
-	cout&lt;&lt;&quot;size == &quot;&lt;&lt;sizeof(b)&lt;&lt;endl;
-	cout&lt;&lt;&quot;[1]:B1::ib1=&quot;&lt;&lt;(int)pvtable[1]&lt;&lt;endl;
-	cout&lt;&lt;&quot;[3]:B::ib=&quot;&lt;&lt;(int)pvtable[3]&lt;&lt;endl;
-	cout&lt;&lt;&quot;[2]:B::ib=&quot;&lt;&lt;(int)pvtable[2]&lt;&lt;endl;
-//	pFun = (Fun)pvtable[2];
-//	pFun();
-//	for (int i=1; pvtable[1][i]!=NULL; i++){
-//		pFun = (Fun)pvtable[1][i];
-//		pFun();
-//	}
-	
-	return 0; 
-} 
-
-
-
-</code></pre>
-<p>内存布局</p>
-<pre><code class="language-cpp">Vtable for B
-B::_ZTV1B: 4u entries
-0     (int (*)(...))0
-4     (int (*)(...))(&amp; _ZTI1B)
-8     (int (*)(...))B::f
-12    (int (*)(...))B::Bf
-
-Class B
-   size=8 align=4
-   base size=8 base align=4
-B (0x0x4f527a8) 0
-    vptr=((&amp; B::_ZTV1B) + 8u)
-
-Vtable for B1
-B1::_ZTV2B1: 12u entries
-0     8u
-4     (int (*)(...))0
-8     (int (*)(...))(&amp; _ZTI2B1)
-12    (int (*)(...))B1::f
-16    (int (*)(...))B1::f1
-20    (int (*)(...))B1::Bf1
-24    0u
-28    4294967288u
-32    (int (*)(...))-8
-36    (int (*)(...))(&amp; _ZTI2B1)
-40    (int (*)(...))B1::_ZTv0_n12_N2B11fEv
-44    (int (*)(...))B::Bf
-
-VTT for B1
-B1::_ZTT2B1: 2u entries
-0     ((&amp; B1::_ZTV2B1) + 12u)
-4     ((&amp; B1::_ZTV2B1) + 40u)
-
-Class B1
-   size=16 align=4
-   base size=8 base align=4
-B1 (0x0x4f9a540) 0
-    vptridx=0u vptr=((&amp; B1::_ZTV2B1) + 12u)
-  B (0x0x4f527e0) 8 virtual
-      vptridx=4u vbaseoffset=-12 vptr=((&amp; B1::_ZTV2B1) + 40u)
-
-</code></pre>
-<p>程序运行结果</p>
-<pre><code class="language-cpp">B1::f()
-B1::f1()
-B1::Bf1()
-here:0
-B::Bf()
-size == 16
-[1]:B1::ib1=100
-[3]:B::ib=1
-[2]:B::ib=4781096
-
-</code></pre>
-<p>这里的内存分布比较奇怪，与vc++的结果不一样。</p>
-<p>但是这里size是16 说明有两个指针；</p>
-<h2 id="多重虚继承">多重虚继承</h2>
-<p>菱形虚拟继承下，最派生类D类的对象模型又有不同的构成了。在D类对象的内存构成上，有以下几点：</p>
-<ol>
-<li>在D类对象内存中，基类出现的顺序是：先是B1（最左父类），然后是B2（次左父类），最后是B（虚祖父类）</li>
-<li>D类对象的数据成员id放在B类前面，两部分数据依旧以0来分隔。</li>
-<li>编译器没有为D类生成一个它自己的vptr，而是覆盖并扩展了最左父类的虚基类表，与简单继承的对象模型相同。</li>
-<li>超类B的内容放到了D类对象内存布局的最后。</li>
-</ol>
-<h1 id="参考资料">参考资料</h1>
-<p><a href="https://zhuanlan.zhihu.com/p/30007037">C/C++内存对齐详解</a></p>
-<p><a href="https://coolshell.cn/articles/12176.html">C++ 对象的内存布局——coolshell</a></p>
-<p><a href="https://www.cnblogs.com/QG-whz/p/4909359.html">图说C++对象模型：对象内存布局详解</a></p>
-<p>[各编译器显示内存布局](</p>
 ]]></content>
     </entry>
 </feed>
