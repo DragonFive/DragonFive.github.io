@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-02T09:41:10.378Z</updated>
+    <updated>2021-07-02T13:25:40.648Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -186,7 +186,7 @@ HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输
 <li>horovod 使用Ring-AllReduce实现来加速dense模型的训练</li>
 <li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
 </ul>
-<p>之前写过一篇关于 horovod 的知识总结：</p>
+<p>之前写过一篇关于 horovod 的知识总结：<a href="https://dragonfive.github.io/post/uber-de-horovod/">uber的Horovod | dragon</a></p>
 ]]></content>
     </entry>
     <entry>
@@ -309,7 +309,7 @@ MPI集群方式用75个计算节点</p>
         </link>
         <updated>2020-06-24T07:41:26.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
-<p>去年五月份总了一些 tensorflow 1.x 分布式训练的一些知识（<a href="https://dragonfive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/">tensorflow 1.x 的分布式训练</a>）。最近总结了一些 tf2.x 的分布式训练相关知识。</p>
+<p>去年总结了一些 tensorflow 1.x 分布式训练的一些知识（<a href="https://dragonfive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/">tensorflow 1.x 的分布式训练</a>）。最近总结了一些 tf2.x 的分布式训练相关知识。</p>
 </blockquote>
 <h1 id="tf2x-分布式训练策略">tf2.x 分布式训练策略</h1>
 <p>TensorFlow 的 tf.distribute 模块下包含有一系列分布式训练策略，它们都是基于数据并行模式实现的。有些策略目前还在 experimental 模块下，表示它们是实验性质的策略，未来可能会发生变动。</p>
@@ -470,7 +470,7 @@ model.fit(dataset, epoch=5)
         <id>https://DragonFive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/</id>
         <link href="https://DragonFive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/">
         </link>
-        <updated>2019-05-16T07:04:42.000Z</updated>
+        <updated>2019-09-05T07:04:42.000Z</updated>
         <content type="html"><![CDATA[<h1 id="模型并行">模型并行</h1>
 <p>将模型部署到很多设备上（设备可能分布在不同机器上）运行，由于模型分割开的各个部分之间有相互依赖关系，因此计算效率不高。所以在模型大小不算太大的情况下一般不使用模型并行。</p>
 <h1 id="数据并行">数据并行</h1>
@@ -579,6 +579,189 @@ os.environ['TF_CONFIG'] = json.dumps( {'cluster': cluster, 'task': {'type': 'eva
 <p><a href="https://zhuanlan.zhihu.com/p/56991108">一文说清楚Tensorflow分布式训练必备知识 - 知乎</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/34172340">【第一期】AI Talk：TensorFlow 分布式训练的线性加速实践 - 知乎</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/79030485">腾讯机智团队分享--AllReduce算法的前世今生 - 知乎</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[TF的session 与graph]]></title>
+        <id>https://DragonFive.github.io/post/tf-de-session-yu-graph/</id>
+        <link href="https://DragonFive.github.io/post/tf-de-session-yu-graph/">
+        </link>
+        <updated>2019-01-30T09:54:33.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者刘光聪。有一些收获，记录一下。</p>
+</blockquote>
+<h1 id="tf的session">TF的Session</h1>
+<p>Session是TensorFlow前后端连接的桥梁。用户利用session使得client能够与master的执行引擎建立连接，并通过session.run()来触发一次计算。它建立了一套上下文环境，封装了operation计算以及tensor求值的环境。</p>
+<p>session之间采用共享graph的方式来提高运行效率。一个session只能运行一个graph实例，但一个graph可以运行在多个session中。创建session时如果不指定Graph实例，则会使用系统默认Graph。当session close时，默认 graph 引用计数减1。只有引用计数为0时，graph才会被回收。这种graph共享的方式，大大减少了graph创建和回收的资源消耗，优化了TensorFlow运行效率。</p>
+<p>op运算和tensor求值时，如果没有指定运行在哪个session中，则会运行在默认session中。通过session.as_default()可以将自己设置为默认session。</p>
+<pre><code class="language-python">operation.run()
+tensor.eval()
+</code></pre>
+<p>实际执行的代码是</p>
+<pre><code class="language-python">tf.get_default_session().run(operation)
+tf.get_default_session().run(tensor)
+</code></pre>
+<h1 id="session-类型">Session 类型</h1>
+<h2 id="前端-session">前端 Session</h2>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625220300985.png" alt="" loading="lazy"></figure>
+<p>分为普通Session和交互式InteractiveSession， 区别在于：</p>
+<ul>
+<li>
+<p>InteractiveSession创建后，会将自己替换为默认session。使得之后operation.run()和tensor.eval()的执行通过这个默认session来进行。特别适合Python交互式环境。</p>
+</li>
+<li>
+<p>InteractiveSession自带with上下文管理器。它在创建时和关闭时会调用上下文管理器的enter和exit方法，从而进行资源的申请和释放，避免内存泄漏问题。这同样很适合Python交互式环境。</p>
+</li>
+</ul>
+<p>BaseSession基本包含了所有的会话实现逻辑。包括会话的整个生命周期，也就是创建 执行 关闭和销毁四个阶段。</p>
+<p>BaseSession包含的主要成员变量有：</p>
+<ul>
+<li>graph引用</li>
+<li>序列化的graph_def</li>
+<li>要连接的tf引擎target</li>
+<li>session配置信息config</li>
+</ul>
+<h2 id="后端session">后端Session</h2>
+<p>后端master中，根据前端client调用tf.Session(target=’’, graph=None, config=None)时指定的target，来创建不同的Session。target为要连接的tf后端执行引擎，默认为空字符串。Session创建采用了抽象工厂模式，如果为空字符串，则创建本地DirectSession，如果以grpc://开头，则创建分布式GrpcSession。</p>
+<p>DirectSession只能利用本地设备，将任务创建到本地的CPU GPU上。而GrpcSession则可以利用远端分布式设备，将任务创建到其他机器的CPU GPU上，然后通过grpc协议进行通信。</p>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625220817848.png" alt="" loading="lazy"></figure>
+<h1 id="session-生命周期">Session 生命周期</h1>
+<p>Session作为前后端连接的桥梁，以及上下文运行环境，其生命周期尤其关键。大致分为4个阶段</p>
+<ul>
+<li>创建：通过tf.Session()创建session实例，进行系统资源分配，特别是graph引用计数加1</li>
+<li>运行：通过session.run()触发计算的执行，client会将整图graph传递给master，由master进行执行</li>
+<li>关闭：通过session.close()来关闭，会进行系统资源的回收，特别是graph引用计数减1.</li>
+<li>销毁：Python垃圾回收器进行GC时，调用session.<strong>del</strong>()进行回收。</li>
+</ul>
+<h1 id="graph">graph</h1>
+<p>可以显示创建Graph，并调用as_default()使他替换默认Graph。在该上下文管理器中创建的op都会注册到这个graph中。退出上下文管理器后，则恢复原来的默认graph。一般情况下，我们不用显式创建Graph，使用系统创建的那个默认Graph即可。</p>
+<pre><code class="language-python">with tf.Graph().as_default() as g:
+    print tf.get_default_graph() is g
+    print tf.get_default_graph()
+
+print tf.get_default_graph()
+</code></pre>
+<p>在上下文管理器中，当前线程的默认图被替换了，而退出上下文管理后，则恢复为了原来的默认图。</p>
+<h1 id="graph-类型">graph 类型</h1>
+<h1 id="前端graph-类型">前端graph 类型</h1>
+<p>Python前端中，Graph的数据结构。Graph主要的成员变量是Operation和Tensor。Operation是Graph的节点，它代表了运算算子。Tensor是Graph的边，它代表了运算数据。</p>
+<pre><code class="language-python">@tf_export(&quot;Graph&quot;)
+class Graph(object):
+    def __init__(self):
+   	    # 加线程锁，使得注册op时，不会有其他线程注册op到graph中，从而保证共享graph是线程安全的
+        self._lock = threading.Lock()
+        
+        # op相关数据。
+        # 为graph的每个op分配一个id，通过id可以快速索引到相关op。故创建了_nodes_by_id字典
+        self._nodes_by_id = dict()  # GUARDED_BY(self._lock)
+        self._next_id_counter = 0  # GUARDED_BY(self._lock)
+        # 同时也可以通过name来快速索引op，故创建了_nodes_by_name字典
+        self._nodes_by_name = dict()  # GUARDED_BY(self._lock)
+        self._version = 0  # GUARDED_BY(self._lock)
+        
+        # tensor相关数据。
+        # 处理tensor的placeholder
+        self._handle_feeders = {}
+        # 处理tensor的read操作
+        self._handle_readers = {}
+        # 处理tensor的move操作
+        self._handle_movers = {}
+        # 处理tensor的delete操作
+        self._handle_deleters = {}
+
+</code></pre>
+<p>graph 添加 op 是会保证线程安全的。</p>
+<pre><code class="language-python">  def _add_op(self, op):
+    # graph被设置为final后，就是只读的了，不能添加op了。
+    self._check_not_finalized()
+    
+    # 保证共享graph的线程安全
+    with self._lock:
+      # 将op以id和name分别构建字典，添加到_nodes_by_id和_nodes_by_name字典中，方便后续快速索引
+      self._nodes_by_id[op._id] = op
+      self._nodes_by_name[op.name] = op
+      self._version = max(self._version, op._id)
+
+</code></pre>
+<h2 id="name_scope">name_scope</h2>
+<p>name_scope 节点命名空间<br>
+使用name_scope对graph中的节点进行层次化管理，上下层之间通过斜杠分隔。</p>
+<h1 id="后端graph">后端Graph</h1>
+<h2 id="graph-2">Graph</h2>
+<pre><code class="language-python">class Graph {
+     private:
+      // 所有已知的op计算函数的注册表
+      FunctionLibraryDefinition ops_;
+
+      // GraphDef版本号
+      const std::unique_ptr&lt;VersionDef&gt; versions_;
+
+      // 节点node列表，通过id来访问
+      std::vector&lt;Node*&gt; nodes_;
+
+      // node个数
+      int64 num_nodes_ = 0;
+
+      // 边edge列表，通过id来访问
+      std::vector&lt;Edge*&gt; edges_;
+
+      // graph中非空edge的数目
+      int num_edges_ = 0;
+
+      // 已分配了内存，但还没使用的node和edge
+      std::vector&lt;Node*&gt; free_nodes_;
+      std::vector&lt;Edge*&gt; free_edges_;
+ }
+
+</code></pre>
+<p>后端中的Graph主要成员也是节点node和边edge。节点node为计算算子Operation，边为算子所需要的数据，或者代表节点间的依赖关系。这一点和Python中的定义相似。边Edge的持有它的源节点和目标节点的指针，从而将两个节点连接起来。</p>
+<h2 id="edge">Edge</h2>
+<pre><code class="language-python">class Edge {
+     private:
+      Edge() {}
+
+      friend class EdgeSetTest;
+      friend class Graph;
+      // 源节点, 边的数据就来源于源节点的计算。源节点是边的生产者
+      Node* src_;
+
+      // 目标节点，边的数据提供给目标节点进行计算。目标节点是边的消费者
+      Node* dst_;
+
+      // 边id，也就是边的标识符
+      int id_;
+
+      // 表示当前边为源节点的第src_output_条边。源节点可能会有多条输出边
+      int src_output_;
+
+      // 表示当前边为目标节点的第dst_input_条边。目标节点可能会有多条输入边。
+      int dst_input_;
+};
+
+</code></pre>
+<p>Edge既可以承载tensor数据，提供给节点Operation进行运算，也可以用来表示节点之间有依赖关系。对于表示节点依赖的边，其src_output_, dst_input_均为-1，此时边不承载任何数据。</p>
+<h2 id="node">Node</h2>
+<pre><code class="language-python">class Node {
+ public:
+    // NodeDef,节点算子Operation的信息，比如op分配到哪个设备上了，op的名字等，运行时有可能变化。
+  	const NodeDef&amp; def() const;
+    
+    // OpDef, 节点算子Operation的元数据，不会变的。比如Operation的入参列表，出参列表等
+  	const OpDef&amp; op_def() const;
+ private:
+  	// 输入边，传递数据给节点。可能有多条
+  	EdgeSet in_edges_;
+
+  	// 输出边，节点计算后得到的数据。可能有多条
+  	EdgeSet out_edges_;
+}
+</code></pre>
+<p>创建Node时不需要new OpDef，只需要从OpDef仓库中取出即可。因为元信息是确定的，比如Operation的入参个数等。</p>
+<p>由Node和Edge，即可以组成图Graph，通过任何节点和任何边，都可以遍历完整图。Graph执行计算时，按照拓扑结构，依次执行每个Node的op计算，最终即可得到输出结果。入度为0的节点，也就是依赖数据已经准备好的节点，可以并发执行，从而提高运行效率。</p>
+<p>系统中存在默认的Graph，初始化Graph时，会添加一个Source节点和Sink节点。Source表示Graph的起始节点，Sink为终止节点。Source的id为0，Sink的id为1，其他节点id均大于1.</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84139986">(81条消息) Tensorflow源码解析3 -- TensorFlow核心对象 - Graph_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84111031">(81条消息) Tensorflow源码解析2 -- 前后端连接的桥梁 - Session_谢杨易的博客-CSDN博客</a></p>
 ]]></content>
     </entry>
     <entry>
@@ -835,387 +1018,6 @@ tags:</p>
 <hr>
 <p>我的毕设题目是基于知识迁移的深度神经网络压缩方法研究，由于本文涉及实验室的后续研究与项目开发，暂时删除该内容，等待时机合适再公开</p>
 <p>——待续</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[mxnet gluon ]]></title>
-        <id>https://DragonFive.github.io/post/gluon-study/</id>
-        <link href="https://DragonFive.github.io/post/gluon-study/">
-        </link>
-        <updated>2018-03-22T03:39:08.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: gluon学习笔记<br>
-date: 2018/3/22 12:04:12<br>
-categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>目标检测</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<h1 id="学到的新知识">学到的新知识</h1>
-<h2 id="bn放在relu后面">bn放在relu后面</h2>
-<p><a href="http://minibatch.net/2017/06/11/%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87-Batch-Normalization/">BN应该放在relu后</a></p>
-<p><a href="https://mp.weixin.qq.com/s/xJromD5Q30KlRhB_kM4kfA">用于分类、检测和分割的移动网络 MobileNetV2</a></p>
-<p><a href="https://www.zhihu.com/question/265709710">如何评价MobileNetV2</a></p>
-<h2 id="卷积核的数量">卷积核的数量</h2>
-<p><a href="http://zh.gluon.ai/chapter_convolutional-neural-networks/cnn-scratch.html">卷积神经网络 — 从0开始</a></p>
-<p>当输入数据有多个通道的时候，每个通道会有对应的权重，然后会对每个通道做卷积之后在通道之间求和。所以当输出只有一个的时候，卷积的channel数目和data的channel数目是一样的。</p>
-<p>当输出需要多通道时，每个输出通道有对应权重，然后每个通道上做卷积。所以当输入有n个channel，输出有h个channel时，卷积核channel数目为n * h，每个输出channel对应一个bias ,卷积核的维度为(h,n,w,h)</p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi><mi>o</mi><mi>n</mi><mi>v</mi><mo>(</mo><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo separator="true">,</mo><mi>w</mi><mo separator="true">,</mo><mi>b</mi><mo>)</mo><mo>[</mo><mo>:</mo><mo separator="true">,</mo><mi>i</mi><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo>]</mo><mo>=</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>v</mi><mo>(</mo><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mo separator="true">,</mo><mi>w</mi><mo>[</mo><mi>i</mi><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo separator="true">,</mo><mo>:</mo><mo>]</mo><mo separator="true">,</mo><mi>b</mi><mo>[</mo><mi>i</mi><mo>]</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">conv(data, w, b)[:,i,:,:] = conv(data, w[i,:,:,:], b[i])
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mclose">)</span><span class="mopen">[</span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">i</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mopen">[</span><span class="mord mathdefault">i</span><span class="mclose">]</span><span class="mclose">)</span></span></span></span></span></p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Γ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi mathvariant="normal">∞</mi></msubsup><msup><mi>t</mi><mrow><mi>z</mi><mo>−</mo><mn>1</mn></mrow></msup><msup><mi>e</mi><mrow><mo>−</mo><mi>t</mi></mrow></msup><mi>d</mi><mi>t</mi><mtext> </mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Γ</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.326242em;vertical-align:-0.9119499999999999em;"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.44445em;position:relative;top:-0.0011249999999999316em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.414292em;"><span style="top:-1.7880500000000001em;margin-left:-0.44445em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span><span style="top:-3.8129000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">∞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9119499999999999em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.864108em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.04398em;">z</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.843556em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathdefault mtight">t</span></span></span></span></span></span></span></span></span><span class="mord mathdefault">d</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">.</span></span></span></span></span></p>
-<p>123</p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1513949196873.jpg" alt="inception v1" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1514013854016.jpg" alt="residual" loading="lazy"></figure>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1514012389756.jpg" alt="resnet各种结构" loading="lazy"></figure>
-<h1 id="gluon语法">gluon语法</h1>
-<h2 id="nnblock与nnsequential的嵌套使用">nn.Block与nn.sequential的嵌套使用</h2>
-<pre><code class="language-python">class RecMLP(nn.Block):
-    def __init__(self, **kwargs):
-        super(RecMLP, self).__init__(**kwargs)
-        self.net = nn.Sequential()
-        with self.name_scope():
-            self.net.add(nn.Dense(256, activation=&quot;relu&quot;))
-            self.net.add(nn.Dense(128, activation=&quot;relu&quot;))
-            self.dense = nn.Dense(64)
-
-    def forward(self, x):
-        return nd.relu(self.dense(self.net(x)))
-
-rec_mlp = nn.Sequential()
-rec_mlp.add(RecMLP())
-rec_mlp.add(nn.Dense(10))
-print(rec_mlp)
-</code></pre>
-<h2 id="初始化与参数访问">初始化与参数访问</h2>
-<pre><code class="language-python">from mxnet import init
-params.initialize(init=init.Normal(sigma=0.02), force_reinit=True)
-print(net[0].weight.data(), net[0].bias.data())
-</code></pre>
-<p>我们也可以通过collect_params来访问Block里面所有的参数（这个会包括所有的子Block）。它会返回一个名字到对应Parameter的dict。</p>
-<p>也可以自定义各层的初始化方法，没有自定义的按照net.initialize里面的方法进行定义</p>
-<pre><code class="language-python">from mxnet.gluon import nn
-from mxnet import nd
-from mxnet import init
-
-def get_net():
-    net = nn.Sequential()
-    with net.name_scope():
-        net.add(nn.Dense(4,activation=&quot;relu&quot;))#,weight_initializer=init.Xavier()))
-        net.add(nn.Dense(2,weight_initializer=init.Zero(),bias_initializer=init.Zero()) )
-    return net
-
-x = nd.random.uniform(shape=(3,5))
-net = get_net()
-net.initialize(init.One())
-net(x)
-print(net[1].weight.data
-</code></pre>
-<h2 id="gpu访问">GPU访问</h2>
-<ol>
-<li>删除cpu版本mxnet</li>
-</ol>
-<pre><code class="language-bash">pip uninstall mxnet
-</code></pre>
-<ol start="2">
-<li>更新GPU版本mxnet</li>
-</ol>
-<pre><code class="language-bash">pip install -U --pre mxnet-cu80
-</code></pre>
-<ol start="3">
-<li>查看版本号</li>
-</ol>
-<pre><code class="language-python">import pip
-for pkg in ['mxnet', 'mxnet-cu75', 'mxnet-cu80']:
-    pip.main(['show', pkg])
-</code></pre>
-<h2 id="使用jupyter的相关插件">使用jupyter的相关插件</h2>
-<ol>
-<li>notedown插件<br>
-可以在jupyter 中查看markdown文件</li>
-<li>nb_conda<br>
-是conda的插件，可以在jupyter里面修改python内核版本</li>
-</ol>
-<h2 id="优化方法">优化方法</h2>
-<p><strong>momentum</strong><br>
-gluon.Trainer的learning_rate属性和set_learning_rate函数可以随意调整学习率。</p>
-<pre><code class="language-python">trainer = gluon.Trainer(net.collect_params(), 'sgd',
-                            {'learning_rate': lr, 'momentum': mom})
-</code></pre>
-<p><strong>adagrad</strong><br>
-Adagrad是一个在迭代过程中不断自我调整学习率，并让模型参数中每个元素都使用不同学习率的优化算法。</p>
-<pre><code class="language-python">    trainer = gluon.Trainer(net.collect_params(), 'adagrad',
-                            {'learning_rate': lr})
-</code></pre>
-<p><strong>Adam</strong></p>
-<pre><code class="language-python">trainer = gluon.Trainer(net.collect_params(), 'adam',
-                            {'learning_rate': lr})
-
-</code></pre>
-<p>通过以上分析, 理论上可以说, 在数据比较稀疏的时候, adaptive 的方法能得到更好的效果, 例如, adagrad, adadelta, rmsprop, adam 等. 在数据稀疏的情况下, adam 方法也会比 rmsprop 方法收敛的结果要好一些, 所以, 通常在没有其它更好的理由的前框下, 我会选用 adam 方法, 可以比较快地得到一个预估结果. 但是, 在论文中, 我们看到的大部分还是最原始的 mini-batch 的 SGD 方法. 因为马鞍面的存在等问题, SGD 方法有时候较难收敛. 另外, SGD 对于参数的初始化要求也比较高. 所以, 如果要是想快速收敛的话, 建议使用 adam 这类 adaptive 的方法</p>
-<h2 id="延迟执行">延迟执行</h2>
-<p>延后执行使得系统有更多空间来做性能优化。但我们推荐每个批量里至少有一个同步函数，例如对损失函数进行评估，来避免将过多任务同时丢进后端系统。</p>
-<pre><code class="language-python">from mxnet import autograd
-
-mem = get_mem()
-
-total_loss = 0
-for x, y in get_data():
-    with autograd.record():
-        L = loss(y, net(x))
-    total_loss += L.sum().asscalar()
-    L.backward()
-    trainer.step(x.shape[0])
-
-nd.waitall()
-print('Increased memory %f MB' % (get_mem() - mem))
-
-</code></pre>
-<h2 id="多gpu训练">多GPU训练</h2>
-<pre><code class="language-python">ctx = [gpu(i) for i in range(num_gpus)]
-data_list = gluon.utils.split_and_load(data, ctx)
-label_list = gluon.utils.split_and_load(label, ctx)
-
-
-
-</code></pre>
-<h2 id="fintune-微调">fintune 微调</h2>
-<p><a href="https://fiercex.github.io/post/gluon_features_fine/">gluon微调</a></p>
-<h1 id="一些可以重复使用的代码">一些可以重复使用的代码</h1>
-<h2 id="读取数据">读取数据</h2>
-<pre><code class="language-python">from mxnet import gluon
-from mxnet import ndarray as nd
-
-def transform(data, label):
-    return data.astype('float32')/255, label.astype('float32')
-mnist_train = gluon.data.vision.FashionMNIST(train=True, transform=transform)
-mnist_test = gluon.data.vision.FashionMNIST(train=False, transform=transform)
-
-</code></pre>
-<h2 id="计算精度">计算精度</h2>
-<pre><code class="language-python">def accuracy(output, label):
-    return nd.mean(output.argmax(axis=1)==label).asscalar()
-
-
-</code></pre>
-<p>我们先使用Flatten层将输入数据转成 batch_size x ? 的矩阵，然后输入到10个输出节点的全连接层。照例我们不需要制定每层输入的大小，gluon会做自动推导。</p>
-<h2 id="激活函数">激活函数</h2>
-<p><strong>sigmoid</strong></p>
-<pre><code class="language-python">from mxnet import nd
-def softmax(X):
-    exp = nd.exp(X)
-    # 假设exp是矩阵，这里对行进行求和，并要求保留axis 1，
-    # 就是返回 (nrows, 1) 形状的矩阵
-    partition = exp.sum(axis=1, keepdims=True)
-    return exp / partition
-
-
-</code></pre>
-<p><strong>relu</strong></p>
-<pre><code class="language-python">def relu(X):
-    return nd.maximum(X, 0)
-
-</code></pre>
-<h2 id="损失函数">损失函数</h2>
-<p><strong>平方误差</strong></p>
-<pre><code class="language-python">square_loss = gluon.loss.L2Loss()
-
-
-</code></pre>
-<pre><code class="language-python">def square_loss(yhat, y):
-    # 注意这里我们把y变形成yhat的形状来避免矩阵形状的自动转换
-    return (yhat - y.reshape(yhat.shape)) ** 2
- 
-
-</code></pre>
-<p><strong>交叉熵损失</strong></p>
-<pre><code class="language-python">def cross_entropy(yhat, y):
-    return - nd.pick(nd.log(yhat), y)
-
-</code></pre>
-<pre><code class="language-python">softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
-
-</code></pre>
-<h2 id="取一个batch_size的代码">取一个batch_size的代码</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">import random
-batch_size = 1
-def data_iter(num_examples):
-    idx = list(range(num_examples))
-    random.shuffle(idx)
-    for i in range(0, num_examples, batch_size):
-        j = nd.array(idx[i:min(i+batch_size,num_examples)])
-        yield X.take(j), y.take(j)
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">batch_size = 1
-dataset_train = gluon.data.ArrayDataset(X_train, y_train)
-data_iter_train = gluon.data.DataLoader(dataset_train, batch_size, shuffle=True)
-
-
-
-</code></pre>
-<h2 id="初始化权值">初始化权值</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">def get_params():
-    w = nd.random.normal(shape=(num_inputs, 1))*0.1
-    b = nd.zeros((1,))
-    for param in (w, b):
-        param.attach_grad()
-    return (w, b)
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">net.initialize()
-
-
-net.collect_params().initialize(mx.init.Normal(sigma=1))
-
-</code></pre>
-<h2 id="sgd">SGD</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">def SGD(params, lr):
-    for param in params:
-        param[:] = param - lr * param.grad
-
-
-</code></pre>
-<p>L2正则</p>
-<pre><code class="language-python">def L2_penalty(w, b):
-    return ((w**2).sum() + b**2) / 2
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code>    trainer = gluon.Trainer(net.collect_params(), 'sgd', {
-        'learning_rate': learning_rate, 'wd': weight_decay})
-
-</code></pre>
-<p>这里的weight_decay表明这里添加了L2正则，正则化<br>
-w = w -lr * grad - wd * w</p>
-<h2 id="训练过程">训练过程</h2>
-<p><strong>scratch版本</strong></p>
-<pre><code class="language-python">    for e in range(epochs):        
-        for data, label in data_iter(num_train):
-            with autograd.record():
-                output = net(data, lambd, *params)
-                loss = square_loss(
-                    output, label) + lambd * L2_penalty(*params)
-            loss.backward()
-            SGD(params, learning_rate)
-        train_loss.append(test(params, X_train, y_train))
-        test_loss.append(test(params, X_test, y_test))
-
-</code></pre>
-<p><strong>gluon版本</strong></p>
-<pre><code class="language-python">    for e in range(epochs):        
-        for data, label in data_iter_train:
-            with autograd.record():
-                output = net(data)
-                loss = square_loss(output, label)
-            loss.backward()
-            trainer.step(batch_size)            
-        train_loss.append(test(net, X_train, y_train))
-        test_loss.append(test(net, X_test, y_test))
-
-
-</code></pre>
-<pre><code class="language-python">%matplotlib inline
-import matplotlib as mpl
-mpl.rcParams['figure.dpi']= 120
-import matplotlib.pyplot as plt
-
-def train(X_train, X_test, y_train, y_test):
-    # 线性回归模型
-    net = gluon.nn.Sequential()
-    with net.name_scope():
-        net.add(gluon.nn.Dense(1))
-    net.initialize()
-    # 设一些默认参数
-    learning_rate = 0.01
-    epochs = 100
-    batch_size = min(10, y_train.shape[0])
-    dataset_train = gluon.data.ArrayDataset(X_train, y_train)
-    data_iter_train = gluon.data.DataLoader(
-        dataset_train, batch_size, shuffle=True)
-    # 默认SGD和均方误差
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {
-        'learning_rate': learning_rate})
-    square_loss = gluon.loss.L2Loss()
-    # 保存训练和测试损失
-    train_loss = []
-    test_loss = []
-    for e in range(epochs):
-        for data, label in data_iter_train:
-            with autograd.record():
-                output = net(data)
-                loss = square_loss(output, label)
-            loss.backward()
-            trainer.step(batch_size)
-        train_loss.append(square_loss(
-            net(X_train), y_train).mean().asscalar())
-        test_loss.append(square_loss(
-            net(X_test), y_test).mean().asscalar())
-    # 打印结果
-    plt.plot(train_loss)
-    plt.plot(test_loss)
-    plt.legend(['train','test'])
-    plt.show()
-    return ('learned weight', net[0].weight.data(),
-            'learned bias', net[0].bias.data())
-
-</code></pre>
-<p>最终版</p>
-<pre><code class="language-python">def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batches=None):
-    &quot;&quot;&quot;Train a network&quot;&quot;&quot;
-    print(&quot;Start training on &quot;, ctx)
-    if isinstance(ctx, mx.Context):
-        ctx = [ctx]
-    for epoch in range(num_epochs):
-        train_loss, train_acc, n, m = 0.0, 0.0, 0.0, 0.0
-        if isinstance(train_data, mx.io.MXDataIter):
-            train_data.reset()
-        start = time()
-        for i, batch in enumerate(train_data):
-            data, label, batch_size = _get_batch(batch, ctx)
-            losses = []
-            with autograd.record():
-                outputs = [net(X) for X in data]
-                losses = [loss(yhat, y) for yhat, y in zip(outputs, label)]
-            for l in losses:
-                l.backward()
-            train_acc += sum([(yhat.argmax(axis=1)==y).sum().asscalar()
-                              for yhat, y in zip(outputs, label)])
-            train_loss += sum([l.sum().asscalar() for l in losses])
-            trainer.step(batch_size)
-            n += batch_size
-            m += sum([y.size for y in label])
-            if print_batches and (i+1) % print_batches == 0:
-                print(&quot;Batch %d. Loss: %f, Train acc %f&quot; % (
-                    n, train_loss/n, train_acc/m
-                ))
-
-        test_acc = evaluate_accuracy(test_data, net, ctx)
-        print(&quot;Epoch %d. Loss: %.3f, Train acc %.2f, Test acc %.2f, Time %.1f sec&quot; % (
-            epoch, train_loss/n, train_acc/m, test_acc, time() - start
-        ))
-
-</code></pre>
-<h1 id="reference">reference</h1>
-<p><a href="https://zhuanlan.zhihu.com/p/28867241">从零开始码一个皮卡丘检测器</a></p>
-<p><a href="http://blog.csdn.net/jesse_mx/article/details/53606897">图片标注工具</a></p>
-<p><a href="http://blog.csdn.net/u014696921/article/details/56877979"> mxnet 使用自己的图片数据训练CNN模型</a></p>
-<p><a href="https://mxnet.incubator.apache.org/api/python/image.html#Image">mxnet image API</a></p>
-<p><a href="https://mxnet.incubator.apache.org/how_to/recordio.html?highlight=recordio">Create a Dataset Using RecordIO</a></p>
-<p><a href="http://blog.csdn.net/muyouhang/article/details/77727381">基于MXNet gluon 的SSD模型训练</a></p>
-<p><a href="https://groups.google.com/a/continuum.io/forum/m/#!topic/anaconda/RuSpZVPEio8">解决conda与ipython notebook的python版本问题</a></p>
-<p><a href="http://blog.csdn.net/sunshine_in_moon/article/details/51434908">神经网络计算参数量的方法</a></p>
-<p><a href="https://www.jianshu.com/p/c56a37093cfa">神经网络计算特征图的大小的方法</a></p>
-<p><a href="http://minibatch.net/2017/06/11/%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87-Batch-Normalization/">BN应该放在relu后</a></p>
 ]]></content>
     </entry>
 </feed>

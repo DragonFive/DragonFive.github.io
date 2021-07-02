@@ -5,14 +5,14 @@
     
 <meta charset="utf-8" >
 
-<title>tensorflow学习笔记 | dragon</title>
+<title>google tensorflow | dragon</title>
 <meta name="description" content="Code is cheap, show me the theory">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625218865899">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625232336482">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625218865899" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625232336482" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -79,7 +79,7 @@
       <div class="content-container">
         <div class="post-detail">
           
-          <h2 class="post-title">tensorflow学习笔记</h2>
+          <h2 class="post-title">google tensorflow</h2>
           <div class="post-info post-detail-info">
             <span><i class="icon-calendar-outline"></i> 2017-11-20</span>
             
@@ -110,7 +110,7 @@
           </div>
           <div class="post-content">
             <hr>
-<p>title: tensorflow学习笔记</p>
+<p>title: tensorflow</p>
 <p>date: 2017/11/20 12:04:12</p>
 <p>categories:</p>
 <ul>
@@ -121,6 +121,31 @@ tags:</li>
 <li>神经网络</li>
 </ul>
 <hr>
+<p>框架层为上层模型开发提供了强大的多语言接口、稳定的运行时、高效的算子，以及完备的通信层和设备层管理层。<br>
+学习Tensorflow框架内核，可以理解前端接口语言的支持，session生命周期，graph的构建、分裂和执行，operation的注册和运行，模块间数据通信，本地运行和分布式运行模式，以及CPU GPU TPU等异构设备的封装支持等。</p>
+<h1 id="tensorflow-系统架构">tensorflow 系统架构</h1>
+<figure data-type="image" tabindex="1"><img src="https://flomo.oss-cn-shanghai.aliyuncs.com/file/2021-07-02/32821/cb0c17b8d0513cbb445523261a74bb92.png" alt="" loading="lazy"></figure>
+<p>以C API为界，分为前端和后端两大部分。</p>
+<ul>
+<li>前端：提供编程模型，多语言的接口支持，比如Python Java C++等。通过C API建立前后端的连接，后面详细讲解。</li>
+<li>后端：提供运行环境，完成计算图的执行。进一步分为4层
+<ul>
+<li>运行时：分为分布式运行时和本地运行时，负责计算图的接收，构造，编排等。</li>
+<li>计算层：提供各op算子的内核实现，例如conv2d, relu等</li>
+<li>通信层：实现组件间数据通信，基于GRPC和RDMA两种通信方式</li>
+<li>设备层：提供多种异构设备的支持，如CPU GPU TPU FPGA等</li>
+</ul>
+</li>
+</ul>
+<h1 id="大体流程">大体流程</h1>
+<ul>
+<li>图构建：用户在client中基于TensorFlow的多语言编程接口，添加算子，完成计算图的构造。</li>
+<li>图传递：client开启session，通过它建立和master之间的连接。执行session.run()时，将构造好的graph序列化为graphDef后，以protobuf的格式传递给master。</li>
+<li>图剪枝：master根据session.run()传递的fetches和feeds列表，反向遍历全图full graph，实施剪枝，得到最小依赖子图</li>
+<li>图分裂：master将最小子图分裂为多个Graph Partition，并注册到多个worker上。一个worker对应一个Graph Partition。</li>
+<li>图二次分裂：worker根据当前可用硬件资源，如CPU GPU，将Graph Partition按照op算子设备约束规范（例如tf.device(’/cpu:0’)，二次分裂到不同设备上。每个计算设备对应一个Graph Partition。</li>
+<li>图运行：对于每一个计算设备，worker依照op在kernel中的实现，完成op的运算。设备间数据通信可以使用send/recv节点，而worker间通信，则使用GRPC或RDMA协议。</li>
+</ul>
 <p>matplotlib.pyplot 的使用：</p>
 <pre><code class="language-python">import matplotlib
 matplotlib.use('Agg')
