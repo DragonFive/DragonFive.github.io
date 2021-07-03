@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-03T07:38:04.689Z</updated>
+    <updated>2021-07-03T09:02:45.950Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -300,19 +300,6 @@ MPI集群方式用75个计算节点</p>
 </li>
 </ol>
 <p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[[转自刘光聪]TensorFlow架构与设计：OP本质论]]></title>
-        <id>https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/</id>
-        <link href="https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/">
-        </link>
-        <updated>2021-03-05T03:59:51.000Z</updated>
-        <content type="html"><![CDATA[<blockquote>
-<blockquote>
-<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。本篇文章摘自 <a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
-</blockquote>
-</blockquote>
 ]]></content>
     </entry>
     <entry>
@@ -962,6 +949,32 @@ def trainable_variables(scope=None):
 ]]></content>
     </entry>
     <entry>
+        <title type="html"><![CDATA[[转自刘光聪]TensorFlow架构与设计：OP本质论]]></title>
+        <id>https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/</id>
+        <link href="https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/">
+        </link>
+        <updated>2019-03-05T03:59:51.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。本篇文章摘自 <a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+</blockquote>
+</blockquote>
+<h1 id="符号编程">符号编程</h1>
+<p>TensorFlow的计算过程是一个延迟计算，是一种典型的基于符号的编程范式。从计算时间轴看，计算过程基本分为2个阶段：</p>
+<ul>
+<li>图构造期：负责计算图的构造；</li>
+<li>图执行期：负责计算图的执行。</li>
+</ul>
+<p>其中，在系统初始化时，系统实现对所有OP进行扫描注册，并保存于OpRegistry之中。</p>
+<h2 id="注册op">注册OP</h2>
+<p>理论上，OP的注册发生在系统初始化阶段。后端系统，可以使用REGISTER_OP实用宏注册OP。前端系统，也存在类似的OP注册机制。</p>
+<p>使用REGISTER_OP注册OP过程，实际上是一个REGISTER_OP描述到OpDef表示的翻译过程。OpDefBuilder通过链式调用Input, Output, Attr方法分别构造OP的输入、输出列表，及其属性列表。最后，通过调用Finalize成员函数，经过解析字符串表示，将其翻译为OpDef的内在表示，最后注册到OpRegistry之中。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-66c28d1f68d97448.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/150/format/webp" alt="" loading="lazy"></figure>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[TF的session 与graph]]></title>
         <id>https://DragonFive.github.io/post/tf-de-session-yu-graph/</id>
         <link href="https://DragonFive.github.io/post/tf-de-session-yu-graph/">
@@ -1140,8 +1153,8 @@ class Graph(object):
 <p>由Node和Edge，即可以组成图Graph，通过任何节点和任何边，都可以遍历完整图。Graph执行计算时，按照拓扑结构，依次执行每个Node的op计算，最终即可得到输出结果。入度为0的节点，也就是依赖数据已经准备好的节点，可以并发执行，从而提高运行效率。</p>
 <p>系统中存在默认的Graph，初始化Graph时，会添加一个Source节点和Sink节点。Source表示Graph的起始节点，Sink为终止节点。Source的id为0，Sink的id为1，其他节点id均大于1.</p>
 <h1 id="参考资料">参考资料</h1>
-<p><a href="https://blog.csdn.net/u013510838/article/details/84139986">(81条消息) Tensorflow源码解析3 -- TensorFlow核心对象 - Graph_谢杨易的博客-CSDN博客</a></p>
-<p><a href="https://blog.csdn.net/u013510838/article/details/84111031">(81条消息) Tensorflow源码解析2 -- 前后端连接的桥梁 - Session_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84139986">Graph_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84111031">Session_谢杨易的博客-CSDN博客</a></p>
 ]]></content>
     </entry>
 </feed>
