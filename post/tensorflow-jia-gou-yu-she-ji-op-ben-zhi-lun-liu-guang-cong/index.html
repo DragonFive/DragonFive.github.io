@@ -6,13 +6,13 @@
 <meta charset="utf-8" >
 
 <title>[转自刘光聪]TensorFlow架构与设计：OP本质论 | dragon</title>
-<meta name="description" content="Code is cheap, show me the theory">
+<meta name="description" content="Get your hands dirty!">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625302962644">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625309988625">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625302962644" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625309988625" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -100,7 +100,15 @@
 <h2 id="注册op">注册OP</h2>
 <p>理论上，OP的注册发生在系统初始化阶段。后端系统，可以使用REGISTER_OP实用宏注册OP。前端系统，也存在类似的OP注册机制。</p>
 <p>使用REGISTER_OP注册OP过程，实际上是一个REGISTER_OP描述到OpDef表示的翻译过程。OpDefBuilder通过链式调用Input, Output, Attr方法分别构造OP的输入、输出列表，及其属性列表。最后，通过调用Finalize成员函数，经过解析字符串表示，将其翻译为OpDef的内在表示，最后注册到OpRegistry之中。</p>
-<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-66c28d1f68d97448.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/150/format/webp" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-66c28d1f68d97448.png" alt="" loading="lazy"></figure>
+<p>例如，REGISTER_OP(&quot;ZerosLike&quot;)向系统注册了一个zeros_like的OP，在运行时实现了OpDef的翻译表达。</p>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-b1cffcdf5b4e6795.png" alt="" loading="lazy"></figure>
+<h2 id="构造op">构造OP</h2>
+<p>在前端，用户使用OP构造器实现OP的构造，并将OP注册到计算图中。在计算图构造期间，OP的输入/输出的类型，Shape得以确定，OP属性值也得以确定。</p>
+<p>计算图的构造过程，实际上就是GraphDef定义过程。其中，OP的属性值承载于NodeDef，计算图构造期间，NodeDef的属性值得以确定。</p>
+<p>在计算图执行启动时，通过调用Session.run，将整个GraphDef传递给后端，并启动计算图的执行。</p>
+<h2 id="执行op">执行OP</h2>
+<p>在计算图执行期间，输入由上游OP流入得以确定，根据特定设备类型，输入输出类型，多态选择合适的Kernel实现，并启动Kernel的计算过程。</p>
 <h1 id="参考资料">参考资料</h1>
 <p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
 
@@ -121,7 +129,7 @@
       
 
       <div class="site-footer">
-  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="slogan">Get your hands dirty!</div>
   <div class="social-container">
     
       

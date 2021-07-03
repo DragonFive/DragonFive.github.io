@@ -6,13 +6,13 @@
 <meta charset="utf-8" >
 
 <title>TF的OP与Tensor | dragon</title>
-<meta name="description" content="Code is cheap, show me the theory">
+<meta name="description" content="Get your hands dirty!">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625302962644">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625309988625">
 <link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
 
 
@@ -29,7 +29,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625302962644" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625309988625" alt="" width="32px" height="32px">
       </a>
       <a href="https://DragonFive.github.io/">
         <h1 class="site-title">dragon</h1>
@@ -167,7 +167,7 @@ class Operation(object):
 </code></pre>
 <h2 id="opdef">opDef</h2>
 <p>在系统实现中，OP的元数据使用Protobuf格式的OpDef描述，实现前端与后端的数据交换，及其领域模型的统一。</p>
-<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-d25671f7ef2fe90a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/309/format/webp" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625303245446.png" alt="" loading="lazy"></figure>
 <h1 id="op-后端">op 后端</h1>
 <p>C++后端中，Graph图也包含两部分，即边Edge和节点Node。同样，节点Node用来表示计算算子，而边Edge则表示计算数据或者Node间依赖关系。Node数据结构如下所示。</p>
 <pre><code class="language-c++">class Node {
@@ -333,7 +333,7 @@ with tf.Session() as sess:
 V = tf.Variable(W.initialized_value(), name='V')
 </code></pre>
 <p>事实上，两者通过Identity衔接，并显式地添加了依赖控制边，保证W在V之前初始化。此处，存在两个Identity的OP，但职责不一样，它们分别完成初始化依赖和变量读取。</p>
-<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-07fcc971de877958.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/340/format/webp" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625303315456.png" alt="" loading="lazy"></figure>
 <h2 id="tfget_variable">tf.get_variable()</h2>
 <pre><code class="language-python">get_variable(
     name,
@@ -437,7 +437,7 @@ def trainable_variables(scope=None):
 <p>其他集合还有model_variables，moving_average_variables。</p>
 <h2 id="tf-variable-的本质">TF variable 的本质</h2>
 <p>Variable是一个特殊的OP，它拥有状态(Stateful)。如果从实现技术探究，Variable的Kernel实现直接持有一个Tensor实例，存在几个操作Variable的特殊OP，例如Assign, AssignAdd等。变量所持有的Tensor以引用的方式输入到Assign中，Assign根据初始值，就地修改Tensor内部的值，最后以引用的方式输出该Tensor。通过初始化器(Initializer)在初始化期间，将初始化值赋予Variable内部所持有Tensor，完成Variable的就地修改。如果要读取变量的值，则通过Identity恒等变化，直接输出变量所持有的Tensor。但时，Identity去除了Variable的引用标识，同时也避免了内存拷贝。</p>
-<figure data-type="image" tabindex="3"><img src="https://upload-images.jianshu.io/upload_images/2254249-7c2cd1ef175994b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1625303479372.png" alt="" loading="lazy"></figure>
 <h1 id="参考资料">参考资料</h1>
 <p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
 <p><a href="https://www.jianshu.com/p/bebcdfb74fb1">TensorFlow架构与设计：变量初始化 - 简书</a></p>
@@ -462,7 +462,7 @@ def trainable_variables(scope=None):
       
 
       <div class="site-footer">
-  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="slogan">Get your hands dirty!</div>
   <div class="social-container">
     
       
