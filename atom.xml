@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-02T13:29:45.801Z</updated>
+    <updated>2021-07-03T07:38:04.689Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -177,7 +177,7 @@ HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输
 <li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
 <li>tensorflow 使用它的ps后吞吐会严重下降</li>
 </ul>
-<p>为了提升tensorflow, money, pytorch较差的分布式性能，uber 的horovod<br>
+<p>为了提升tensorflow, mxnet, pytorch较差的分布式性能，uber 的horovod<br>
 <a href="https://arxiv.org/abs/1802.05799">Horovod: fast and easy distributed deeplearninginTensorFlow</a><br>
 和字节的byteps<br>
 <a href="https://arxiv.org/abs/1807.00311">Product-based Neural Networks for User Response Prediction over Multi-field Categorical Data</a><br>
@@ -300,6 +300,19 @@ MPI集群方式用75个计算节点</p>
 </li>
 </ol>
 <p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[[转自刘光聪]TensorFlow架构与设计：OP本质论]]></title>
+        <id>https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/</id>
+        <link href="https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/">
+        </link>
+        <updated>2021-03-05T03:59:51.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。本篇文章摘自 <a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+</blockquote>
+</blockquote>
 ]]></content>
     </entry>
     <entry>
@@ -537,6 +550,373 @@ os.environ['TF_CONFIG'] = json.dumps( {'cluster': cluster, 'task': {'type': 'eva
 ]]></content>
     </entry>
     <entry>
+        <title type="html"><![CDATA[TF的OP与Tensor]]></title>
+        <id>https://DragonFive.github.io/post/tf-de-op-yu-tensor/</id>
+        <link href="https://DragonFive.github.io/post/tf-de-op-yu-tensor/">
+        </link>
+        <updated>2019-04-18T01:42:54.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。上篇记录于 <a href="http://localhost:4000/post/tf-de-session-yu-graph/">TF的session 与graph | dragon</a></p>
+</blockquote>
+<p>Graph包含两大成员，节点和边。节点即为计算算子Operation，边则为计算数据Tensor。由起始节点Source出发，按照Graph的拓扑顺序，依次执行节点的计算，即可完成整图的计算，最后结束于终止节点Sink，并输出计算结果。边用来表示计算的数据，它经过上游节点计算后得到，然后传递给下游节点进行运算。本文讲解Graph的边Tensor，以及TensorFlow中的变量。</p>
+<h1 id="op前端">Op前端</h1>
+<p>Python前端中，Operation表示Graph的节点，Tensor表示Graph的边。Operation包含OpDef和NodeDef两个主要成员变量。其中OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。而NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。</p>
+<pre><code class="language-python">@tf_export(&quot;Operation&quot;)
+class Operation(object):
+  def __init__(self,
+               node_def,
+               g,
+               inputs=None,
+               output_types=None,
+               control_inputs=None,
+               input_types=None,
+               original_op=None,
+               op_def=None):
+     # graph引用，通过它可以拿到Operation所注册到的Graph
+     self._graph = g
+    
+    # inputs
+    if inputs is None:
+      inputs = []
+
+    #  input types
+    if input_types is None:
+      input_types = [i.dtype.base_dtype for i in inputs]
+
+    # control_input_ops
+    control_input_ops = []
+    
+    # node_def和op_def是两个最关键的成员
+    if not self._graph._c_graph:
+      self._inputs_val = list(inputs)  # Defensive copy.
+      self._input_types_val = input_types
+      self._control_inputs_val = control_input_ops
+      
+      # NodeDef，深复制
+      self._node_def_val = copy.deepcopy(node_def)
+        
+      # OpDef
+      self._op_def_val = op_def
+      
+    # outputs输出
+    self._outputs = [
+        Tensor(self, i, output_type)
+        for i, output_type in enumerate(output_types)
+    ]
+</code></pre>
+<p>成员函数，通过成员函数我们可以拿到Operation的两大成员，即OpDef和NodeDef。</p>
+<pre><code class="language-python">  @property
+  def name(self):
+    # Operation的name，注意要嵌套name_scope
+	return self._node_def_val.name
+
+  @property
+  def _id(self):
+    # Operation的唯一标示，id
+    return self._id_value
+
+  @property
+  def device(self):
+    # Operation的设备信息
+    return self._node_def_val.device
+    
+  @property
+  def graph(self):
+    # graph引用
+    return self._graph
+
+  @property
+  def node_def(self):
+    # NodeDef成员，获取Operation的动态属性信息，例如Operation分配到的设备信息，Operation的name等
+    return self._node_def_val
+
+  @property
+  def op_def(self):
+    # OpDef，获取Operation的静态属性信息，例如Operation入参列表，出参列表等
+    return self._op_def_val
+</code></pre>
+<h2 id="opdef">opDef</h2>
+<p>在系统实现中，OP的元数据使用Protobuf格式的OpDef描述，实现前端与后端的数据交换，及其领域模型的统一。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-d25671f7ef2fe90a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/309/format/webp" alt="" loading="lazy"></figure>
+<h1 id="op-后端">op 后端</h1>
+<p>C++后端中，Graph图也包含两部分，即边Edge和节点Node。同样，节点Node用来表示计算算子，而边Edge则表示计算数据或者Node间依赖关系。Node数据结构如下所示。</p>
+<pre><code class="language-c++">class Node {
+ public:
+    // NodeDef,节点算子Operation的信息，比如op分配到哪个设备上了等，运行时有可能变化。
+  	const NodeDef&amp; def() const;
+    
+    // OpDef, 节点算子Operation的元数据，不会变的。比如Operation的入参个数，名字等
+  	const OpDef&amp; op_def() const;
+ private:
+  	// 输入边，传递数据给节点。可能有多条
+  	EdgeSet in_edges_;
+
+  	// 输出边，节点计算后得到的数据。可能有多条
+  	EdgeSet out_edges_;
+}
+
+</code></pre>
+<p>节点Node中包含的主要数据有输入边和输出边的集合，从而能够由Node找到跟他关联的所有边。Node中还包含NodeDef和OpDef两个成员。NodeDef表示节点算子的动态属性，创建Node时会new一个NodeDef对象。OpDef表示节点算子的静态属性，运行时不会变，创建Node时不需要new OpDef，只需要从OpDef仓库中取出即可。因为元信息是确定的，比如Operation的入参列表，出参列表等。</p>
+<h1 id="python-tensor">python Tensor</h1>
+<p>Tensor作为Graph的边，使得节点Operation之间建立了连接。上游源节点Operation经过计算得到数据Tensor，然后传递给下游目标节点，是一个典型的生产者-消费者关系。下面来看Tensor的数据结构:</p>
+<pre><code class="language-python">@tf_export(&quot;Tensor&quot;)
+class Tensor(_TensorLike):
+  def __init__(self, op, value_index, dtype):
+    # 源节点，tensor的生产者，会计算得到tensor
+    self._op = op
+
+    # tensor在源节点的输出边集合中的索引。源节点可能会有多条输出边
+    # 利用op和value_index即可唯一确定tensor。
+    self._value_index = value_index
+
+    # tensor中保存的数据的数据类型
+    self._dtype = dtypes.as_dtype(dtype)
+
+    # tensor的shape，可以得到张量的rank，维度等信息
+    self._shape_val = tensor_shape.unknown_shape()
+
+    # 目标节点列表，tensor的消费者，会使用该tensor来进行计算
+    self._consumers = []
+
+    #
+    self._handle_data = None
+    self._id = uid()
+</code></pre>
+<p>Tensor中主要包含两类信息，一个是Graph结构信息，如边的源节点和目标节点。另一个则是它所保存的数据信息，例如数据类型，shape等。</p>
+<h1 id="c-端-edge">C++ 端 EDGE</h1>
+<p>边Edge为算子所需要的数据，或者代表节点间的依赖关系。这一点和Python中的定义相似。边Edge的持有它的源节点和目标节点的指针，从而将两个节点连接起来。下面看Edge类的定义。</p>
+<pre><code class="language-c++">class Edge {
+   private:
+      Edge() {}
+
+      friend class EdgeSetTest;
+      friend class Graph;
+      // 源节点, 边的数据就来源于源节点的计算。源节点是边的生产者
+      Node* src_;
+
+      // 目标节点，边的数据提供给目标节点进行计算。目标节点是边的消费者
+      Node* dst_;
+
+      // 边id，也就是边的标识符
+      int id_;
+
+      // 表示当前边为源节点的第src_output_条边。源节点可能会有多条输出边
+      int src_output_;
+
+      // 表示当前边为目标节点的第dst_input_条边。目标节点可能会有多条输入边。
+      int dst_input_;
+};
+</code></pre>
+<p>Edge既可以承载tensor数据，提供给节点Operation进行运算，也可以用来表示节点之间有依赖关系。对于表示节点依赖的边，其src_output_, dst_input_均为-1，此时边不承载任何数据。</p>
+<h1 id="tf-varible">TF varible</h1>
+<h2 id="tf常量-constant">TF常量 Constant</h2>
+<p>TensorFlow的常量constant，最终包装成了一个Tensor。通过tf.constant(10)，返回一个Tensor对象。</p>
+<pre><code class="language-python">@tf_export(&quot;constant&quot;)
+def constant(value, dtype=None, shape=None, name=&quot;Const&quot;, verify_shape=False):
+  # 算子注册到默认Graph中
+  g = ops.get_default_graph()
+    
+  # 对常量值value的处理
+  tensor_value = attr_value_pb2.AttrValue()
+  tensor_value.tensor.CopyFrom(
+      tensor_util.make_tensor_proto(
+          value, dtype=dtype, shape=shape, verify_shape=verify_shape))
+
+  # 对常量值的类型dtype进行处理
+  dtype_value = attr_value_pb2.AttrValue(type=tensor_value.tensor.dtype)
+
+  # 构造并注册类型为“Const”的算子到Graph中，从算子的outputs中取出输出的tensor。
+  const_tensor = g.create_op(
+      &quot;Const&quot;, [], [dtype_value.type],
+      attrs={&quot;value&quot;: tensor_value,
+             &quot;dtype&quot;: dtype_value},
+      name=name).outputs[0]
+  return const_tensor
+</code></pre>
+<p>tf.constant的过程为:</p>
+<ol>
+<li>获取默认graph</li>
+<li>对常量值value和常量值的类型dtype进行处理</li>
+<li>构造并注册类型为“Const”的算子到默认graph中，从算子的outputs中取出输出的tensor。</li>
+</ol>
+<p>在TF1.x中，此时只是图的构造过程，tensor并未承载数据，仅表示Operation输出的一个符号句柄。经过tensor.eval()或session.run()后，才会启动graph的执行，并得到数据。</p>
+<h2 id="tf-变量-variable">TF 变量 Variable</h2>
+<p>通过tf.Variable()构造一个变量，代码如下：</p>
+<pre><code class="language-python">@tf_export(&quot;Variable&quot;)
+class Variable(object):
+  def __init__(self,
+               initial_value=None,
+               trainable=True,
+               collections=None,
+               validate_shape=True,
+               caching_device=None,
+               name=None,
+               variable_def=None,
+               dtype=None,
+               expected_shape=None,
+               import_scope=None,
+               constraint=None):
+</code></pre>
+<p><strong>参数：</strong></p>
+<ul>
+<li>
+<p>initial_value: initial_value：Tensor或可转换为Tensor的Python对象，它是Variable的初始值。除非validate_shape设置为False，否则初始值必须具有指定的形状；也可以是一个可调用的，没有参数，在调用时返回初始值。在这种情况下，必须指定dtype。 （请注意，init_ops.py中的初始化函数必须首先绑定到形状才能在此处使用。）</p>
+</li>
+<li>
+<p>trainable：是否可以训练，如果为false，则训练时不会改变，如果为True，则会默认将变量添加到图形集合GraphKeys.TRAINABLE_VARIABLES中。此集合用于Optimizer类优化的的默认变量列表【可为optimizer指定其他的变量集合】，可就是要训练的变量列表。</p>
+</li>
+<li>
+<p>collections：变量要加入哪个集合中，有全局变量集合、本地变量集合、可训练变量集合等。默认[GraphKeys.GLOBAL_VARIABLES]加入全局变量集合中</p>
+</li>
+<li>
+<p>validate_shape：如果为False，则允许使用未知形状的值初始化变量。如果为True，则默认为initial_value的形状必须已知。</p>
+</li>
+<li>
+<p>name：变量的可选名称。默认为“Variable”并自动获取。</p>
+</li>
+<li>
+<p>dtype：如果设置，则initial_value将转换为给定类型。如果为None，则保留数据类型（如果initial_value是Tensor），或者convert_to_tensor将决定。</p>
+</li>
+<li>
+<p>expected_shape：TensorShape。如果设置，则initial_value应具有此形状。</p>
+</li>
+</ul>
+<h3 id="初始化">初始化</h3>
+<p>Variable可以接受一个tensor或者可以被包装为tensor的值，来作为初始值。事实上，Variable可以看做是Tensor的包装器，它重载了Tensor的几乎所有操作，是对Tensor的进一步封装。</p>
+<p>初始化时将initial_value初始值赋予Variable内部持有的Tensor。通过运行变量的初始化器可以对变量进行初始化，也可以执行全局初始化器。如下</p>
+<pre><code class="language-python">y = tf.Variable([5.3])
+
+with tf.Session() as sess:
+    initialization = tf.global_variables_initializer()
+    print sess.run(initialization)
+</code></pre>
+<p>通过调用tf.global_variables_initializer()将变量的所有初始化器进行汇总，然后启动Session运行该OP。事实上，搜集所有全局变量的初始化器的OP是一个NoOp，即不存在输入，也不存在输出。所有变量的初始化器通过控制依赖边与该NoOp相连，保证所有的全局变量被初始化。</p>
+<p>一般常用的参数包括初始化值和名称name(是该变量的唯一索引)，在使用变量之前必须要进行初始化，初始化的方式有三种：</p>
+<ul>
+<li>在会话中运行initializer操作。</li>
+<li>从文件中恢复，如restore from checkpoint。</li>
+<li>自己通过tf.assign()给变量附初值。</li>
+</ul>
+<h3 id="初始化依赖">初始化依赖</h3>
+<p>如果一个变量初始化需要依赖于另外一个变量的初始值，则需要特殊地处理。例如，变量V的初始值依赖于W的初始值，可以通过W.initialized_value()指定。</p>
+<pre><code class="language-python">W = tf.Variable(tf.zeros([784,10]), name='W')
+V = tf.Variable(W.initialized_value(), name='V')
+</code></pre>
+<p>事实上，两者通过Identity衔接，并显式地添加了依赖控制边，保证W在V之前初始化。此处，存在两个Identity的OP，但职责不一样，它们分别完成初始化依赖和变量读取。</p>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-07fcc971de877958.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/340/format/webp" alt="" loading="lazy"></figure>
+<h2 id="tfget_variable">tf.get_variable()</h2>
+<pre><code class="language-python">get_variable(
+    name,
+    shape=None,
+    dtype=None,
+    initializer=None,
+    regularizer=None,
+    trainable=True,
+    collections=None,
+    caching_device=None,
+    partitioner=None,
+    validate_shape=True,
+    use_resource=None,
+    custom_getter=None,
+    constraint=None
+)
+</code></pre>
+<p><strong>参数：</strong></p>
+<ul>
+<li>
+<p>name：新变量或现有变量的名称。</p>
+</li>
+<li>
+<p>shape：新变量或现有变量的形状。</p>
+</li>
+<li>
+<p>dtype：新变量或现有变量的类型（默认为DT_FLOAT）。</p>
+</li>
+<li>
+<p>ininializer：如果创建了，则用它来初始化变量。</p>
+</li>
+<li>
+<p>regularizer：A（Tensor - &gt; Tensor或None）函数;将它应用于新创建的变量的结果将添加到集合tf.GraphKeys.REGULARIZATION_LOSSES中，并可用于正则化。</p>
+</li>
+<li>
+<p>trainable：如果为True，还将变量添加到图形集合GraphKeys.TRAINABLE_VARIABLES（参见tf.Variable）。</p>
+</li>
+<li>
+<p>collections：要将变量添加到的图表集合列表。默认为[GraphKeys.GLOBAL_VARIABLES]（参见tf.Variable）。</p>
+</li>
+<li>
+<p>validate_shape：如果为False，则允许使用未知形状的值初始化变量。如果为True，则默认为initial_value的形状必须已知。</p>
+</li>
+<li>
+<p>use_resource：如果为False，则创建常规变量。如果为true，则使用定义良好的语义创建实验性ResourceVariable。默认为False（稍后将更改为True）。在Eager模式下，此参数始终强制为True。</p>
+</li>
+<li>
+<p>custom_getter：Callable，它将第一个参数作为true getter，并允许覆盖内部get_variable方法。 custom_getter的签名应与此方法的签名相匹配，但最适合未来的版本将允许更改：def custom_getter（getter，* args，** kwargs）。也允许直接访问所有get_variable参数：def custom_getter（getter，name，* args，** kwargs）。一个简单的身份自定义getter只需创建具有修改名称的变量是：python def custom_getter（getter，name，* args，** kwargs）：return getter（name +'_suffix'，* args，** kwargs）。</p>
+</li>
+</ul>
+<p>如果initializer初始化方法是None(默认值)，则会使用variable_scope()中定义的initializer，如果也为None，则默认使用glorot_uniform_initializer，也可以使用其他的tensor来初始化，value、和shape与此tensor相同。</p>
+<p>正则化方法默认是None，如果不指定，只会使用variable_scope()中的正则化方式，如果也为None，则不使用正则化；</p>
+<h2 id="两者区别">两者区别</h2>
+<p>tf.get_variable()会检查当前命名空间下是否存在同样name的变量，可以方便共享变量。而tf.Variable每次都会新建一个变量。tf.get_variable()，要配合reuse和tf.variable_scope()使用，对于get_variable()来说，如果已经创建的变量对象，就把那个对象返回，如果没有创建变量对象的话，就创建一个新的。</p>
+<pre><code class="language-python">import tensorflow as tf
+
+with tf.variable_scope(&quot;scope1&quot;):
+    w1 = tf.get_variable(&quot;w1&quot;, shape=[])
+    w2 = tf.Variable(0.0, name=&quot;w2&quot;)
+with tf.variable_scope(&quot;scope1&quot;, reuse=True):
+    w1_p = tf.get_variable(&quot;w1&quot;, shape=[])
+    w2_p = tf.Variable(1.0, name=&quot;w2&quot;)
+
+print(w1 is w1_p, w2 is w2_p)
+#输出
+#True  False
+</code></pre>
+<h3 id="graphkeys-图分组">GraphKeys 图分组</h3>
+<p>每个Operation节点都有一个特定的标签，从而实现节点的分类。相同标签的节点归为一类，放到同一个Collection中。标签是一个唯一的GraphKey，GraphKey被定义在类GraphKeys中，如下</p>
+<pre><code class="language-python">@tf_export(&quot;GraphKeys&quot;)
+class GraphKeys(object):
+    GLOBAL_VARIABLES = &quot;variables&quot;
+    QUEUE_RUNNERS = &quot;queue_runners&quot;
+    SAVERS = &quot;savers&quot;
+    WEIGHTS = &quot;weights&quot;
+    BIASES = &quot;biases&quot;
+    ACTIVATIONS = &quot;activations&quot;
+    UPDATE_OPS = &quot;update_ops&quot;
+    LOSSES = &quot;losses&quot;
+    TRAIN_OP = &quot;train_op&quot;
+    # 省略其他
+</code></pre>
+<h3 id="variable集合">Variable集合</h3>
+<p>Variable被划分到不同的集合中，方便后续操作。常见的集合有</p>
+<p>全局变量：全局变量可以在不同进程中共享，可运用在分布式环境中。变量默认会加入到全局变量集合中。通过tf.global_variables()可以查询全局变量集合。其op标示为GraphKeys.GLOBAL_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;global_variables&quot;)
+def global_variables(scope=None):
+  return ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES, scope)
+</code></pre>
+<p>本地变量：运行在进程内的变量，不能跨进程共享。通常用来保存临时变量，如训练迭代次数epoches。通过tf.local_variables()可以查询本地变量集合。其op标示为GraphKeys.LOCAL_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;local_variables&quot;)
+def local_variables(scope=None):
+	return ops.get_collection(ops.GraphKeys.LOCAL_VARIABLES, scope)
+</code></pre>
+<p>可训练变量：一般模型参数会放到可训练变量集合中，训练时，做这些变量会得到改变。不在这个集合中的变量则不会得到改变。默认会放到此集合中。通过tf.trainable_variables()可以查询。其op标示为<br>
+GraphKeys.TRAINABLE_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;trainable_variables&quot;)
+def trainable_variables(scope=None):
+  return ops.get_collection(ops.GraphKeys.TRAINABLE_VARIABLES, scope)
+</code></pre>
+<p>其他集合还有model_variables，moving_average_variables。</p>
+<h2 id="tf-variable-的本质">TF variable 的本质</h2>
+<p>Variable是一个特殊的OP，它拥有状态(Stateful)。如果从实现技术探究，Variable的Kernel实现直接持有一个Tensor实例，存在几个操作Variable的特殊OP，例如Assign, AssignAdd等。变量所持有的Tensor以引用的方式输入到Assign中，Assign根据初始值，就地修改Tensor内部的值，最后以引用的方式输出该Tensor。通过初始化器(Initializer)在初始化期间，将初始化值赋予Variable内部所持有Tensor，完成Variable的就地修改。如果要读取变量的值，则通过Identity恒等变化，直接输出变量所持有的Tensor。但时，Identity去除了Variable的引用标识，同时也避免了内存拷贝。</p>
+<figure data-type="image" tabindex="3"><img src="https://upload-images.jianshu.io/upload_images/2254249-7c2cd1ef175994b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp" alt="" loading="lazy"></figure>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+<p><a href="https://www.jianshu.com/p/bebcdfb74fb1">TensorFlow架构与设计：变量初始化 - 简书</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84141538">Tensorflow源码解析4 -- 图的节点 - Operation_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84144238">Tensorflow源码解析5 -- 图的边 - Tensor_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/TeFuirnever/article/details/89577480">tf.get_variable()和tf.Variable()的区别</a></p>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[分布式架构：ring all-reduce算法]]></title>
         <id>https://DragonFive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/</id>
         <link href="https://DragonFive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/">
@@ -762,262 +1142,6 @@ class Graph(object):
 <h1 id="参考资料">参考资料</h1>
 <p><a href="https://blog.csdn.net/u013510838/article/details/84139986">(81条消息) Tensorflow源码解析3 -- TensorFlow核心对象 - Graph_谢杨易的博客-CSDN博客</a></p>
 <p><a href="https://blog.csdn.net/u013510838/article/details/84111031">(81条消息) Tensorflow源码解析2 -- 前后端连接的桥梁 - Session_谢杨易的博客-CSDN博客</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[深度学习框架的并行优化方法小结]]></title>
-        <id>https://DragonFive.github.io/post/deeplearning-parrel/</id>
-        <link href="https://DragonFive.github.io/post/deeplearning-parrel/">
-        </link>
-        <updated>2018-08-11T08:17:26.000Z</updated>
-        <content type="html"><![CDATA[<p>title: 深度学习框架的并行优化方法小结</p>
-<p>categories:</p>
-<ul>
-<li>深度学习<br>
-tags:</li>
-<li>deeplearning</li>
-<li>mpi</li>
-<li>caffe</li>
-</ul>
-<p>目前的深度学习领域就是海量的数据加上大量的数学运算，所以计算量相当的大，训练一个模型跑上十天半个月啥的是常事。那此时分布式的意义就出现了，既然一张GPU卡跑得太慢就来两张，一台机器跑得太慢就用多台机器。</p>
-<p><strong>数据并行</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1505026360037.jpg" alt="数据并行" loading="lazy"></figure>
-<p>每一个节点（或者叫进程）都有一份模型，然后各个节点取不同的数据，通常是一个batch_size，然后各自完成前向和后向的计算得到梯度，这些进行训练的进程我们成为<strong>worker</strong>，除了worker，还有<strong>参数服务器</strong>，简称ps server，这些worker会把各自计算得到的梯度送到ps server，然后由ps server来进行update操作，然后把update后的模型再传回各个节点。因为在这种并行模式中，被划分的是数据，所以这种并行方式叫<strong>数据并行</strong>。</p>
-<p>数据并行有<strong>同步模式和异步模式</strong>之分。同步模式中，所有训练程序同时训练一个批次的训练数据，完成后经过同步，再同时交换参数。参数交换完成后所有的训练程序就有了共同的新模型作为起点，再训练下一个批次。而异步模式中，训练程序完成一个批次的训练数据，立即和参数服务器交换参数，不考虑其他训练程序的状态。异步模式中一个训练程序的最新结果不会立刻体现在其他训练程序中，直到他们进行下次参数交换。</p>
-<p><a href="http://blog.csdn.net/xsc_c/article/details/42420167"> 卷积神经网络的并行化模型</a></p>
-<h1 id="parameter-server">parameter server</h1>
-<p>limu的parameter server， MSRA的adam和google的tensorflow。</p>
-<p><a href="https://www.zhihu.com/question/26998075">最近比较火的parameter server是什么？</a></p>
-<p><a href="http://www.cs.cmu.edu/~muli/file/ps.pdf">李沐：Parameter Server for Distributed Machine Learning</a></p>
-<p>参数服务器是个编程框架，用于方便分布式并行程序的编写，其中重点是对大规模参数的分布式存储和协同的支持。</p>
-<p>参数服务器就类似于MapReduce，是大规模机器学习在不断使用过程中，抽象出来的框架之一。重点支持的就是<strong>参数的分布式</strong>，毕竟巨大的模型其实就是巨大的参数。</p>
-<h2 id="架构">架构：</h2>
-<p>集群中的节点可以分为<strong>计算节点和参数服务节点</strong>两种。其中，计算节点负责对分配到自己本地的训练数据（块）计算学习，并更新对应的参数；参数服务节点采用分布式存储的方式，各自存储全局参数的一部分，并作为服务方接受计算节点的参数查询和更新请求。简而言之吧，计算节点负责干活和更新参数，参数服务节点则负责存储参数。</p>
-<h2 id="冗余和恢复">冗余和恢复：</h2>
-<p>类似MapReduce，每个参数在参数服务器的集群中都在多个不同节点上备份（<strong>3个</strong>也是极好的），这样当出现节点失效时，冗余的参数依旧能够保证服务的有效性。当有新的节点插入时，把原先失效节点的参数从冗余参数那边复制过来，失效节点的接班人就加入队伍了。</p>
-<h2 id="并行计算">并行计算：</h2>
-<p>并行计算这部分主要在计算节点上进行。 类似于MapReduce，分配任务时，会将数据拆分给每个worker节点。参数服务器在开始学习前，也会把大规模的训练数据拆分到每个计算节点上。单个计算节点就对本地数据进行学习就可以了。学习完毕再把参数的更新梯度上传给对应的参数服务节点进行更新。</p>
-<h2 id="流程">流程</h2>
-<p>1.分发训练数据 -&gt; 节点1 节点2   节点3   ... 节点i  ... 节点N<br>
-2.节点i 学习过程：遍历本地的训练数据，统计所有需要的参数(key)向分布式的参数服务器查询需要的参数（注意，本地数据对应到的参数只是全局参数的一小部分）得到查询到的参数值，用于模型的本地训练一轮训练完毕，得到所有对应参数的更新，将更新上传给参数服务器<br>
-3.参数服务器更新参数过程：参数服务器得到计算节点传过来的局部更新，<strong>汇总后更新本地数据</strong></p>
-<h1 id="并行程序">并行程序</h1>
-<h2 id="并行实现实现方式">并行实现实现方式：</h2>
-<ol>
-<li>任务并行：将任务分配带若干计算核上;</li>
-<li><strong>数据并行</strong>：将数据进行分割，然后由不同的计算核进行处理，<strong>每个核在规模相当的数据集上大致采用相同的操作</strong>。这不由使我想到了<strong>CAFFE中的对GPU的运用来实现并行训练</strong>的思路，就是将数据集进行分割，每个GPU并行处理各自对应的数据集。</li>
-</ol>
-<p>多指令多数据流又分为分布式内存系统和共享内存系统。<br>
-<strong>分布式内存系统</strong>：<br>
-每个处理器由独立的内存，通过<strong>消息传递函数</strong>来通信。<br>
-共享式内存系统：<br>
-多个处理器能访问内存系统中的相同内存，通过共享内存进行通信。<br>
-<strong>MPI</strong>就是用来在分布式系统中为各处理器进行消息传递的API。</p>
-<p>各个核能够直接访问自己的内存，而运行在不同核之间的进程需要交换内存数据的时候，只能通过消息传递API来实现。消息传递的API至少要提供一个发送函数和接收函数。**进程之间通过它们的序号（rank）**进行识别。</p>
-<h2 id="并行程序的流程">并行程序的流程</h2>
-<p>a、任务或者<strong>数据划分</strong>，就是要识别出任务中可以进行并行执行的部分。<br>
-b、不同任务之间的<strong>通信</strong>;<br>
-c、<strong>聚合</strong>，将任务和通信进行集合，聚合成更大的任务;<br>
-d、<strong>分配</strong>，将聚合的任务分配到进程或线程中。</p>
-<p>1、MPI是进程级别的，通过通信在进程之间进行消息传递。<br>
-2、编程模型复杂：<br>
-a、需要进行任务划分;<br>
-b、通信延迟和负载不均衡;通信延迟很好理解，负载不均衡是因为分布式的系统，每个处理的任务量不同？待进一步的解释 ；<br>
-c、可靠性差，一个进程出错，整个程序崩溃。第一感觉就是这简直是MPI的命门。在分布式系统中某一个进程出错是很容易的，为MPI的命运担忧。</p>
-<h1 id="通信函数">通信函数</h1>
-<h2 id="一般函数">一般函数</h2>
-<pre><code class="language-cpp">int MPI_Send (void *buf, int count, MPI_Datatype datatype,int dest, int tag,MPI_Comm comm)
-</code></pre>
-<p>参数buf为发送缓冲区；count为发送的数据个数；datatype为发送的数据类型；dest为消息的目的地址(进程号)，其取值范围为0到np－1间的整数(np代表通信器comm中的进程数) 或MPI_PROC_NULL；tag为消息标签，其取值范围为0到MPI_TAG_UB间的整数；<strong>comm为通信器</strong></p>
-<pre><code class="language-cpp">mpi_recv:接收信息   MPI_Probe：预测一下消息的size
-</code></pre>
-<h2 id="mpi聚合通信">mpi聚合通信</h2>
-<p>collective communication。聚合通信是在通信子中的所有的进程都参与的通信方式。</p>
-<h3 id="同步-mpi_barrier">同步 MPI_Barrier</h3>
-<p>MPI_Barrier就是这样的一个函数，他确保除非所有的进程同时调用，否则他不会允许任何进程通过这个节点<br>
-对于所有的进程来说，聚合通信必然包含了一个<strong>同步点</strong>。也就是说所有的进程必须在他们又一次执行新动作之前都到达某个点。这跟GPU中线程同步的概念很相似，很好理解。</p>
-<h3 id="广播">广播</h3>
-<p>广播机制：<br>
-一个进程将相同的数据发送给通信子中所有的进程。该机制最主要的应用是将输入数据发送给并行程序，或者将<strong>配置参数</strong>发送给所有的进程</p>
-<pre><code class="language-cpp">MPI_Bcast(
-    void* data,//数据
-    int count,//数据个数
-    MPI_Datatype datatype,
-    int root,//根进程编号
-    MPI_Comm communicator)
-</code></pre>
-<h3 id="mpi_scatter-数据分发">MPI_Scatter 数据分发</h3>
-<p>MPI_Scatter与MPI_Bcast非常相似，都是<strong>一对多</strong>的通信方式，不同的是后者的<strong>0号进程</strong>将相同的信息发送给所有的进程，而前者则是将一段array 的不同部分发送给所有的进程</p>
-<figure data-type="image" tabindex="2"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761049076.jpg" alt="scatter与bcast的区别" loading="lazy"></figure>
-<pre><code class="language-cpp">MPI_Scatter(
-    void* send_data,//存储在0号进程的数据，array
-    int send_count,//具体需要给每个进程发送的数据的个数
-    //如果send_count为1，那么每个进程接收1个数据；如果为2，那么每个进程接收2个数据
-    MPI_Datatype send_datatype,//发送数据的类型
-    void* recv_data,//接收缓存，缓存 recv_count个数据
-    int recv_count,
-    MPI_Datatype recv_datatype,
-    int root,//root进程的编号
-    MPI_Comm communicator)
-</code></pre>
-<p>通常send_count等于array的元素个数除以进程个数。</p>
-<h3 id="mpi_gather">MPI_Gather</h3>
-<p>MPI_Gather和MPI_scatter刚好相反，他的作用是从所有的进程中将每个进程的数据集中到根进程中，<strong>同样根据进程的编号对array元素排序</strong></p>
-<figure data-type="image" tabindex="3"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761558789.jpg" alt="mpi_gather" loading="lazy"></figure>
-<pre><code class="language-cpp">MPI_Gather(
-    void* send_data,
-    int send_count,
-    MPI_Datatype send_datatype,
-    void* recv_data,
-    int recv_count,//注意该参数表示的是从单个进程接收的数据个数，不是总数
-    MPI_Datatype recv_datatype,
-    int root,
-    MPI_Comm communicator)
-</code></pre>
-<h3 id="mpi_allgather-多对多通信">MPI_Allgather 多对多通信</h3>
-<p>当数据分布在所有的进程中时，MPI_Allgather将所有的数据聚合到每个进程中。</p>
-<figure data-type="image" tabindex="4"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502761637900.jpg" alt="mpi_Allgather" loading="lazy"></figure>
-<h2 id="数据归约-reduce">数据归约 Reduce</h2>
-<p>Reduce——规约是来自函数式编程的一个经典概念。数据规约包含通过一个函数将一批数据分成较小的一批数据。比如将一个数组的元素通过加法函数规约为一个数字。</p>
-<h3 id="mpi_reduce">mpi_reduce</h3>
-<p>与MPI_Gather类似，MPI_Reduce在每个进程上都有一组输入元素，并将<strong>一个输出元素数组返回给根进程</strong>。 输出元素包含被规约的结果。</p>
-<pre><code class="language-cpp">MPI_Reduce(
-    void* send_data,
-    void* recv_data,
-    int count,
-    MPI_Datatype datatype,
-    MPI_Op op,
-    int root,
-    MPI_Comm communicator)
-</code></pre>
-<blockquote>
-<p>send_data参数指向的是每个进程想要规约的datatype类型的元素数组。<br>
-recv_data仅与根进程相关。<br>
-recv_data数组包含规约的结果，并具有sizeof（datatype）* count的大小的内存。<br>
-op参数是要应用于数据的操作。</p>
-</blockquote>
-<p>mpi支持的操作有</p>
-<blockquote>
-<p>MPI_MAX - 返回最大值.<br>
-MPI_MIN - 返回最小值.<br>
-MPI_SUM -元素和.<br>
-MPI_PROD - 元素乘积.<br>
-MPI_LAND - 逻辑与.<br>
-MPI_LOR - 逻辑或<br>
-MPI_BAND -按位与<br>
-MPI_BOR - 按位或<br>
-MPI_MAXLOC - 返回最大值和拥有该值的进程编号<br>
-MPI_MINLOC - 返回最小值和拥有该值的进程编号.```</p>
-</blockquote>
-<p>如果每个进程中的数组拥有两个元素，那么规约结果是对两个对位的元素进行规约的。</p>
-<figure data-type="image" tabindex="5"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762764619.jpg" alt="两个元素的归约结果" loading="lazy"></figure>
-<h3 id="mpi_allreduce">mpi_allReduce</h3>
-<figure data-type="image" tabindex="6"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1502762804609.jpg" alt="归约后分发给所有的进程" loading="lazy"></figure>
-<h1 id="parameter-server-2">parameter-server</h1>
-<h1 id="cuda-c编程">CUDA C编程</h1>
-<h2 id="cuda运行时函数">cuda运行时函数</h2>
-<p>cuda运行时提供了丰富的函数，功能涉及设备管理、存储管理、数据传输、线程管理、流管理、事件管理、纹理管理、执行控制等。</p>
-<h3 id="设备管理函数">设备管理函数</h3>
-<p>函数声明一般这样</p>
-<pre><code>extern __host__ cudaError_t CUDARTAPI 函数名(参数列表)
-</code></pre>
-<p><strong>cudaGetDeviceCount</strong><br>
-获得计算能力大于等于1.0的GPU数量</p>
-<pre><code class="language-cpp">int count;
-cudaGetDeviceCount(&amp;count);
-</code></pre>
-<p><strong>cudaSetDevice</strong><br>
-设置使用的GPU索引号，如果不设置默认使用0号GPU</p>
-<pre><code class="language-cpp">int gpuid = 0;
-cudaSetDevice(gpuid);
-
-</code></pre>
-<p><strong>cudaGetDevice</strong><br>
-获得当前线程的GPU设备号</p>
-<pre><code class="language-cpp">int gpuid;
-cudaGetDevice(&amp;gpuid);
-
-</code></pre>
-<p><strong>cudaSetValidDevices</strong></p>
-<p>设置多个device,len表示签名设备号数组的长度;</p>
-<pre><code class="language-cpp">cudaSetValidDevices(int &amp;device_arr, int len);
-</code></pre>
-<h3 id="存储管理函数">存储管理函数</h3>
-<p><strong>cudaMalloc</strong></p>
-<p>在GPU上分配大小为size的现行存储空间，起始地址为 *devPtr</p>
-<pre><code class="language-cpp">cudaMalloc(void **devPtr,size_t size);
-
-</code></pre>
-<p><strong>cudaMallocPitch</strong></p>
-<p>在GPU上分配大小为PitchxHight的逻辑2D线性存储空间，首地址为<code>*devPtr</code>, 其中Pitch是返回的width对齐后的存储空间的宽度</p>
-<pre><code class="language-cpp">cudaMallocPitch(void **devPtr, size_t *pitch, size_t width, size_t height);
-</code></pre>
-<pre><code>devPtr[x] = devPtr[rowid*pitch+column]
-</code></pre>
-<p><strong>cudaFree</strong><br>
-清空指定的GPU存储区域，可释放cudaMalloc和cudaMallocPitch分类的GPU存储区域</p>
-<pre><code class="language-cpp">cudaFree(void *devPtr);
-
-</code></pre>
-<p><strong>cudaMemset</strong><br>
-将GPU端的devPtr指针指向的count长度的存储空间赋值为value.</p>
-<pre><code class="language-cpp">cudaMemset(void 8DevPTR， int value,size_t count);
-</code></pre>
-<p><strong>cudaHostAlloc</strong><br>
-在主机端(CPU)根据flag值来分配页锁定存储,</p>
-<pre><code class="language-cpp">cudaHostAlloc(void **pHost, size_t size, usigned int flags);
-</code></pre>
-<p>flags可以有四种取值</p>
-<pre><code class="language-cpp">cudaHostAllocDefault   分配默认存储
-cudaHostAllocPortable  分配的存储可以被cuda索引
-cudaHostAllocMapped 分配的存储映射到GPU
-。。。
-
-</code></pre>
-<h3 id="数据传输函数">数据传输函数</h3>
-<p><strong>cudaMemcpy</strong></p>
-<pre><code class="language-cpp">cudaMemcpy(void * dst, const void *src, size_t count, enum cudaMemcpyKind kind);
-</code></pre>
-<p>主机(cpu内存)与设备间的数据传输函数，源地址是<code>*src</code>，目标地址是<code>*dst</code>,传输长度为<code>count</code>,kind指定了传输的方向，kind可选值域如下：</p>
-<pre><code class="language-cpp">cudaMemcpyHostToHost = 0;
-cudaMemcpyHostToDevice = 0;
-cudaMemcpyDeviceToHost = 0;
-cudaMemcpyDeviceToDevice = 0;
-</code></pre>
-<p>还有其它的形式</p>
-<h3 id="线程管理函数">线程管理函数</h3>
-<p><strong>cudaThreadSynchronize</strong></p>
-<p>CPU与GPU之间的同步函数，保证该函数前的CPU和GPU上的任务均执行完成，并在该函数位置汇合。一般是CPU在该函数处等待GPU函数执行完。</p>
-<pre><code class="language-cpp">cudaThreadSynchronize(void);
-</code></pre>
-<h1 id="reference">reference</h1>
-<p>《GPU编程与优化》——方民权</p>
-<h1 id="reference-2">reference</h1>
-<p><a href="http://blog.csdn.net/sinat_22336563/article/details/69486937">MPI学习笔记之并行程序概述</a></p>
-<p><a href="http://blog.csdn.net/xsc_c/article/details/42420167"> 卷积神经网络的并行化模型</a></p>
-<p><a href="https://www.zhihu.com/search?type=content&amp;q=parameter+server">知乎 parameter server</a></p>
-<p><a href="http://blog.csdn.net/xbinworld/article/details/74781605">分布式机器学习系统笔记（一）——模型并行，数据并行，参数平均，ASGD</a></p>
-<p><a href="http://djt.qq.com/article/view/1245">深度学习及并行化实现概述</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[基于知识迁移的深度神经网络压缩方法研究]]></title>
-        <id>https://DragonFive.github.io/post/networker-thransfer/</id>
-        <link href="https://DragonFive.github.io/post/networker-thransfer/">
-        </link>
-        <updated>2018-05-20T03:40:48.000Z</updated>
-        <content type="html"><![CDATA[<hr>
-<p>title: 基于知识迁移的深度神经网络压缩方法研究<br>
-date: 2018/5/20 12:04:12<br>
-tags:</p>
-<ul>
-<li>神经网络压缩</li>
-<li>深度学习</li>
-<li>神经网络</li>
-</ul>
-<hr>
-<p>我的毕设题目是基于知识迁移的深度神经网络压缩方法研究，由于本文涉及实验室的后续研究与项目开发，暂时删除该内容，等待时机合适再公开</p>
-<p>——待续</p>
 ]]></content>
     </entry>
 </feed>

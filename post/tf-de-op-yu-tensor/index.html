@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>TF的OP与Tensor | dragon</title>
+<meta name="description" content="Code is cheap, show me the theory">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625297881525">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625297881525" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">TF的OP与Tensor</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2019-04-18</span>
+            
+          </div>
+          <div class="post-content">
+            <blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。上篇记录于 <a href="http://localhost:4000/post/tf-de-session-yu-graph/">TF的session 与graph | dragon</a></p>
+</blockquote>
+<p>Graph包含两大成员，节点和边。节点即为计算算子Operation，边则为计算数据Tensor。由起始节点Source出发，按照Graph的拓扑顺序，依次执行节点的计算，即可完成整图的计算，最后结束于终止节点Sink，并输出计算结果。边用来表示计算的数据，它经过上游节点计算后得到，然后传递给下游节点进行运算。本文讲解Graph的边Tensor，以及TensorFlow中的变量。</p>
+<h1 id="op前端">Op前端</h1>
+<p>Python前端中，Operation表示Graph的节点，Tensor表示Graph的边。Operation包含OpDef和NodeDef两个主要成员变量。其中OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。而NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。</p>
+<pre><code class="language-python">@tf_export(&quot;Operation&quot;)
+class Operation(object):
+  def __init__(self,
+               node_def,
+               g,
+               inputs=None,
+               output_types=None,
+               control_inputs=None,
+               input_types=None,
+               original_op=None,
+               op_def=None):
+     # graph引用，通过它可以拿到Operation所注册到的Graph
+     self._graph = g
+    
+    # inputs
+    if inputs is None:
+      inputs = []
+
+    #  input types
+    if input_types is None:
+      input_types = [i.dtype.base_dtype for i in inputs]
+
+    # control_input_ops
+    control_input_ops = []
+    
+    # node_def和op_def是两个最关键的成员
+    if not self._graph._c_graph:
+      self._inputs_val = list(inputs)  # Defensive copy.
+      self._input_types_val = input_types
+      self._control_inputs_val = control_input_ops
+      
+      # NodeDef，深复制
+      self._node_def_val = copy.deepcopy(node_def)
+        
+      # OpDef
+      self._op_def_val = op_def
+      
+    # outputs输出
+    self._outputs = [
+        Tensor(self, i, output_type)
+        for i, output_type in enumerate(output_types)
+    ]
+</code></pre>
+<p>成员函数，通过成员函数我们可以拿到Operation的两大成员，即OpDef和NodeDef。</p>
+<pre><code class="language-python">  @property
+  def name(self):
+    # Operation的name，注意要嵌套name_scope
+	return self._node_def_val.name
+
+  @property
+  def _id(self):
+    # Operation的唯一标示，id
+    return self._id_value
+
+  @property
+  def device(self):
+    # Operation的设备信息
+    return self._node_def_val.device
+    
+  @property
+  def graph(self):
+    # graph引用
+    return self._graph
+
+  @property
+  def node_def(self):
+    # NodeDef成员，获取Operation的动态属性信息，例如Operation分配到的设备信息，Operation的name等
+    return self._node_def_val
+
+  @property
+  def op_def(self):
+    # OpDef，获取Operation的静态属性信息，例如Operation入参列表，出参列表等
+    return self._op_def_val
+</code></pre>
+<h2 id="opdef">opDef</h2>
+<p>在系统实现中，OP的元数据使用Protobuf格式的OpDef描述，实现前端与后端的数据交换，及其领域模型的统一。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-d25671f7ef2fe90a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/309/format/webp" alt="" loading="lazy"></figure>
+<h1 id="op-后端">op 后端</h1>
+<p>C++后端中，Graph图也包含两部分，即边Edge和节点Node。同样，节点Node用来表示计算算子，而边Edge则表示计算数据或者Node间依赖关系。Node数据结构如下所示。</p>
+<pre><code class="language-c++">class Node {
+ public:
+    // NodeDef,节点算子Operation的信息，比如op分配到哪个设备上了等，运行时有可能变化。
+  	const NodeDef&amp; def() const;
+    
+    // OpDef, 节点算子Operation的元数据，不会变的。比如Operation的入参个数，名字等
+  	const OpDef&amp; op_def() const;
+ private:
+  	// 输入边，传递数据给节点。可能有多条
+  	EdgeSet in_edges_;
+
+  	// 输出边，节点计算后得到的数据。可能有多条
+  	EdgeSet out_edges_;
+}
+
+</code></pre>
+<p>节点Node中包含的主要数据有输入边和输出边的集合，从而能够由Node找到跟他关联的所有边。Node中还包含NodeDef和OpDef两个成员。NodeDef表示节点算子的动态属性，创建Node时会new一个NodeDef对象。OpDef表示节点算子的静态属性，运行时不会变，创建Node时不需要new OpDef，只需要从OpDef仓库中取出即可。因为元信息是确定的，比如Operation的入参列表，出参列表等。</p>
+<h1 id="python-tensor">python Tensor</h1>
+<p>Tensor作为Graph的边，使得节点Operation之间建立了连接。上游源节点Operation经过计算得到数据Tensor，然后传递给下游目标节点，是一个典型的生产者-消费者关系。下面来看Tensor的数据结构:</p>
+<pre><code class="language-python">@tf_export(&quot;Tensor&quot;)
+class Tensor(_TensorLike):
+  def __init__(self, op, value_index, dtype):
+    # 源节点，tensor的生产者，会计算得到tensor
+    self._op = op
+
+    # tensor在源节点的输出边集合中的索引。源节点可能会有多条输出边
+    # 利用op和value_index即可唯一确定tensor。
+    self._value_index = value_index
+
+    # tensor中保存的数据的数据类型
+    self._dtype = dtypes.as_dtype(dtype)
+
+    # tensor的shape，可以得到张量的rank，维度等信息
+    self._shape_val = tensor_shape.unknown_shape()
+
+    # 目标节点列表，tensor的消费者，会使用该tensor来进行计算
+    self._consumers = []
+
+    #
+    self._handle_data = None
+    self._id = uid()
+</code></pre>
+<p>Tensor中主要包含两类信息，一个是Graph结构信息，如边的源节点和目标节点。另一个则是它所保存的数据信息，例如数据类型，shape等。</p>
+<h1 id="c-端-edge">C++ 端 EDGE</h1>
+<p>边Edge为算子所需要的数据，或者代表节点间的依赖关系。这一点和Python中的定义相似。边Edge的持有它的源节点和目标节点的指针，从而将两个节点连接起来。下面看Edge类的定义。</p>
+<pre><code class="language-c++">class Edge {
+   private:
+      Edge() {}
+
+      friend class EdgeSetTest;
+      friend class Graph;
+      // 源节点, 边的数据就来源于源节点的计算。源节点是边的生产者
+      Node* src_;
+
+      // 目标节点，边的数据提供给目标节点进行计算。目标节点是边的消费者
+      Node* dst_;
+
+      // 边id，也就是边的标识符
+      int id_;
+
+      // 表示当前边为源节点的第src_output_条边。源节点可能会有多条输出边
+      int src_output_;
+
+      // 表示当前边为目标节点的第dst_input_条边。目标节点可能会有多条输入边。
+      int dst_input_;
+};
+</code></pre>
+<p>Edge既可以承载tensor数据，提供给节点Operation进行运算，也可以用来表示节点之间有依赖关系。对于表示节点依赖的边，其src_output_, dst_input_均为-1，此时边不承载任何数据。</p>
+<h1 id="tf-varible">TF varible</h1>
+<h2 id="tf常量-constant">TF常量 Constant</h2>
+<p>TensorFlow的常量constant，最终包装成了一个Tensor。通过tf.constant(10)，返回一个Tensor对象。</p>
+<pre><code class="language-python">@tf_export(&quot;constant&quot;)
+def constant(value, dtype=None, shape=None, name=&quot;Const&quot;, verify_shape=False):
+  # 算子注册到默认Graph中
+  g = ops.get_default_graph()
+    
+  # 对常量值value的处理
+  tensor_value = attr_value_pb2.AttrValue()
+  tensor_value.tensor.CopyFrom(
+      tensor_util.make_tensor_proto(
+          value, dtype=dtype, shape=shape, verify_shape=verify_shape))
+
+  # 对常量值的类型dtype进行处理
+  dtype_value = attr_value_pb2.AttrValue(type=tensor_value.tensor.dtype)
+
+  # 构造并注册类型为“Const”的算子到Graph中，从算子的outputs中取出输出的tensor。
+  const_tensor = g.create_op(
+      &quot;Const&quot;, [], [dtype_value.type],
+      attrs={&quot;value&quot;: tensor_value,
+             &quot;dtype&quot;: dtype_value},
+      name=name).outputs[0]
+  return const_tensor
+</code></pre>
+<p>tf.constant的过程为:</p>
+<ol>
+<li>获取默认graph</li>
+<li>对常量值value和常量值的类型dtype进行处理</li>
+<li>构造并注册类型为“Const”的算子到默认graph中，从算子的outputs中取出输出的tensor。</li>
+</ol>
+<p>在TF1.x中，此时只是图的构造过程，tensor并未承载数据，仅表示Operation输出的一个符号句柄。经过tensor.eval()或session.run()后，才会启动graph的执行，并得到数据。</p>
+<h2 id="tf-变量-variable">TF 变量 Variable</h2>
+<p>通过tf.Variable()构造一个变量，代码如下：</p>
+<pre><code class="language-python">@tf_export(&quot;Variable&quot;)
+class Variable(object):
+  def __init__(self,
+               initial_value=None,
+               trainable=True,
+               collections=None,
+               validate_shape=True,
+               caching_device=None,
+               name=None,
+               variable_def=None,
+               dtype=None,
+               expected_shape=None,
+               import_scope=None,
+               constraint=None):
+</code></pre>
+<p><strong>参数：</strong></p>
+<ul>
+<li>
+<p>initial_value: initial_value：Tensor或可转换为Tensor的Python对象，它是Variable的初始值。除非validate_shape设置为False，否则初始值必须具有指定的形状；也可以是一个可调用的，没有参数，在调用时返回初始值。在这种情况下，必须指定dtype。 （请注意，init_ops.py中的初始化函数必须首先绑定到形状才能在此处使用。）</p>
+</li>
+<li>
+<p>trainable：是否可以训练，如果为false，则训练时不会改变，如果为True，则会默认将变量添加到图形集合GraphKeys.TRAINABLE_VARIABLES中。此集合用于Optimizer类优化的的默认变量列表【可为optimizer指定其他的变量集合】，可就是要训练的变量列表。</p>
+</li>
+<li>
+<p>collections：变量要加入哪个集合中，有全局变量集合、本地变量集合、可训练变量集合等。默认[GraphKeys.GLOBAL_VARIABLES]加入全局变量集合中</p>
+</li>
+<li>
+<p>validate_shape：如果为False，则允许使用未知形状的值初始化变量。如果为True，则默认为initial_value的形状必须已知。</p>
+</li>
+<li>
+<p>name：变量的可选名称。默认为“Variable”并自动获取。</p>
+</li>
+<li>
+<p>dtype：如果设置，则initial_value将转换为给定类型。如果为None，则保留数据类型（如果initial_value是Tensor），或者convert_to_tensor将决定。</p>
+</li>
+<li>
+<p>expected_shape：TensorShape。如果设置，则initial_value应具有此形状。</p>
+</li>
+</ul>
+<h3 id="初始化">初始化</h3>
+<p>Variable可以接受一个tensor或者可以被包装为tensor的值，来作为初始值。事实上，Variable可以看做是Tensor的包装器，它重载了Tensor的几乎所有操作，是对Tensor的进一步封装。</p>
+<p>初始化时将initial_value初始值赋予Variable内部持有的Tensor。通过运行变量的初始化器可以对变量进行初始化，也可以执行全局初始化器。如下</p>
+<pre><code class="language-python">y = tf.Variable([5.3])
+
+with tf.Session() as sess:
+    initialization = tf.global_variables_initializer()
+    print sess.run(initialization)
+</code></pre>
+<p>通过调用tf.global_variables_initializer()将变量的所有初始化器进行汇总，然后启动Session运行该OP。事实上，搜集所有全局变量的初始化器的OP是一个NoOp，即不存在输入，也不存在输出。所有变量的初始化器通过控制依赖边与该NoOp相连，保证所有的全局变量被初始化。</p>
+<p>一般常用的参数包括初始化值和名称name(是该变量的唯一索引)，在使用变量之前必须要进行初始化，初始化的方式有三种：</p>
+<ul>
+<li>在会话中运行initializer操作。</li>
+<li>从文件中恢复，如restore from checkpoint。</li>
+<li>自己通过tf.assign()给变量附初值。</li>
+</ul>
+<h3 id="初始化依赖">初始化依赖</h3>
+<p>如果一个变量初始化需要依赖于另外一个变量的初始值，则需要特殊地处理。例如，变量V的初始值依赖于W的初始值，可以通过W.initialized_value()指定。</p>
+<pre><code class="language-python">W = tf.Variable(tf.zeros([784,10]), name='W')
+V = tf.Variable(W.initialized_value(), name='V')
+</code></pre>
+<p>事实上，两者通过Identity衔接，并显式地添加了依赖控制边，保证W在V之前初始化。此处，存在两个Identity的OP，但职责不一样，它们分别完成初始化依赖和变量读取。</p>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-07fcc971de877958.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/340/format/webp" alt="" loading="lazy"></figure>
+<h2 id="tfget_variable">tf.get_variable()</h2>
+<pre><code class="language-python">get_variable(
+    name,
+    shape=None,
+    dtype=None,
+    initializer=None,
+    regularizer=None,
+    trainable=True,
+    collections=None,
+    caching_device=None,
+    partitioner=None,
+    validate_shape=True,
+    use_resource=None,
+    custom_getter=None,
+    constraint=None
+)
+</code></pre>
+<p><strong>参数：</strong></p>
+<ul>
+<li>
+<p>name：新变量或现有变量的名称。</p>
+</li>
+<li>
+<p>shape：新变量或现有变量的形状。</p>
+</li>
+<li>
+<p>dtype：新变量或现有变量的类型（默认为DT_FLOAT）。</p>
+</li>
+<li>
+<p>ininializer：如果创建了，则用它来初始化变量。</p>
+</li>
+<li>
+<p>regularizer：A（Tensor - &gt; Tensor或None）函数;将它应用于新创建的变量的结果将添加到集合tf.GraphKeys.REGULARIZATION_LOSSES中，并可用于正则化。</p>
+</li>
+<li>
+<p>trainable：如果为True，还将变量添加到图形集合GraphKeys.TRAINABLE_VARIABLES（参见tf.Variable）。</p>
+</li>
+<li>
+<p>collections：要将变量添加到的图表集合列表。默认为[GraphKeys.GLOBAL_VARIABLES]（参见tf.Variable）。</p>
+</li>
+<li>
+<p>validate_shape：如果为False，则允许使用未知形状的值初始化变量。如果为True，则默认为initial_value的形状必须已知。</p>
+</li>
+<li>
+<p>use_resource：如果为False，则创建常规变量。如果为true，则使用定义良好的语义创建实验性ResourceVariable。默认为False（稍后将更改为True）。在Eager模式下，此参数始终强制为True。</p>
+</li>
+<li>
+<p>custom_getter：Callable，它将第一个参数作为true getter，并允许覆盖内部get_variable方法。 custom_getter的签名应与此方法的签名相匹配，但最适合未来的版本将允许更改：def custom_getter（getter，* args，** kwargs）。也允许直接访问所有get_variable参数：def custom_getter（getter，name，* args，** kwargs）。一个简单的身份自定义getter只需创建具有修改名称的变量是：python def custom_getter（getter，name，* args，** kwargs）：return getter（name +'_suffix'，* args，** kwargs）。</p>
+</li>
+</ul>
+<p>如果initializer初始化方法是None(默认值)，则会使用variable_scope()中定义的initializer，如果也为None，则默认使用glorot_uniform_initializer，也可以使用其他的tensor来初始化，value、和shape与此tensor相同。</p>
+<p>正则化方法默认是None，如果不指定，只会使用variable_scope()中的正则化方式，如果也为None，则不使用正则化；</p>
+<h2 id="两者区别">两者区别</h2>
+<p>tf.get_variable()会检查当前命名空间下是否存在同样name的变量，可以方便共享变量。而tf.Variable每次都会新建一个变量。tf.get_variable()，要配合reuse和tf.variable_scope()使用，对于get_variable()来说，如果已经创建的变量对象，就把那个对象返回，如果没有创建变量对象的话，就创建一个新的。</p>
+<pre><code class="language-python">import tensorflow as tf
+
+with tf.variable_scope(&quot;scope1&quot;):
+    w1 = tf.get_variable(&quot;w1&quot;, shape=[])
+    w2 = tf.Variable(0.0, name=&quot;w2&quot;)
+with tf.variable_scope(&quot;scope1&quot;, reuse=True):
+    w1_p = tf.get_variable(&quot;w1&quot;, shape=[])
+    w2_p = tf.Variable(1.0, name=&quot;w2&quot;)
+
+print(w1 is w1_p, w2 is w2_p)
+#输出
+#True  False
+</code></pre>
+<h3 id="graphkeys-图分组">GraphKeys 图分组</h3>
+<p>每个Operation节点都有一个特定的标签，从而实现节点的分类。相同标签的节点归为一类，放到同一个Collection中。标签是一个唯一的GraphKey，GraphKey被定义在类GraphKeys中，如下</p>
+<pre><code class="language-python">@tf_export(&quot;GraphKeys&quot;)
+class GraphKeys(object):
+    GLOBAL_VARIABLES = &quot;variables&quot;
+    QUEUE_RUNNERS = &quot;queue_runners&quot;
+    SAVERS = &quot;savers&quot;
+    WEIGHTS = &quot;weights&quot;
+    BIASES = &quot;biases&quot;
+    ACTIVATIONS = &quot;activations&quot;
+    UPDATE_OPS = &quot;update_ops&quot;
+    LOSSES = &quot;losses&quot;
+    TRAIN_OP = &quot;train_op&quot;
+    # 省略其他
+</code></pre>
+<h3 id="variable集合">Variable集合</h3>
+<p>Variable被划分到不同的集合中，方便后续操作。常见的集合有</p>
+<p>全局变量：全局变量可以在不同进程中共享，可运用在分布式环境中。变量默认会加入到全局变量集合中。通过tf.global_variables()可以查询全局变量集合。其op标示为GraphKeys.GLOBAL_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;global_variables&quot;)
+def global_variables(scope=None):
+  return ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES, scope)
+</code></pre>
+<p>本地变量：运行在进程内的变量，不能跨进程共享。通常用来保存临时变量，如训练迭代次数epoches。通过tf.local_variables()可以查询本地变量集合。其op标示为GraphKeys.LOCAL_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;local_variables&quot;)
+def local_variables(scope=None):
+	return ops.get_collection(ops.GraphKeys.LOCAL_VARIABLES, scope)
+</code></pre>
+<p>可训练变量：一般模型参数会放到可训练变量集合中，训练时，做这些变量会得到改变。不在这个集合中的变量则不会得到改变。默认会放到此集合中。通过tf.trainable_variables()可以查询。其op标示为<br>
+GraphKeys.TRAINABLE_VARIABLES</p>
+<pre><code class="language-python">@tf_export(&quot;trainable_variables&quot;)
+def trainable_variables(scope=None):
+  return ops.get_collection(ops.GraphKeys.TRAINABLE_VARIABLES, scope)
+</code></pre>
+<p>其他集合还有model_variables，moving_average_variables。</p>
+<h2 id="tf-variable-的本质">TF variable 的本质</h2>
+<p>Variable是一个特殊的OP，它拥有状态(Stateful)。如果从实现技术探究，Variable的Kernel实现直接持有一个Tensor实例，存在几个操作Variable的特殊OP，例如Assign, AssignAdd等。变量所持有的Tensor以引用的方式输入到Assign中，Assign根据初始值，就地修改Tensor内部的值，最后以引用的方式输出该Tensor。通过初始化器(Initializer)在初始化期间，将初始化值赋予Variable内部所持有Tensor，完成Variable的就地修改。如果要读取变量的值，则通过Identity恒等变化，直接输出变量所持有的Tensor。但时，Identity去除了Variable的引用标识，同时也避免了内存拷贝。</p>
+<figure data-type="image" tabindex="3"><img src="https://upload-images.jianshu.io/upload_images/2254249-7c2cd1ef175994b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp" alt="" loading="lazy"></figure>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+<p><a href="https://www.jianshu.com/p/bebcdfb74fb1">TensorFlow架构与设计：变量初始化 - 简书</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84141538">Tensorflow源码解析4 -- 图的节点 - Operation_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/u013510838/article/details/84144238">Tensorflow源码解析5 -- 图的边 - Tensor_谢杨易的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/TeFuirnever/article/details/89577480">tf.get_variable()和tf.Variable()的区别</a></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/">
+              <h3 class="post-title">
+                下一篇：分布式架构：ring all-reduce算法
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Code is cheap, show me the theory</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
