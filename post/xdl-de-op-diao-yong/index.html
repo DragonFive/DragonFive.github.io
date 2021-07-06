@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>XDL的OP调用 | dragon</title>
+<meta name="description" content="Get your hands dirty!">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1625468854704">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1625468854704" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">XDL的OP调用</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2020-03-23</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/xdl/">
+                    XDL
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>emb 和 statis，那么最基本要实现的功能就是增、删、改、查，其中增对应的就是注册和初始化变量，删就是进行特征过滤，改就是进行更新，查就是从ps上把最新的值取下来，</p>
+<p>并且这些功能需要保证一定的顺序，只有先注册才能初始化，之后才能删改查。</p>
+<p>但是emb和statis都是函数，返回的分别是embedding_op 对应的op，加入到计算图中，那么对于变量的注册、初始化、更新就需要想其它的办法加入计算，</p>
+<p>这里使用的是hook的机制，并且使用hook 的priority优先级机制来保证 op 调用的顺序，优先级数值越小的越先被调用，hook基类的默认优先级为2000</p>
+<h1 id="1注册与初始化增">1.注册与初始化(增)</h1>
+<p>注册与初始化两个OP，但注册只需要在client端完成 variableinfo 的设置即可，所以每个worker都需要做，就放在workerHook中完成</p>
+<p>初始化择需要各个ps端完成，只需要一个worker向ps请求即可，所以只在workermaster 的 ChiefHook 中完成，并且worker master 的注册也是在 chiefHook 中完成（worker master 没有 workerHook）</p>
+<p>chiehook 的优先级是1001 ，workerhook 的优先级是1002</p>
+<pre><code class="language-python">class SimpleSession(object):
+    def __init__(self, hooks=None):
+        ...
+        if self._is_chief:
+            self._hooks = self._hooks + [ChiefHook()]
+        else:
+            self._hooks = self._hooks + [WorkerHook()]
+        def take_priority(elem):
+            return elem._priority
+        self._hooks.sort(key=take_priority)
+        self._session = Session(self._hooks)
+        ...
+ 
+ 
+class ChiefHook(Hook):
+    def __init__(self):
+        super(ChiefHook, self).__init__(priority=1001)
+ 
+    def create_session(self):
+        scopes = list(get_model_scopes())
+        if global_variables(scopes) is None or\
+                len(global_variables(scopes)) == 0:
+            return
+        execute_with_retry(variable_registers(scopes))
+        execute_with_retry(global_initializers(scopes))
+
+</code></pre>
+<p>注册最后调用的是 ps_register_variable_op，初始化使用的是 用户指定的初始化方式 如 Ones，Zeros，xdl.TruncatedNormal 等等</p>
+<p>注册在client端就结束了 ，只是在每个worker记一下variable的信息</p>
+<pre><code class="language-c++">Status RawClient::RegisterVariable(const std::string&amp; name, const VariableInfo&amp; info) {
+  std::lock_guard&lt;std::mutex&gt; lock(variable_info_mutex_);
+  auto iter = args_.variable_info.find(name);
+  if (iter != args_.variable_info.end()) {
+    std::string arg_name = &quot;slots&quot;;
+    auto it2 = info.args.find(arg_name);
+    if (it2 != info.args.end()) {
+      auto it = args_.variable_info[name].args.find(arg_name);
+      if (it == args_.variable_info[name].args.end()) {
+        args_.variable_info[name].args[arg_name] = it2-&gt;second;
+      } else {
+        args_.variable_info[name].args[arg_name] += &quot;|&quot; + it2-&gt;second;
+      }
+    }
+    return Status::Ok();
+  }
+  args_.variable_info[name] = info;
+  init_variable_info_ = false;
+  return Status::Ok();
+}
+
+</code></pre>
+<p>初始化会通过partitioner 将data 的shape split 给各个ps，然后请求各个ps按照 udf 来执行simplerun, 完成 data 和 slot 的初始化</p>
+<p>worker0 初始化的时候会调用 initop, 在调用process的时候会把本地的variableinfo发送给scheduler，在从头训练（没有checkpoint）的情况下，scheduler会调用 placement</p>
+<h1 id="2-filter-删">2. filter (删)</h1>
+<p>就是各种用户指定的filter， 会在variable 带上对应的 slot, 这里所谓的删除是删除key对应的data行和slot行</p>
+<p>需要注意的是，虽然fea_statis 或fea_score 是一起使用的，但在featurescorefilter中只计算fea_score, 而在HashSlotsUpdateHook中只更新 fea_statis,两者的计算是分开的<br>
+还有一些slot不是通过filter添加的，比如__dacay_rate 和accumulate，这些没有删除功能，只能更新，将在下一部分介绍。</p>
+<p>下面以 featurescorefilter 为例，介绍filter的工作。</p>
+<p>featurescorefilter调用的是PsHashFeatureScoreFilterOp，</p>
+<p>Broadcast这样的spliter是指向所有ps广播clk_weight,non_clk_weight和train_threshold的所有内容<br>
+然后在client向各个ps发送“HashFeatureScoreFilter”这样的udf</p>
+<pre><code class="language-cpp">class PsHashFeatureScoreFilterOp : public xdl::OpKernelAsync {
+ public:
+  ...
+  void Compute(OpKernelContext* ctx, Callback done) override {
+    ...
+    ps::client::UdfData udf(&quot;HashFeatureScoreFilter&quot;,
+                            ps::client::UdfData(0),
+                            ps::client::UdfData(1),
+                            ps::client::UdfData(2));
+
+    std::vector&lt;ps::client::Partitioner*&gt; spliters{
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast};
+
+    client-&gt;Process(udf, var_name_, client-&gt;Args(nonclk_weight_, clk_weight_,
+                                                 train_threshold_),
+                                                 spliters, {}, outputs, cb);
+  }
+</code></pre>
+<p>在ps端调用 HashFeatureScoreFilter 的simplerun</p>
+<pre><code class="language-cpp">class HashFeatureScoreFilter : public SimpleUdf&lt;float, float, float&gt; {
+ public:
+  virtual Status SimpleRun(UdfContext* ctx,
+                           const float&amp; nonclk_weight,
+                           const float&amp; clk_weight,
+                           const float&amp; score_threshold) const {
+    Variable* variable = ctx-&gt;GetVariable();
+    ...
+    //2. compute fea score
+    auto score = show_vector * nonclk_weight + clk_vector * (clk_weight - nonclk_weight);
+    printf(&quot;HashFeatureScoreFilter for %s fea score min %f max %f\n&quot;,
+           var_name.c_str(), score.minCoeff(), score.maxCoeff());
+
+    //3. select keys and store fea score
+    std::vector&lt;size_t&gt; ids;
+    for (size_t i = 0; i &lt; items.size(); ++i) {
+      *fea_scores-&gt;Raw&lt;float&gt;(items[i].id) = score(i);
+      if (score(i) &lt; score_threshold) {
+        ids.push_back(items[i].id);
+      }
+    }
+
+    //4. delete
+    ctx-&gt;GetServerLocker()-&gt;ChangeType(QRWLocker::kWrite);
+    tbb::concurrent_vector&lt;size_t&gt; unfiltered_ids;
+    size_t del_size = hashmap-&gt;EraseById(ctx-&gt;GetVariableName(), ids, &amp;unfiltered_ids);
+    ...
+    return Status::Ok();
+  }
+};
+</code></pre>
+<p>hashmap 完成删除工作，把id放到free_list_里面，供特征准入时重用</p>
+<pre><code class="language-cpp">virtual size_t EraseById(const std::string&amp; variable_name, std::vector&lt;size_t&gt;&amp; ids, tbb::concurrent_vector&lt;size_t&gt;* unfiltered_ids) {
+    std::atomic&lt;size_t&gt; size(0);
+    tbb::concurrent_vector&lt;KeyType&gt; keys;
+    std::sort(ids.begin(), ids.end());
+    tbb::parallel_for_each(begin(table_), end(table_), [&amp;](const std::pair&lt;KeyType, size_t&gt;&amp; pr) {
+      auto iter = std::lower_bound(ids.begin(), ids.end(), pr.second);
+      if (iter != ids.end() &amp;&amp; *iter == pr.second) {
+        keys.push_back(pr.first);
+        free_list_.push(pr.second);
+        size++;
+      } else {
+        unfiltered_ids-&gt;push_back(pr.second);
+      }
+    });
+    for (auto&amp;&amp; key : keys) {
+      table_.unsafe_erase(key);
+    }
+    LOG(INFO) &lt;&lt; &quot;Filter for &quot; + variable_name + &quot;, clear=&quot; + std::to_string(keys.size()) + &quot;, left=&quot; + std::to_string(table_.size());
+    return size;
+  }
+</code></pre>
+<h1 id="3-更新-改">3. 更新 (改)</h1>
+<p>这一部分我们介绍filter 的slot 和 statis 的slot的计算更新方法</p>
+<p>decay_rate 是statis自带的，维度是label_len+1，通过label累加计算出来，通过HashSlotUpdaterHook 进行更新slot值，通过HashFeatureDecayHook对slot进行decay</p>
+<p>accumulate 是adagrade优化器的参数，优化器负责data和自身参数的更新，我们这部分主要介绍 slot 的更新。</p>
+<p>可以发现带有衰减率的两个slot，需要两个hook来分别完成slot的更新和decay_rate的更新，并且是先更新slot，再更新decay_rate，并且hook的优先级能够保证，先更新slot，然后才考虑各个filter。</p>
+<p>下面我们以 __dacay_rate_xx 这个slot的更新为例，来介绍slot的更新，顺便介绍统计特征。</p>
+<p>__dacay_rate_xx 的更新分为两部分，一是计算统计增量更新slot，二是应用decat_rate更新slot</p>
+<h2 id="1-计算统计增量更新slot">1） 计算统计增量更新slot</h2>
+<p>先通过 FeaStatsCpuOp 计算要更新的增量</p>
+<pre><code class="language-cpp">void FeaStatsFunctor&lt;CpuDevice, T, I&gt;::operator()(CpuDevice* d, const Tensor&amp; sindex, const Tensor&amp; ssegment,
+                                                  const Tensor&amp; fea_stat_input, Tensor* stat_delta) {
+  ...
+  size_t out_fea_stat_dim = in_fea_stat_dim + 1;
+  TensorShape out_shape({ssegment.Shape()[0], out_fea_stat_dim});
+  *stat_delta = Tensor(d, out_shape, DataTypeToEnum&lt;T&gt;::v());
+  T* pout = stat_delta-&gt;Raw&lt;T&gt;();
+  std::memset(pout, 0, sizeof(T) * out_shape.NumElements());
+  ...
+
+  #pragma omp parallel for
+  for (size_t i = 0; i &lt; id_num; ++i) {
+    size_t sseg_idx = std::lower_bound(psseg, psseg + sseg_size, i + 1) - psseg;
+    T* src = pclick + psindex[i] * in_fea_stat_dim;
+    T* dst = pout + sseg_idx * out_fea_stat_dim;
+
+    // show
+    common::cpu_atomic_add&lt;T&gt;(1, dst);
+    // others
+    for (size_t j = 0; j &lt; in_fea_stat_dim; j++) {
+      common::cpu_atomic_add&lt;T&gt;(src[j], dst + j + 1);
+    }
+  }
+
+};
+</code></pre>
+<p>HashSlotsUpdateHook 通过调用 client 的 ps_sparse_push_slots_op 完成对slot的更新，调用链路如下：</p>
+<p>(client)ps_sparse_push_slots_op → (client)HashPushSlots → (ps)BuildHashSlice → (ps)AssignAddSlotUpdater</p>
+<p>client 的 HashPushSlots 代码如下</p>
+<pre><code class="language-cpp">void Client::HashPushSlots(...) {
+  ...
+  std::vector&lt;Data*&gt; inputs = Args(ids_vec, name_vec, save_ratio_vec, true, insertable);
+  UdfData slice_udf(&quot;BuildHashSlice&quot;, UdfData(0), UdfData(1), UdfData(2), UdfData(3), UdfData(4));
+  std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;* outputs = 
+    new std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;;
+  std::vector&lt;Partitioner*&gt; splitter = {
+    new partitioner::HashId,
+    ...
+  };
+  std::vector&lt;UdfData&gt; udf_chain;
+  for (size_t i = 0; i &lt; slot_names.size(); i++) {
+    UdfData one_updater = UdfData(updaters[i], slice_udf, UdfData(5+i*2), UdfData(6+i*2));
+    std::string slot_name = slot_names[i];
+    inputs.push_back(Args(slot_name)[0]);
+    std::vector&lt;ps::Tensor&gt; grad = {grads[i]};
+    inputs.push_back(Args(grad)[0]);
+    splitter.push_back(new partitioner::Broadcast);
+    splitter.push_back(new partitioner::HashData);
+    udf_chain.push_back(one_updater);
+  }
+  ...
+
+  Process(udf_chain, variable_name, inputs, splitter, 
+          combiner, outputs, realcb);
+}  
+</code></pre>
+<p>splitter 中的 HashId 和 HashData 会分离出不同的数据发给不同的ps</p>
+<pre><code class="language-cpp">Status SparseData::Split(PartitionerContext* ctx, Data* src, std::vector&lt;Data*&gt;* dst) {
+    ...
+    dst-&gt;clear();
+    for (size_t i = 0; i &lt; info-&gt;parts.size(); ++i) {
+      WrapperData&lt;std::vector&lt;Tensor&gt;&gt;* result = new WrapperData&lt;std::vector&lt;Tensor&gt;&gt;();
+      dst-&gt;emplace_back(result);
+      ctx-&gt;AddDeleter(result);
+    }
+    for (size_t i = 0; i &lt; data_vec.size(); ++i) {
+      std::vector&lt;Data*&gt; one_dst;
+      Status one_status = SplitOneSparseData(ctx, data_vec[i], &amp;one_dst, i);
+      if (!one_status.IsOk()) {
+        return one_status;
+      }
+      for(size_t j = 0; j &lt; one_dst.size(); ++j) {
+        dynamic_cast&lt;WrapperData&lt;std::vector&lt;Tensor&gt;&gt;*&gt;((*dst)[j])-&gt;Internal().push_back(dynamic_cast&lt;WrapperData&lt;Tensor&gt;*&gt;(one_dst[j])-&gt;Internal());
+      }
+    }
+    ...
+}
+</code></pre>
+<p>buildhashslice 的代码上面分析过，就是会做特征准入</p>
+<p>AssignAddSlotUpdater 完成slot的更新</p>
+<pre><code class="language-cpp">class AssignAddSlotUpdater : public SimpleUdf&lt;vector&lt;Slices&gt;, std::string, vector&lt;Tensor&gt; &gt; {
+ public:
+  virtual Status SimpleRun(
+      UdfContext* ctx, const vector&lt;Slices&gt;&amp; sslices, const std::string&amp; slot_name, const vector&lt;Tensor&gt;&amp; grad_tensors) const {
+      ...
+      Tensor* assigned_tensor;
+      ...
+      PS_CHECK_BOOL(assigned_slice_size == slice_size, Status::ArgumentError(&quot;var &quot; + var_name + &quot; slot &quot; + slot_name + &quot; AssignAddSlotUpdater shape mismatch.&quot;));
+      CASES(grad_tensor.Type(), MultiThreadDo(slices.slice_id.size(), [&amp;](const Range&amp; r) {
+                for (size_t i = r.begin; i &lt; r.end; i++) {
+                  int64_t slice = slices.slice_id[i];
+                  if ((int64_t)slice == ps::HashMap::NOT_ADD_ID) {
+                    continue;
+                  }
+                  T* grad = grad_tensor.Raw&lt;T&gt;(i);
+                  T* data = assigned_tensor-&gt;Raw&lt;T&gt;(slice);
+                  for (size_t j = 0; j &lt; slice_size; j++) {
+                    *data += *grad;
+                    data++;grad++;
+                  }
+                ...
+};
+</code></pre>
+<h2 id="2-应用decay-更新slot-仅针对fea_statis-和-__decay_rate_xx">2） 应用decay 更新slot （仅针对fea_statis 和 __decay_rate_xx）</h2>
+<p>每个interval 会执行一次</p>
+<p>调用链路为（client）HashFeatureDecayHook → （client）ps_hash_feature_decay_op → (ps) HashFeatureDecay</p>
+<pre><code class="language-cpp">
+    ...
+    ps::client::UdfData udf(&quot;HashFeatureDecay&quot;,
+                            ps::client::UdfData(0),
+                            ps::client::UdfData(1),
+                            ps::client::UdfData(2),                            
+                            ps::client::UdfData(3));
+
+
+    std::vector&lt;ps::client::Partitioner*&gt; spliters{
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,        
+      new ps::client::partitioner::Broadcast};
+
+    client-&gt;Process(udf, var_name_,
+                    client-&gt;Args(slot_names_, decay_rates, decay_intervals, decay_mark),
+                    spliters, {}, outputs, cb);
+   ...
+</code></pre>
+<p>HashFeatureDecay 计算衰减</p>
+<pre><code class="language-cpp">
+    ...
+      PS_CHECK_STATUS(variable-&gt;GetExistSlot(slots[i], &amp;tensor));
+      auto&amp; shape = tensor-&gt;Shape();
+      ...
+      decay_rate = pow(decay_rate, ((current_decay_mark - *last_decay_mark) * 1.0 / decay_intervals[i]));
+
+      CASES(tensor-&gt;Type(), MultiThreadDo(items.size(), [&amp;](const Range&amp; r) {
+            for (size_t j = r.begin; j &lt; r.end; ++j) {
+              T* dst = tensor-&gt;Raw&lt;T&gt;(items[j].id);
+              for (size_t k = 0; k &lt; shape[1]; ++k) {
+                *(dst + k) *= decay_rate;
+              }
+            }
+            return Status::Ok();
+          }));
+   ...
+</code></pre>
+<h1 id="4-拉取最新数据查">4. 拉取最新数据(查)</h1>
+<p>emb 和 statis 中需要拉取新数据对就是 var.gather 和 var.gather_slots 两个操作, 分别为特定的ids 从ps 上获取 data 和 slot</p>
+<p>gather 的调用链路是 : （client）ps_sparse_pull_op→ (client)HashPull→ (ps) BuildHashSlice  → (ps)TransSlice → (client) HashData.Combine</p>
+<p>使用 HashId 对id 按照ps server 进行分隔，如果上面的 HashData, BuildHashSlice 的代码上面也分析过了，就是进行特征准入，如果这个hashkey 在hashmap里没有就加进去并初始化，TransSlice 就是获取data</p>
+<pre><code class="language-cpp">Status SparseData::Combine(PartitionerContext* ctx, Data* src, size_t server_id, std::unique_ptr&lt;Data&gt;* output) {
+  ...
+  char* res_ptr = result-&gt;Raw&lt;char&gt;();
+  shape.Set(0, 1);
+  size_t single_size = shape.NumElements() * SizeOfType(type);
+  MultiThreadDo(slices.ids[server_id].size(), [&amp;](const Range&amp; r) {
+        char* src_ptr = data.Raw&lt;char&gt;() + r.begin * single_size;
+        for (size_t i = r.begin; i &lt; r.end; ++i) {
+          size_t item = slices.ids[server_id][i];
+          memcpy(res_ptr + item * single_size, src_ptr, single_size);
+          src_ptr += single_size;
+        }
+        return Status::Ok();
+      }, 1000);
+  return Status::Ok();
+}
+</code></pre>
+<p>gather_slot 的调用链路是  （client）ps_sparse_pull_slots_op→ (client)HashPullSlots→ (ps) BuildHashSlice  → (ps) TransSlotsSlice → (ps)TransTensorSliceOffVector →  (client)HashAuxiliaryData.Combine</p>
+<p>BuildHashSlice 就是进行特征准入，如果这个hashkey 在hashmap里没有就加进去并初始化，TransSlotsSlice 就是获取 slot， combine 是把相同id 的slot的值放在一行里</p>
+<pre><code class="language-cpp">std::vector&lt;Partitioner*&gt; combiner = {
+    new partitioner::HashAuxiliaryData({slots_dim_sum})
+  };
+
+
+class HashAuxiliaryData : public SparseData {
+ public:
+  HashAuxiliaryData(const std::vector&lt;size_t&gt;&amp; dims, size_t id = 0) : SparseData(id), dims_(dims) {}
+  virtual Status CombineInit(PartitionerContext* ctx, std::unique_ptr&lt;Data&gt;* output) override;
+ protected:
+  std::vector&lt;size_t&gt; dims_;
+};
+
+
+Status HashAuxiliaryData::CombineInit(PartitionerContext* ctx, std::unique_ptr&lt;Data&gt;* output) {
+  ...
+  std::vector&lt;size_t&gt; dims;
+  dims.push_back(slices.id_size);
+  for (size_t i = 0; i &lt; dims_.size(); ++i) {
+    dims.push_back(dims_[i]);
+  }
+  TensorShape shape(dims);
+  DataType type = info-&gt;datatype;
+  output-&gt;reset(new WrapperData&lt;Tensor&gt;(type, shape, new initializer::NoneInitializer));
+  return Status::Ok();
+}
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/xdl-de-te-zheng-zhun-ru-yu-tui-chu-ji-zhi/">
+              <h3 class="post-title">
+                下一篇：XDL 的特征准入与退出机制
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Get your hands dirty!</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-07-03T10:59:50.497Z</updated>
+    <updated>2021-07-06T09:23:13.339Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -463,6 +463,490 @@ model.fit(dataset, epoch=5)
 <p><a href="https://ggaaooppeenngg.github.io/zh-CN/2019/08/30/horovod-%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/">horovod 实现分析 | ggaaooppeenngg</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/332825987">Horovod 源码分析 - 知乎</a></p>
 <p><a href="https://mp.weixin.qq.com/s/7c7Q0P3g3IEL_r4BU2ZxRg">Horovod架构剖析——解密最成功的第三方DL分布式训练框架</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[XDL的OP调用]]></title>
+        <id>https://DragonFive.github.io/post/xdl-de-op-diao-yong/</id>
+        <link href="https://DragonFive.github.io/post/xdl-de-op-diao-yong/">
+        </link>
+        <updated>2020-03-23T06:58:34.000Z</updated>
+        <content type="html"><![CDATA[<p>emb 和 statis，那么最基本要实现的功能就是增、删、改、查，其中增对应的就是注册和初始化变量，删就是进行特征过滤，改就是进行更新，查就是从ps上把最新的值取下来，</p>
+<p>并且这些功能需要保证一定的顺序，只有先注册才能初始化，之后才能删改查。</p>
+<p>但是emb和statis都是函数，返回的分别是embedding_op 对应的op，加入到计算图中，那么对于变量的注册、初始化、更新就需要想其它的办法加入计算，</p>
+<p>这里使用的是hook的机制，并且使用hook 的priority优先级机制来保证 op 调用的顺序，优先级数值越小的越先被调用，hook基类的默认优先级为2000</p>
+<h1 id="1注册与初始化增">1.注册与初始化(增)</h1>
+<p>注册与初始化两个OP，但注册只需要在client端完成 variableinfo 的设置即可，所以每个worker都需要做，就放在workerHook中完成</p>
+<p>初始化择需要各个ps端完成，只需要一个worker向ps请求即可，所以只在workermaster 的 ChiefHook 中完成，并且worker master 的注册也是在 chiefHook 中完成（worker master 没有 workerHook）</p>
+<p>chiehook 的优先级是1001 ，workerhook 的优先级是1002</p>
+<pre><code class="language-python">class SimpleSession(object):
+    def __init__(self, hooks=None):
+        ...
+        if self._is_chief:
+            self._hooks = self._hooks + [ChiefHook()]
+        else:
+            self._hooks = self._hooks + [WorkerHook()]
+        def take_priority(elem):
+            return elem._priority
+        self._hooks.sort(key=take_priority)
+        self._session = Session(self._hooks)
+        ...
+ 
+ 
+class ChiefHook(Hook):
+    def __init__(self):
+        super(ChiefHook, self).__init__(priority=1001)
+ 
+    def create_session(self):
+        scopes = list(get_model_scopes())
+        if global_variables(scopes) is None or\
+                len(global_variables(scopes)) == 0:
+            return
+        execute_with_retry(variable_registers(scopes))
+        execute_with_retry(global_initializers(scopes))
+
+</code></pre>
+<p>注册最后调用的是 ps_register_variable_op，初始化使用的是 用户指定的初始化方式 如 Ones，Zeros，xdl.TruncatedNormal 等等</p>
+<p>注册在client端就结束了 ，只是在每个worker记一下variable的信息</p>
+<pre><code class="language-c++">Status RawClient::RegisterVariable(const std::string&amp; name, const VariableInfo&amp; info) {
+  std::lock_guard&lt;std::mutex&gt; lock(variable_info_mutex_);
+  auto iter = args_.variable_info.find(name);
+  if (iter != args_.variable_info.end()) {
+    std::string arg_name = &quot;slots&quot;;
+    auto it2 = info.args.find(arg_name);
+    if (it2 != info.args.end()) {
+      auto it = args_.variable_info[name].args.find(arg_name);
+      if (it == args_.variable_info[name].args.end()) {
+        args_.variable_info[name].args[arg_name] = it2-&gt;second;
+      } else {
+        args_.variable_info[name].args[arg_name] += &quot;|&quot; + it2-&gt;second;
+      }
+    }
+    return Status::Ok();
+  }
+  args_.variable_info[name] = info;
+  init_variable_info_ = false;
+  return Status::Ok();
+}
+
+</code></pre>
+<p>初始化会通过partitioner 将data 的shape split 给各个ps，然后请求各个ps按照 udf 来执行simplerun, 完成 data 和 slot 的初始化</p>
+<p>worker0 初始化的时候会调用 initop, 在调用process的时候会把本地的variableinfo发送给scheduler，在从头训练（没有checkpoint）的情况下，scheduler会调用 placement</p>
+<h1 id="2-filter-删">2. filter (删)</h1>
+<p>就是各种用户指定的filter， 会在variable 带上对应的 slot, 这里所谓的删除是删除key对应的data行和slot行</p>
+<p>需要注意的是，虽然fea_statis 或fea_score 是一起使用的，但在featurescorefilter中只计算fea_score, 而在HashSlotsUpdateHook中只更新 fea_statis,两者的计算是分开的<br>
+还有一些slot不是通过filter添加的，比如__dacay_rate 和accumulate，这些没有删除功能，只能更新，将在下一部分介绍。</p>
+<p>下面以 featurescorefilter 为例，介绍filter的工作。</p>
+<p>featurescorefilter调用的是PsHashFeatureScoreFilterOp，</p>
+<p>Broadcast这样的spliter是指向所有ps广播clk_weight,non_clk_weight和train_threshold的所有内容<br>
+然后在client向各个ps发送“HashFeatureScoreFilter”这样的udf</p>
+<pre><code class="language-cpp">class PsHashFeatureScoreFilterOp : public xdl::OpKernelAsync {
+ public:
+  ...
+  void Compute(OpKernelContext* ctx, Callback done) override {
+    ...
+    ps::client::UdfData udf(&quot;HashFeatureScoreFilter&quot;,
+                            ps::client::UdfData(0),
+                            ps::client::UdfData(1),
+                            ps::client::UdfData(2));
+
+    std::vector&lt;ps::client::Partitioner*&gt; spliters{
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast};
+
+    client-&gt;Process(udf, var_name_, client-&gt;Args(nonclk_weight_, clk_weight_,
+                                                 train_threshold_),
+                                                 spliters, {}, outputs, cb);
+  }
+</code></pre>
+<p>在ps端调用 HashFeatureScoreFilter 的simplerun</p>
+<pre><code class="language-cpp">class HashFeatureScoreFilter : public SimpleUdf&lt;float, float, float&gt; {
+ public:
+  virtual Status SimpleRun(UdfContext* ctx,
+                           const float&amp; nonclk_weight,
+                           const float&amp; clk_weight,
+                           const float&amp; score_threshold) const {
+    Variable* variable = ctx-&gt;GetVariable();
+    ...
+    //2. compute fea score
+    auto score = show_vector * nonclk_weight + clk_vector * (clk_weight - nonclk_weight);
+    printf(&quot;HashFeatureScoreFilter for %s fea score min %f max %f\n&quot;,
+           var_name.c_str(), score.minCoeff(), score.maxCoeff());
+
+    //3. select keys and store fea score
+    std::vector&lt;size_t&gt; ids;
+    for (size_t i = 0; i &lt; items.size(); ++i) {
+      *fea_scores-&gt;Raw&lt;float&gt;(items[i].id) = score(i);
+      if (score(i) &lt; score_threshold) {
+        ids.push_back(items[i].id);
+      }
+    }
+
+    //4. delete
+    ctx-&gt;GetServerLocker()-&gt;ChangeType(QRWLocker::kWrite);
+    tbb::concurrent_vector&lt;size_t&gt; unfiltered_ids;
+    size_t del_size = hashmap-&gt;EraseById(ctx-&gt;GetVariableName(), ids, &amp;unfiltered_ids);
+    ...
+    return Status::Ok();
+  }
+};
+</code></pre>
+<p>hashmap 完成删除工作，把id放到free_list_里面，供特征准入时重用</p>
+<pre><code class="language-cpp">virtual size_t EraseById(const std::string&amp; variable_name, std::vector&lt;size_t&gt;&amp; ids, tbb::concurrent_vector&lt;size_t&gt;* unfiltered_ids) {
+    std::atomic&lt;size_t&gt; size(0);
+    tbb::concurrent_vector&lt;KeyType&gt; keys;
+    std::sort(ids.begin(), ids.end());
+    tbb::parallel_for_each(begin(table_), end(table_), [&amp;](const std::pair&lt;KeyType, size_t&gt;&amp; pr) {
+      auto iter = std::lower_bound(ids.begin(), ids.end(), pr.second);
+      if (iter != ids.end() &amp;&amp; *iter == pr.second) {
+        keys.push_back(pr.first);
+        free_list_.push(pr.second);
+        size++;
+      } else {
+        unfiltered_ids-&gt;push_back(pr.second);
+      }
+    });
+    for (auto&amp;&amp; key : keys) {
+      table_.unsafe_erase(key);
+    }
+    LOG(INFO) &lt;&lt; &quot;Filter for &quot; + variable_name + &quot;, clear=&quot; + std::to_string(keys.size()) + &quot;, left=&quot; + std::to_string(table_.size());
+    return size;
+  }
+</code></pre>
+<h1 id="3-更新-改">3. 更新 (改)</h1>
+<p>这一部分我们介绍filter 的slot 和 statis 的slot的计算更新方法</p>
+<p>decay_rate 是statis自带的，维度是label_len+1，通过label累加计算出来，通过HashSlotUpdaterHook 进行更新slot值，通过HashFeatureDecayHook对slot进行decay</p>
+<p>accumulate 是adagrade优化器的参数，优化器负责data和自身参数的更新，我们这部分主要介绍 slot 的更新。</p>
+<p>可以发现带有衰减率的两个slot，需要两个hook来分别完成slot的更新和decay_rate的更新，并且是先更新slot，再更新decay_rate，并且hook的优先级能够保证，先更新slot，然后才考虑各个filter。</p>
+<p>下面我们以 __dacay_rate_xx 这个slot的更新为例，来介绍slot的更新，顺便介绍统计特征。</p>
+<p>__dacay_rate_xx 的更新分为两部分，一是计算统计增量更新slot，二是应用decat_rate更新slot</p>
+<h2 id="1-计算统计增量更新slot">1） 计算统计增量更新slot</h2>
+<p>先通过 FeaStatsCpuOp 计算要更新的增量</p>
+<pre><code class="language-cpp">void FeaStatsFunctor&lt;CpuDevice, T, I&gt;::operator()(CpuDevice* d, const Tensor&amp; sindex, const Tensor&amp; ssegment,
+                                                  const Tensor&amp; fea_stat_input, Tensor* stat_delta) {
+  ...
+  size_t out_fea_stat_dim = in_fea_stat_dim + 1;
+  TensorShape out_shape({ssegment.Shape()[0], out_fea_stat_dim});
+  *stat_delta = Tensor(d, out_shape, DataTypeToEnum&lt;T&gt;::v());
+  T* pout = stat_delta-&gt;Raw&lt;T&gt;();
+  std::memset(pout, 0, sizeof(T) * out_shape.NumElements());
+  ...
+
+  #pragma omp parallel for
+  for (size_t i = 0; i &lt; id_num; ++i) {
+    size_t sseg_idx = std::lower_bound(psseg, psseg + sseg_size, i + 1) - psseg;
+    T* src = pclick + psindex[i] * in_fea_stat_dim;
+    T* dst = pout + sseg_idx * out_fea_stat_dim;
+
+    // show
+    common::cpu_atomic_add&lt;T&gt;(1, dst);
+    // others
+    for (size_t j = 0; j &lt; in_fea_stat_dim; j++) {
+      common::cpu_atomic_add&lt;T&gt;(src[j], dst + j + 1);
+    }
+  }
+
+};
+</code></pre>
+<p>HashSlotsUpdateHook 通过调用 client 的 ps_sparse_push_slots_op 完成对slot的更新，调用链路如下：</p>
+<p>(client)ps_sparse_push_slots_op → (client)HashPushSlots → (ps)BuildHashSlice → (ps)AssignAddSlotUpdater</p>
+<p>client 的 HashPushSlots 代码如下</p>
+<pre><code class="language-cpp">void Client::HashPushSlots(...) {
+  ...
+  std::vector&lt;Data*&gt; inputs = Args(ids_vec, name_vec, save_ratio_vec, true, insertable);
+  UdfData slice_udf(&quot;BuildHashSlice&quot;, UdfData(0), UdfData(1), UdfData(2), UdfData(3), UdfData(4));
+  std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;* outputs = 
+    new std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;;
+  std::vector&lt;Partitioner*&gt; splitter = {
+    new partitioner::HashId,
+    ...
+  };
+  std::vector&lt;UdfData&gt; udf_chain;
+  for (size_t i = 0; i &lt; slot_names.size(); i++) {
+    UdfData one_updater = UdfData(updaters[i], slice_udf, UdfData(5+i*2), UdfData(6+i*2));
+    std::string slot_name = slot_names[i];
+    inputs.push_back(Args(slot_name)[0]);
+    std::vector&lt;ps::Tensor&gt; grad = {grads[i]};
+    inputs.push_back(Args(grad)[0]);
+    splitter.push_back(new partitioner::Broadcast);
+    splitter.push_back(new partitioner::HashData);
+    udf_chain.push_back(one_updater);
+  }
+  ...
+
+  Process(udf_chain, variable_name, inputs, splitter, 
+          combiner, outputs, realcb);
+}  
+</code></pre>
+<p>splitter 中的 HashId 和 HashData 会分离出不同的数据发给不同的ps</p>
+<pre><code class="language-cpp">Status SparseData::Split(PartitionerContext* ctx, Data* src, std::vector&lt;Data*&gt;* dst) {
+    ...
+    dst-&gt;clear();
+    for (size_t i = 0; i &lt; info-&gt;parts.size(); ++i) {
+      WrapperData&lt;std::vector&lt;Tensor&gt;&gt;* result = new WrapperData&lt;std::vector&lt;Tensor&gt;&gt;();
+      dst-&gt;emplace_back(result);
+      ctx-&gt;AddDeleter(result);
+    }
+    for (size_t i = 0; i &lt; data_vec.size(); ++i) {
+      std::vector&lt;Data*&gt; one_dst;
+      Status one_status = SplitOneSparseData(ctx, data_vec[i], &amp;one_dst, i);
+      if (!one_status.IsOk()) {
+        return one_status;
+      }
+      for(size_t j = 0; j &lt; one_dst.size(); ++j) {
+        dynamic_cast&lt;WrapperData&lt;std::vector&lt;Tensor&gt;&gt;*&gt;((*dst)[j])-&gt;Internal().push_back(dynamic_cast&lt;WrapperData&lt;Tensor&gt;*&gt;(one_dst[j])-&gt;Internal());
+      }
+    }
+    ...
+}
+</code></pre>
+<p>buildhashslice 的代码上面分析过，就是会做特征准入</p>
+<p>AssignAddSlotUpdater 完成slot的更新</p>
+<pre><code class="language-cpp">class AssignAddSlotUpdater : public SimpleUdf&lt;vector&lt;Slices&gt;, std::string, vector&lt;Tensor&gt; &gt; {
+ public:
+  virtual Status SimpleRun(
+      UdfContext* ctx, const vector&lt;Slices&gt;&amp; sslices, const std::string&amp; slot_name, const vector&lt;Tensor&gt;&amp; grad_tensors) const {
+      ...
+      Tensor* assigned_tensor;
+      ...
+      PS_CHECK_BOOL(assigned_slice_size == slice_size, Status::ArgumentError(&quot;var &quot; + var_name + &quot; slot &quot; + slot_name + &quot; AssignAddSlotUpdater shape mismatch.&quot;));
+      CASES(grad_tensor.Type(), MultiThreadDo(slices.slice_id.size(), [&amp;](const Range&amp; r) {
+                for (size_t i = r.begin; i &lt; r.end; i++) {
+                  int64_t slice = slices.slice_id[i];
+                  if ((int64_t)slice == ps::HashMap::NOT_ADD_ID) {
+                    continue;
+                  }
+                  T* grad = grad_tensor.Raw&lt;T&gt;(i);
+                  T* data = assigned_tensor-&gt;Raw&lt;T&gt;(slice);
+                  for (size_t j = 0; j &lt; slice_size; j++) {
+                    *data += *grad;
+                    data++;grad++;
+                  }
+                ...
+};
+</code></pre>
+<h2 id="2-应用decay-更新slot-仅针对fea_statis-和-__decay_rate_xx">2） 应用decay 更新slot （仅针对fea_statis 和 __decay_rate_xx）</h2>
+<p>每个interval 会执行一次</p>
+<p>调用链路为（client）HashFeatureDecayHook → （client）ps_hash_feature_decay_op → (ps) HashFeatureDecay</p>
+<pre><code class="language-cpp">
+    ...
+    ps::client::UdfData udf(&quot;HashFeatureDecay&quot;,
+                            ps::client::UdfData(0),
+                            ps::client::UdfData(1),
+                            ps::client::UdfData(2),                            
+                            ps::client::UdfData(3));
+
+
+    std::vector&lt;ps::client::Partitioner*&gt; spliters{
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,
+      new ps::client::partitioner::Broadcast,        
+      new ps::client::partitioner::Broadcast};
+
+    client-&gt;Process(udf, var_name_,
+                    client-&gt;Args(slot_names_, decay_rates, decay_intervals, decay_mark),
+                    spliters, {}, outputs, cb);
+   ...
+</code></pre>
+<p>HashFeatureDecay 计算衰减</p>
+<pre><code class="language-cpp">
+    ...
+      PS_CHECK_STATUS(variable-&gt;GetExistSlot(slots[i], &amp;tensor));
+      auto&amp; shape = tensor-&gt;Shape();
+      ...
+      decay_rate = pow(decay_rate, ((current_decay_mark - *last_decay_mark) * 1.0 / decay_intervals[i]));
+
+      CASES(tensor-&gt;Type(), MultiThreadDo(items.size(), [&amp;](const Range&amp; r) {
+            for (size_t j = r.begin; j &lt; r.end; ++j) {
+              T* dst = tensor-&gt;Raw&lt;T&gt;(items[j].id);
+              for (size_t k = 0; k &lt; shape[1]; ++k) {
+                *(dst + k) *= decay_rate;
+              }
+            }
+            return Status::Ok();
+          }));
+   ...
+</code></pre>
+<h1 id="4-拉取最新数据查">4. 拉取最新数据(查)</h1>
+<p>emb 和 statis 中需要拉取新数据对就是 var.gather 和 var.gather_slots 两个操作, 分别为特定的ids 从ps 上获取 data 和 slot</p>
+<p>gather 的调用链路是 : （client）ps_sparse_pull_op→ (client)HashPull→ (ps) BuildHashSlice  → (ps)TransSlice → (client) HashData.Combine</p>
+<p>使用 HashId 对id 按照ps server 进行分隔，如果上面的 HashData, BuildHashSlice 的代码上面也分析过了，就是进行特征准入，如果这个hashkey 在hashmap里没有就加进去并初始化，TransSlice 就是获取data</p>
+<pre><code class="language-cpp">Status SparseData::Combine(PartitionerContext* ctx, Data* src, size_t server_id, std::unique_ptr&lt;Data&gt;* output) {
+  ...
+  char* res_ptr = result-&gt;Raw&lt;char&gt;();
+  shape.Set(0, 1);
+  size_t single_size = shape.NumElements() * SizeOfType(type);
+  MultiThreadDo(slices.ids[server_id].size(), [&amp;](const Range&amp; r) {
+        char* src_ptr = data.Raw&lt;char&gt;() + r.begin * single_size;
+        for (size_t i = r.begin; i &lt; r.end; ++i) {
+          size_t item = slices.ids[server_id][i];
+          memcpy(res_ptr + item * single_size, src_ptr, single_size);
+          src_ptr += single_size;
+        }
+        return Status::Ok();
+      }, 1000);
+  return Status::Ok();
+}
+</code></pre>
+<p>gather_slot 的调用链路是  （client）ps_sparse_pull_slots_op→ (client)HashPullSlots→ (ps) BuildHashSlice  → (ps) TransSlotsSlice → (ps)TransTensorSliceOffVector →  (client)HashAuxiliaryData.Combine</p>
+<p>BuildHashSlice 就是进行特征准入，如果这个hashkey 在hashmap里没有就加进去并初始化，TransSlotsSlice 就是获取 slot， combine 是把相同id 的slot的值放在一行里</p>
+<pre><code class="language-cpp">std::vector&lt;Partitioner*&gt; combiner = {
+    new partitioner::HashAuxiliaryData({slots_dim_sum})
+  };
+
+
+class HashAuxiliaryData : public SparseData {
+ public:
+  HashAuxiliaryData(const std::vector&lt;size_t&gt;&amp; dims, size_t id = 0) : SparseData(id), dims_(dims) {}
+  virtual Status CombineInit(PartitionerContext* ctx, std::unique_ptr&lt;Data&gt;* output) override;
+ protected:
+  std::vector&lt;size_t&gt; dims_;
+};
+
+
+Status HashAuxiliaryData::CombineInit(PartitionerContext* ctx, std::unique_ptr&lt;Data&gt;* output) {
+  ...
+  std::vector&lt;size_t&gt; dims;
+  dims.push_back(slices.id_size);
+  for (size_t i = 0; i &lt; dims_.size(); ++i) {
+    dims.push_back(dims_[i]);
+  }
+  TensorShape shape(dims);
+  DataType type = info-&gt;datatype;
+  output-&gt;reset(new WrapperData&lt;Tensor&gt;(type, shape, new initializer::NoneInitializer));
+  return Status::Ok();
+}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[XDL 的特征准入与退出机制]]></title>
+        <id>https://DragonFive.github.io/post/xdl-de-te-zheng-zhun-ru-yu-tui-chu-ji-zhi/</id>
+        <link href="https://DragonFive.github.io/post/xdl-de-te-zheng-zhun-ru-yu-tui-chu-ji-zhi/">
+        </link>
+        <updated>2019-11-08T03:56:04.000Z</updated>
+        <content type="html"><![CDATA[<p>本文主要介绍 xdl 中的 embedding 和 statis 的底层数据结构。</p>
+<p>embedding 和 statis 其实都是保存在ps 端上的 variable，包含 data 和 slot 部分。</p>
+<p>只不过对于statis来说主体是__decay_rate 这个slot，data部分是shape 为[featuredim,1]，初始化方式为zeros的tensor，并没有被用到。</p>
+<p>在 ps server 端，variable 的结构如下：</p>
+<pre><code class="language-c++">class Variable {
+ 
+ 
+ private:
+  std::unique_ptr&lt;Tensor&gt; data_;//emd_dim的参数
+  std::unique_ptr&lt;Data&gt; slicer_;//hashmap,从hashkey到id的映射
+  std::unordered_map&lt;std::string, Slot&gt; slots_;//slot_name到对应slot
+ public:
+  struct Slot {
+    std::unique_ptr&lt;Tensor&gt; tensor;
+    SlotJoiner joiner;
+  };
+};
+</code></pre>
+<p>hashmap 管理特征准入和退出策略，我们可以从函数签名中看到 ，建立hashkey到id的映射关系，ids存的是我们输入的key在data这个tensor中的位置</p>
+<p>add_probability 会在这里起作用，进行特征准入，reused_ids会把一些id剔除</p>
+<h1 id="特征准入">特征准入</h1>
+<pre><code class="language-c++">int64_t Get(const int64_t* keys,
+                 size_t size, bool not_insert,
+                 float add_probability,
+                 std::vector&lt;size_t&gt;* ids,
+                 tbb::concurrent_vector&lt;size_t&gt;* reused_ids,
+                 size_t* filtered_keys,
+                 size_t block_size = 500, size_t timeout = 1800)
+</code></pre>
+<p>其中 add_probability 就是以一定概率对 feature key 进行准入。</p>
+<h1 id="特征退出">特征退出</h1>
+<pre><code class="language-c++">if (max_id &gt; 0) {
+  PS_CHECK_STATUS(variable-&gt;ReShapeId(max_id));
+}
+if (reused_ids.size() != 0) {
+  std::vector&lt;size_t&gt; raw_reused_ids;
+  for (auto iter : reused_ids) {
+    raw_reused_ids.push_back(iter);
+  }
+  variable-&gt;ClearIds(raw_reused_ids);
+}
+</code></pre>
+<p>同一个 variable，在ps会通过均衡策略保存不同的部分到不同的ps上。<br>
+向ps请求一个variable的指定key的时候，就需要计算分别向哪些ps请求哪些key，这部分工作是在client端的partition代码完成的</p>
+<p>以初始化PsConstantInitializerOp为例,在client端调用HashInitializer，在client中调用partitioner::HashShape来计算在各个ps上的形状</p>
+<pre><code class="language-c++">
+void Client::HashInitializer(const std::string&amp; variable_name,
+                             Initializer* init,
+                             const Client::Callback&amp; cb) {
+  VariableInfo info;
+  CHECK_ASYNC(GetVariableInfo(variable_name, &amp;info));
+  std::string extra_info;
+  for (auto&amp; arg : info.args) {
+    extra_info += arg.first + &quot;=&quot; + arg.second + &quot;&amp;&quot;;
+  }
+  if (!extra_info.empty()) { extra_info.pop_back(); }
+  std::vector&lt;Data*&gt; inputs = Args(0, 0, extra_info, std::unique_ptr&lt;Initializer&gt;(init));
+  std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;* outputs =
+    new std::vector&lt;std::unique_ptr&lt;Data&gt;&gt;;
+  std::vector&lt;Partitioner*&gt; splitter = {
+    new partitioner::HashDataType,
+    new partitioner::HashShape,
+    new partitioner::Broadcast,
+    new partitioner::Broadcast
+  };
+  std::vector&lt;Partitioner*&gt; combiner = {};
+  UdfData udf(&quot;HashVariableInitializer&quot;, UdfData(0), UdfData(1), UdfData(2), UdfData(3));
+  ...
+}
+ 
+ 
+Status HashShape::Split(PartitionerContext* ctx, Data* src, std::vector&lt;Data*&gt;* dst) {
+  VariableInfo* info = ctx-&gt;GetVariableInfo();
+  std::vector&lt;size_t&gt; dims(info-&gt;shape.begin(), info-&gt;shape.end());
+  dst-&gt;clear();
+  for (size_t i = 0; i &lt; info-&gt;parts.size(); i++) {
+    size_t k = info-&gt;parts[i].size * info-&gt;shape[0] / Hasher::kTargetRange;
+    dims[0] = k + 10 * sqrt(k) + 10;
+    Data* d = new WrapperData&lt;TensorShape&gt;(dims);
+    ctx-&gt;AddDeleter(d);
+    dst-&gt;push_back(d);
+  }
+  return Status::Ok();
+}
+
+</code></pre>
+<p>client 通过 udf 通知ps做什么样的操作，比如这个初始化就是告诉 ps server 调用 HashVariableInitializer 的simplerun方法进行初始化</p>
+<pre><code class="language-c++">class HashVariableInitializer : public SimpleUdf&lt;DataType, TensorShape, std::string, std::unique_ptr&lt;Initializer&gt;&gt; {
+ public:
+  virtual Status SimpleRun(
+      UdfContext* ctx,
+      const DataType&amp; dt,
+      const TensorShape&amp; shape,
+      const std::string&amp; extra_info,
+      const std::unique_ptr&lt;Initializer&gt;&amp; initializer) const {
+    ...
+    std::vector&lt;std::string&gt; slots;
+    ...
+    ps::Status status = GetStorageManager(ctx)-&gt;Get(var_name, &amp;var);
+    ...
+    if (!status.IsOk()) {
+      return ctx-&gt;GetStorageManager()-&gt;Set(var_name, [&amp;]{
+            HashMap* hashmap = new HashMapImpl&lt;int64_t&gt;(init_shape[0]);
+            Variable* var = new Variable(new Tensor(dt, init_shape, initializer-&gt;Clone(), Tensor::TType::kSegment, true), new WrapperData&lt;std::unique_ptr&lt;HashMap&gt; &gt;(hashmap), var_name);
+            Status st = InitSlots(slots, var);
+            ...
+            return var;
+          });
+    } else {
+      ...
+  }
+ 
+ 
+  Status InitSlots(const std::vector&lt;std::string&gt;&amp; slots, Variable* var) const {
+    for (auto&amp; slot : slots) {
+      ...
+      Tensor* t = var-&gt;GetVariableLikeSlot(tuple[0], dtype, TensorShape(inner_dims), []{ return new initializer::ConstantInitializer(0); });
+      ...
+    return Status::Ok();
+  }
+</code></pre>
 ]]></content>
     </entry>
     <entry>
@@ -946,223 +1430,6 @@ def trainable_variables(scope=None):
 <p><a href="https://zhuanlan.zhihu.com/p/56991108">一文说清楚Tensorflow分布式训练必备知识 - 知乎</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/34172340">【第一期】AI Talk：TensorFlow 分布式训练的线性加速实践 - 知乎</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/79030485">腾讯机智团队分享--AllReduce算法的前世今生 - 知乎</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[[转自刘光聪]TensorFlow架构与设计：OP本质论]]></title>
-        <id>https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/</id>
-        <link href="https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/">
-        </link>
-        <updated>2019-03-05T03:59:51.000Z</updated>
-        <content type="html"><![CDATA[<blockquote>
-<blockquote>
-<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。本篇文章摘自 <a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
-</blockquote>
-</blockquote>
-<h1 id="符号编程">符号编程</h1>
-<p>TensorFlow的计算过程是一个延迟计算，是一种典型的基于符号的编程范式。从计算时间轴看，计算过程基本分为2个阶段：</p>
-<ul>
-<li>图构造期：负责计算图的构造；</li>
-<li>图执行期：负责计算图的执行。</li>
-</ul>
-<p>其中，在系统初始化时，系统实现对所有OP进行扫描注册，并保存于OpRegistry之中。</p>
-<h2 id="注册op">注册OP</h2>
-<p>理论上，OP的注册发生在系统初始化阶段。后端系统，可以使用REGISTER_OP实用宏注册OP。前端系统，也存在类似的OP注册机制。</p>
-<p>使用REGISTER_OP注册OP过程，实际上是一个REGISTER_OP描述到OpDef表示的翻译过程。OpDefBuilder通过链式调用Input, Output, Attr方法分别构造OP的输入、输出列表，及其属性列表。最后，通过调用Finalize成员函数，经过解析字符串表示，将其翻译为OpDef的内在表示，最后注册到OpRegistry之中。</p>
-<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-66c28d1f68d97448.png" alt="" loading="lazy"></figure>
-<p>例如，REGISTER_OP(&quot;ZerosLike&quot;)向系统注册了一个zeros_like的OP，在运行时实现了OpDef的翻译表达。</p>
-<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-b1cffcdf5b4e6795.png" alt="" loading="lazy"></figure>
-<h2 id="构造op">构造OP</h2>
-<p>在前端，用户使用OP构造器实现OP的构造，并将OP注册到计算图中。在计算图构造期间，OP的输入/输出的类型，Shape得以确定，OP属性值也得以确定。</p>
-<p>计算图的构造过程，实际上就是GraphDef定义过程。其中，OP的属性值承载于NodeDef，计算图构造期间，NodeDef的属性值得以确定。</p>
-<p>在计算图执行启动时，通过调用Session.run，将整个GraphDef传递给后端，并启动计算图的执行。</p>
-<h2 id="执行op">执行OP</h2>
-<p>在计算图执行期间，输入由上游OP流入得以确定，根据特定设备类型，输入输出类型，多态选择合适的Kernel实现，并启动Kernel的计算过程。</p>
-<h1 id="参考资料">参考资料</h1>
-<p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[TF的session 与graph]]></title>
-        <id>https://DragonFive.github.io/post/tf-de-session-yu-graph/</id>
-        <link href="https://DragonFive.github.io/post/tf-de-session-yu-graph/">
-        </link>
-        <updated>2019-01-30T09:54:33.000Z</updated>
-        <content type="html"><![CDATA[<blockquote>
-<p>最近在读《TensorFlow 内核剖析》这本书，作者刘光聪。有一些收获，记录一下。</p>
-</blockquote>
-<h1 id="tf的session">TF的Session</h1>
-<p>Session是TensorFlow前后端连接的桥梁。用户利用session使得client能够与master的执行引擎建立连接，并通过session.run()来触发一次计算。它建立了一套上下文环境，封装了operation计算以及tensor求值的环境。</p>
-<p>session之间采用共享graph的方式来提高运行效率。一个session只能运行一个graph实例，但一个graph可以运行在多个session中。创建session时如果不指定Graph实例，则会使用系统默认Graph。当session close时，默认 graph 引用计数减1。只有引用计数为0时，graph才会被回收。这种graph共享的方式，大大减少了graph创建和回收的资源消耗，优化了TensorFlow运行效率。</p>
-<p>op运算和tensor求值时，如果没有指定运行在哪个session中，则会运行在默认session中。通过session.as_default()可以将自己设置为默认session。</p>
-<pre><code class="language-python">operation.run()
-tensor.eval()
-</code></pre>
-<p>实际执行的代码是</p>
-<pre><code class="language-python">tf.get_default_session().run(operation)
-tf.get_default_session().run(tensor)
-</code></pre>
-<h1 id="session-类型">Session 类型</h1>
-<h2 id="前端-session">前端 Session</h2>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625220300985.png" alt="" loading="lazy"></figure>
-<p>分为普通Session和交互式InteractiveSession， 区别在于：</p>
-<ul>
-<li>
-<p>InteractiveSession创建后，会将自己替换为默认session。使得之后operation.run()和tensor.eval()的执行通过这个默认session来进行。特别适合Python交互式环境。</p>
-</li>
-<li>
-<p>InteractiveSession自带with上下文管理器。它在创建时和关闭时会调用上下文管理器的enter和exit方法，从而进行资源的申请和释放，避免内存泄漏问题。这同样很适合Python交互式环境。</p>
-</li>
-</ul>
-<p>BaseSession基本包含了所有的会话实现逻辑。包括会话的整个生命周期，也就是创建 执行 关闭和销毁四个阶段。</p>
-<p>BaseSession包含的主要成员变量有：</p>
-<ul>
-<li>graph引用</li>
-<li>序列化的graph_def</li>
-<li>要连接的tf引擎target</li>
-<li>session配置信息config</li>
-</ul>
-<h2 id="后端session">后端Session</h2>
-<p>后端master中，根据前端client调用tf.Session(target=’’, graph=None, config=None)时指定的target，来创建不同的Session。target为要连接的tf后端执行引擎，默认为空字符串。Session创建采用了抽象工厂模式，如果为空字符串，则创建本地DirectSession，如果以grpc://开头，则创建分布式GrpcSession。</p>
-<p>DirectSession只能利用本地设备，将任务创建到本地的CPU GPU上。而GrpcSession则可以利用远端分布式设备，将任务创建到其他机器的CPU GPU上，然后通过grpc协议进行通信。</p>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625220817848.png" alt="" loading="lazy"></figure>
-<h1 id="session-生命周期">Session 生命周期</h1>
-<p>Session作为前后端连接的桥梁，以及上下文运行环境，其生命周期尤其关键。大致分为4个阶段</p>
-<ul>
-<li>创建：通过tf.Session()创建session实例，进行系统资源分配，特别是graph引用计数加1</li>
-<li>运行：通过session.run()触发计算的执行，client会将整图graph传递给master，由master进行执行</li>
-<li>关闭：通过session.close()来关闭，会进行系统资源的回收，特别是graph引用计数减1.</li>
-<li>销毁：Python垃圾回收器进行GC时，调用session.<strong>del</strong>()进行回收。</li>
-</ul>
-<h1 id="graph">graph</h1>
-<p>可以显示创建Graph，并调用as_default()使他替换默认Graph。在该上下文管理器中创建的op都会注册到这个graph中。退出上下文管理器后，则恢复原来的默认graph。一般情况下，我们不用显式创建Graph，使用系统创建的那个默认Graph即可。</p>
-<pre><code class="language-python">with tf.Graph().as_default() as g:
-    print tf.get_default_graph() is g
-    print tf.get_default_graph()
-
-print tf.get_default_graph()
-</code></pre>
-<p>在上下文管理器中，当前线程的默认图被替换了，而退出上下文管理后，则恢复为了原来的默认图。</p>
-<h1 id="graph-类型">graph 类型</h1>
-<h1 id="前端graph-类型">前端graph 类型</h1>
-<p>Python前端中，Graph的数据结构。Graph主要的成员变量是Operation和Tensor。Operation是Graph的节点，它代表了运算算子。Tensor是Graph的边，它代表了运算数据。</p>
-<pre><code class="language-python">@tf_export(&quot;Graph&quot;)
-class Graph(object):
-    def __init__(self):
-   	    # 加线程锁，使得注册op时，不会有其他线程注册op到graph中，从而保证共享graph是线程安全的
-        self._lock = threading.Lock()
-        
-        # op相关数据。
-        # 为graph的每个op分配一个id，通过id可以快速索引到相关op。故创建了_nodes_by_id字典
-        self._nodes_by_id = dict()  # GUARDED_BY(self._lock)
-        self._next_id_counter = 0  # GUARDED_BY(self._lock)
-        # 同时也可以通过name来快速索引op，故创建了_nodes_by_name字典
-        self._nodes_by_name = dict()  # GUARDED_BY(self._lock)
-        self._version = 0  # GUARDED_BY(self._lock)
-        
-        # tensor相关数据。
-        # 处理tensor的placeholder
-        self._handle_feeders = {}
-        # 处理tensor的read操作
-        self._handle_readers = {}
-        # 处理tensor的move操作
-        self._handle_movers = {}
-        # 处理tensor的delete操作
-        self._handle_deleters = {}
-
-</code></pre>
-<p>graph 添加 op 是会保证线程安全的。</p>
-<pre><code class="language-python">  def _add_op(self, op):
-    # graph被设置为final后，就是只读的了，不能添加op了。
-    self._check_not_finalized()
-    
-    # 保证共享graph的线程安全
-    with self._lock:
-      # 将op以id和name分别构建字典，添加到_nodes_by_id和_nodes_by_name字典中，方便后续快速索引
-      self._nodes_by_id[op._id] = op
-      self._nodes_by_name[op.name] = op
-      self._version = max(self._version, op._id)
-
-</code></pre>
-<h2 id="name_scope">name_scope</h2>
-<p>name_scope 节点命名空间<br>
-使用name_scope对graph中的节点进行层次化管理，上下层之间通过斜杠分隔。</p>
-<h1 id="后端graph">后端Graph</h1>
-<h2 id="graph-2">Graph</h2>
-<pre><code class="language-cpp">class Graph {
-     private:
-      // 所有已知的op计算函数的注册表
-      FunctionLibraryDefinition ops_;
-
-      // GraphDef版本号
-      const std::unique_ptr&lt;VersionDef&gt; versions_;
-
-      // 节点node列表，通过id来访问
-      std::vector&lt;Node*&gt; nodes_;
-
-      // node个数
-      int64 num_nodes_ = 0;
-
-      // 边edge列表，通过id来访问
-      std::vector&lt;Edge*&gt; edges_;
-
-      // graph中非空edge的数目
-      int num_edges_ = 0;
-
-      // 已分配了内存，但还没使用的node和edge
-      std::vector&lt;Node*&gt; free_nodes_;
-      std::vector&lt;Edge*&gt; free_edges_;
- }
-
-</code></pre>
-<p>后端中的Graph主要成员也是节点node和边edge。节点node为计算算子Operation，边为算子所需要的数据，或者代表节点间的依赖关系。这一点和Python中的定义相似。边Edge的持有它的源节点和目标节点的指针，从而将两个节点连接起来。</p>
-<h2 id="edge">Edge</h2>
-<pre><code class="language-cpp">class Edge {
-     private:
-      Edge() {}
-
-      friend class EdgeSetTest;
-      friend class Graph;
-      // 源节点, 边的数据就来源于源节点的计算。源节点是边的生产者
-      Node* src_;
-
-      // 目标节点，边的数据提供给目标节点进行计算。目标节点是边的消费者
-      Node* dst_;
-
-      // 边id，也就是边的标识符
-      int id_;
-
-      // 表示当前边为源节点的第src_output_条边。源节点可能会有多条输出边
-      int src_output_;
-
-      // 表示当前边为目标节点的第dst_input_条边。目标节点可能会有多条输入边。
-      int dst_input_;
-};
-
-</code></pre>
-<p>Edge既可以承载tensor数据，提供给节点Operation进行运算，也可以用来表示节点之间有依赖关系。对于表示节点依赖的边，其src_output_, dst_input_均为-1，此时边不承载任何数据。</p>
-<h2 id="node">Node</h2>
-<pre><code class="language-cpp">class Node {
- public:
-    // NodeDef,节点算子Operation的信息，比如op分配到哪个设备上了，op的名字等，运行时有可能变化。
-  	const NodeDef&amp; def() const;
-    
-    // OpDef, 节点算子Operation的元数据，不会变的。比如Operation的入参列表，出参列表等
-  	const OpDef&amp; op_def() const;
- private:
-  	// 输入边，传递数据给节点。可能有多条
-  	EdgeSet in_edges_;
-
-  	// 输出边，节点计算后得到的数据。可能有多条
-  	EdgeSet out_edges_;
-}
-</code></pre>
-<p>创建Node时不需要new OpDef，只需要从OpDef仓库中取出即可。因为元信息是确定的，比如Operation的入参个数等。</p>
-<p>由Node和Edge，即可以组成图Graph，通过任何节点和任何边，都可以遍历完整图。Graph执行计算时，按照拓扑结构，依次执行每个Node的op计算，最终即可得到输出结果。入度为0的节点，也就是依赖数据已经准备好的节点，可以并发执行，从而提高运行效率。</p>
-<p>系统中存在默认的Graph，初始化Graph时，会添加一个Source节点和Sink节点。Source表示Graph的起始节点，Sink为终止节点。Source的id为0，Sink的id为1，其他节点id均大于1.</p>
-<h1 id="参考资料">参考资料</h1>
-<p><a href="https://blog.csdn.net/u013510838/article/details/84139986">Graph_谢杨易的博客-CSDN博客</a></p>
-<p><a href="https://blog.csdn.net/u013510838/article/details/84111031">Session_谢杨易的博客-CSDN博客</a></p>
 ]]></content>
     </entry>
 </feed>
