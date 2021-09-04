@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>快手的八卦：bagua论文翻译与赏析 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1630755926351">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1630755926351" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">快手的八卦：bagua论文翻译与赏析</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-08-31</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/gd01ID-F3/">
+                    论文阅读
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>《八卦-使用系统松弛（Relaxations）扩展分布式学习</p>
+<blockquote>
+<p>点评：这篇论文的作者中的后面发了很多论文，快手人才济济呀</p>
+</blockquote>
+<h1 id="摘要">摘要</h1>
+<p>近年来，用于分布式数据并行训练的系统列表越来越多。 现有系统在很大程度上适合两种范式，即参数服务器和 MPI 风格的集体操作。 在算法方面，研究人员提出了广泛的技术来通过“系统松弛”降低通信：<strong>量化、去中心化和通信延迟</strong>。然而，大多数（如果不是全部）现有系统仅依赖于基于标准同步和异步随机梯度 (SG) 的优化，因此无法利用机器学习社区最近开发的所有可能的优化。鉴于当前系统和理论之间出现的这种差距，我们构建了 BAGUA，<strong>这是一个通信框架</strong>，其设计目标是提供一个既灵活又模块化的系统抽象，以支持最先进的分布式训练系统松弛技术 . 在新系统设计的支持下，BAGUA 具有强大的实现和扩展各种最先进的分布式学习算法的能力。 在拥有多达 16 台机器（128 个 GPU）的生产集群中，BAGUA 可以在端到端的训练时间内在各种任务中以显着的优势（高达 1.95 倍）优于 PyTorch-DDP、Horovod 和 BytePS。 此外，我们进行了严格的权衡探索，表明不同的算法和系统松弛在不同的网络条件下实现了最佳性能。</p>
+<h1 id="1-引言">1. 引言</h1>
+<p>分布式机器学习系统不断提高的可扩展性和性能一直是机器学习技术快速发展的主要推动力之一。模型质量的每一次飞跃都是通过模型大小和可以训练模型的数据量的增长以及计算量的快速增加来实现的。这种改进的背后是两个主要的促成因素：硬件加速（例如 GPU 和 TPU）和高效且可扩展的分布式训练算法的开发。可以说可扩展的分布式训练系统是现代深度学习技术的基石。</p>
+<p><em>表一：不同的系统松弛技术</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">论文</th>
+<th style="text-align:center">同步</th>
+<th style="text-align:center">精确度</th>
+<th style="text-align:center">集中式</th>
+<th style="text-align:center">PyTorch-DDP</th>
+<th style="text-align:center">Horovod</th>
+<th style="text-align:center">BytePS</th>
+<th style="text-align:center">BAGUA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">limu ps</td>
+<td style="text-align:center">同步</td>
+<td style="text-align:center">全精度</td>
+<td style="text-align:center">中心</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1902.00340">arXiv:1902.00340</a></td>
+<td style="text-align:center">同步</td>
+<td style="text-align:center">全精度</td>
+<td style="text-align:center">去中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1610.02132">arXiv:1610.02132</a></td>
+<td style="text-align:center">同步</td>
+<td style="text-align:center">低精度</td>
+<td style="text-align:center">中心</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1809.07599">arXiv:1809.07599</a></td>
+<td style="text-align:center">同步</td>
+<td style="text-align:center">低精度</td>
+<td style="text-align:center">去中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1803.06443">arXiv:1803.06443</a></td>
+<td style="text-align:center">异步</td>
+<td style="text-align:center">全精度</td>
+<td style="text-align:center">中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">v</td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1609.08326">arXiv:1609.08326</a></td>
+<td style="text-align:center">异步</td>
+<td style="text-align:center">全精度</td>
+<td style="text-align:center">去中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://arxiv.org/abs/1710.06952">arXiv:1710.06952</a></td>
+<td style="text-align:center">异步</td>
+<td style="text-align:center">低精度</td>
+<td style="text-align:center">中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">v</td>
+</tr>
+<tr>
+<td style="text-align:center">无</td>
+<td style="text-align:center">异步</td>
+<td style="text-align:center">低精度</td>
+<td style="text-align:center">去中心</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>点评：这里对于各项技术的综述视角不错，值得学习</p>
+</blockquote>
+<h3 id="数据并行训练系统的现状">数据并行训练系统的现状:</h3>
+<p>在本文中，我们将自己的范围定为并专注于数据并行训练，这是最流行的分布式训练范式之一，其中数据集在不同的工作人员之间进行分区，并且模型适合单个设备。 毫不奇怪，最近几年见证了越来越多的分布式数据并行训练系统。现有系统适合<strong>两个范式</strong>：ps(遵循 Li mu等人所做的开创性工作<a href="http://web.eecs.umich.edu/~mosharaf/Readings/Parameter-Server.pdf">ps</a>) 和 使用 MPI 集体操作（Sergeev等人<a href="https://arxiv.org/abs/1802.05799">horovod</a>），例如 Allreduce。两种范式都支持工业规模的分布式训练系统。基于ps 的有 Adam (Microsoft) , TensorFlow (Google) , Poseidon (Petuum) , Angel (Tencent) , and BytePS (ByteDance)。基于 MPI 风格的有：PyTorch-DDP (Facebook) , Mariana (Tencent) , MALT (NEC Labs) , NCCL (NVIDIA) , and Horovod (Uber)。这些系统通常涉及机器学习、系统和数据管理社区的共同努力，并成功地使分布式训练变得更容易和更具可扩展性。</p>
+<blockquote>
+<p>点评：byteps 是ps模式，还是allreduce模式在知乎上也引发正义</p>
+</blockquote>
+<h3 id="数据并行训练算法的现状">数据并行训练算法的现状</h3>
+<p>在理论和算法方面，研究人员也一直在积极改进基于标准同步和异步随机梯度 (SG) 算法的性能。 注意到一个主要的系统瓶颈是通信，研究人员提出了一系列技术来降低通信开销，主要是通过“放松”通信的某些方面。比如包括 (1) 通信压缩（例如，量化、稀疏化和误差补偿 ），(2) 通信分散化和 (3) 通信延迟（例如 LocalSGD）和异步 。这些技术针对不同的工作负载和不同的网络条件进行了优化。 这些技术在<strong>带宽和延迟方面显着降低通信开销</strong>，或增加对落后者存在的容忍度方面有很好的保障。</p>
+<h3 id="系统与理论之间新出现的鸿沟">系统与理论之间新出现的鸿沟</h3>
+<p>在本文中，我们受到当前系统和理论景观之间新出现的差距的启发。尽管分布式学习理论和算法在系统松弛方面取得了最新进展，但大多数（如果不是全部）现有系统仅依赖于标准的同步和异步基于随机梯度 (SG) 的算法。 主要后果是现有系统没有利用机器学习社区一直在开发的所有可能的优化，并且许多实际应用程序可能会进一步加速。在本文中，我们问：我们能否通过通信系统松弛来进一步加速分布式学习系统？ 如果是这样，为此目的正确的系统抽象是什么？</p>
+<h3 id="技术挑战">技术挑战</h3>
+<p>要缩小这一差距需要的不仅仅是简单地使用这些算法来实现从现有系统中抽象出参数服务器和 Allreduce。有两个挑战。首先，在参数服务器或 Allreduce 范式中直接和自然地支持这些系统松弛是具有挑战性的。例如，使用参数服务器提供的 put/get 抽象来支持需要服务器端内存和状态的算法是具有挑战性的，这是大多数使用错误补偿的通信压缩算法所需要的。 同样，两种范式都很难支持去中心化通信。因此，必须从根本上重新审视系统抽象的设计，以支持当今许多松弛算法。其次，我们需要支持模块化系统抽象和优化来处理这些系统松弛的多样性。当 Horovod 和 BytePS 等现有系统针对性能进行优化时，它们通常会关注基于 教科书式的随机梯度算法的通信模式。当我们希望支持大量训练算法时，如表 1 所示，我们无法单独优化每个算法； 相反，我们必须了解如何在通用框架中自动优化这组不同的算法。</p>
+<h3 id="bagua-系统和我们的贡献">BAGUA 系统和我们的贡献</h3>
+<p>受这两个挑战的启发，我们构建了 BAGUA，这是一个通信框架，其设计目标是支持分布式训练的最先进系统松弛技术。 我们做出了两项技术贡献：</p>
+<ul>
+<li>我们的第一个贡献是 BAGUA 的系统设计，它为通信提供了模块化设计。 我们的抽象囊括了参数服务器和 Allreduce 范式，并提供了一系列 MPI 风格的集体操作，以促进具有不同精度和集中化策略的通信。<br>
+这种抽象非常灵活和模块化，足以支持许多算法，如表 1 所示。此外，我们还开发了一个简单的自动优化框架，可以加速在 BAGUA 框架内实现的算法。 该框架背后的关键是通信的自动batching和调度。 与之前的工作，如 Horovod 和 BytePS 不同，我们的优化框架可以更广泛地应用，超出基于标准 SG 的算法</li>
+<li>我们的第二个贡献是围绕两个假设进行的广泛的实证研究：(1) 通过支持不同的系统松弛技术，BAGUA 能够通过现实世界的基础设施为现实世界的应用程序和工作负载提供比现有系统显著的改进； (2) 通过支持多种系统松弛，BAGUA 能够在不同的网络条件下提供可扩展的 ML 训练，以允许用户选择不同的算法。为此，我们对两者进行了大规模的实证研究在快手公司运行的基准测试任务和实际应用程序。 在具有多达 16 台机器（总共 128 个 GPU，使用 Tensor Core 聚合 2 petaFLOPS）的集群上，我们按照 V100 GPU 机器 (p3.8xlarge, p3. 16xlarge、p3dn.24xlarge) 在 AWS 上连接：10Gbps、25Gbps 和 100Gbps，使用 TCP/IP 连接。在各种任务中，BAGUA 的性能明显优于 BytePS 、Horovod 和 PyTorch-DDP（对于 10Gbps 可达 1.9 倍，对于 100Gbps 可达 1.34 倍）。 此外，我们进行了严格的权衡探索，表明不同的算法和系统松弛可以在不同的网络条件下实现最佳性能。 这说明了向最终用户提供这种不同的算法队列的重要性。</li>
+</ul>
+<h3 id="局限和进步">局限和进步</h3>
+<p>当前的 BAGUA 系统存在一些局限性，我们希望我们在构建 BAGUA 方面所做的努力可以帮助和启发未来在这些令人兴奋的方向上的研究。首先，BAGUA 没有提供一种原则性的方法来帮助用户自动选择最合适的系统松弛来应用。 在 BAGUA 为所有这些算法提供支持之后，一个令人兴奋的方向是了解如何构建一个有原则的自动调整系统。 其次，当前版本的 BAGUA 只关注数据并行性，集成其他技术（例如模型并行性和流水线并行性）并理解系统抽象是有趣的未来工作。</p>
+<h3 id="大纲">大纲</h3>
+<p>大纲 本文的其余部分组织如下。 我们首先简要回顾第 2 节中的数据并行训练和现有系统的优化框架，作为准备工作和相关工作。 我们在第 3 节中讨论了 BAGUA 的设计和优化。我们在第 4 节中描述了我们的实验研究，并在第 5 节中总结。</p>
+<h1 id="2-前期工作及相关工作">2. 前期工作及相关工作</h1>
+<p>BAGUA 建立在数十年关于分布式机器学习系统和算法的研究之上。 其中很多来自数据库社区。 我们现在总结相关工作并详细讨论一些以提供背景和背景。 我们建议读者参考 <a href="https://arxiv.org/abs/2104.05245">Distributed Learning Systems with First-order Methods</a> 对不同系统松弛算法的严格理论分析。</p>
+<h2 id="21-基于数据并行sg的算法">2.1 基于数据并行SG的算法</h2>
+<p>分布式学习系统的基石是基于数据并行随机梯度（DP-SG）的算法，这是现有系统支持和优化的主导算法。 设 D 是一个数据集，n 是worker 的数量，每个worker  i 持有它在步骤 t 的数据 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>D</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">D^{(t)}_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.27686399999999994em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.27686399999999994em;"><span></span></span></span></span></span></span></span></span></span> 和模型副本的分区：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">x^{(t)}_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.27686399999999994em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.27686399999999994em;"><span></span></span></span></span></span></span></span></span></span>。 设 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>g</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">g^{(t)}_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.27686399999999994em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.27686399999999994em;"><span></span></span></span></span></span></span></span></span></span> 是第 t 步worker i 的随机梯度，教科书 DP-SG 更新worker i 处的每个本地模型副本，如下所示：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></msubsup><mo>=</mo><msubsup><mi>x</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup><mi mathvariant="normal">−</mi><mi>γ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msubsup><mi>g</mi><mi>j</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">x^{(t+1)}_i = x^{(t)}_i − γ \sum^n_{j=1} g^{(t)}_j
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.276864em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.0651740000000007em;vertical-align:-1.4137769999999998em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span><span class="mord">−</span><span class="mord mathdefault" style="margin-right:0.05556em;">γ</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000007em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.4137769999999998em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.412972em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<p>其中γ是学习率。 为了实现这一点，所有机器都需要交换它们的局部梯度 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>g</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">g^{(t)}_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.27686399999999994em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.27686399999999994em;"><span></span></span></span></span></span></span></span></span></span>，聚合并广播到所有机器。 当然，这可以通过标准的 Allreduce 通信模式来实现。</p>
+<p>当有很多worker 或一些潜在的落后者时，可以将上述算法扩展到其异步对应物。 我们允许访问一些过时的版本(staled version)，而不是在迭代 t 时使用最新的梯度。</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></msubsup><mo>=</mo><msubsup><mi>x</mi><mi>i</mi><mrow><mo>(</mo><mi>t</mi><mo>)</mo></mrow></msubsup><mi mathvariant="normal">−</mi><mi>γ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msubsup><mi>g</mi><mi>j</mi><mrow><mo>(</mo><msubsup><mi>t</mi><mi>j</mi><mi>i</mi></msubsup><mo>)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">x^{(t+1)}_i = x^{(t)}_i − γ \sum^n_{j=1} g^{(t^i_j)}_j
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.321664em;vertical-align:-0.276864em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.0651740000000007em;vertical-align:-1.4137769999999998em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0448em;"><span style="top:-2.4231360000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.2198em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight">t</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span><span class="mord">−</span><span class="mord mathdefault" style="margin-right:0.05556em;">γ</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000007em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.4137769999999998em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.2736799999999997em;"><span style="top:-2.4231360000000004em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span><span style="top:-3.3422199999999997em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9020857142857143em;"><span style="top:-2.214em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.42488571428571426em;"><span></span></span></span></span></span></span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.412972em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<p>t 是计算worker j 梯度的前一次迭代，由worker i 在迭代 t 时访问。 理论上可以通过 异步SGD 实现线性加速。</p>
+<h2 id="22-现有的分布式学习系统">2.2 现有的分布式学习系统</h2>
+<p>分布式学习系统在过去十年中吸引了大量研究。 大多数现有系统，包括 DistBelief [63]、Adam [25]、SparkNet [64]、GeePS [65]、Poseidon [27]、Angel [28]、BytePS [29]、PyTorch-DDP [30]、Mariana [31] ]、MALT [32]、NCCL [33]、SINGA [66, 67]、Rafiki [68] 和 Horovod [24]，都专注于 DP-SG 算法或其异步对应算法的优化。 这些系统的设计基于两个基本问题：</p>
+<ul>
+<li>1.（抽象通信）应该如何通信和聚合梯度和模型？</li>
+<li>2.（优化）如何通过平衡通信和计算来优化端到端执行？</li>
+</ul>
+<h3 id="通信抽象">通信抽象</h3>
+<p>在通信抽象方面，现有系统分为两种范式：参数服务器（PS）和 Allreduce ，图 1 说明了这两种范式。 在参数服务器架构中，模型可以划分为分片并分布到多个节点（我们称这些节点为“参数服务器”）。 在训练阶段，worker 定期从 PS 中获取模型，利用 GPU 等计算单元进行前向和反向传播并将梯度推送到 PS，而 PS 聚合梯度并更新参数。使用 Allreduce 范式，所有worker 与他们的邻居合作进行模型/梯度交换。 现有系统通常采用环形拓扑 <a href="https://link.springer.com/chapter/10.1007/978-3-540-24685-5_1">Optimization of Collective Reduction Operations</a> 进行两阶段通信：首先，范式将模型/梯度划分为 n 个块（其中 n 是节点数），并使用 n 个具有不同起点和终点的环 指向聚合 n 个块； 其次，通过环广播位于不同节点的每个块的聚合结果。</p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1630754817474.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1630754865306.png" alt="" loading="lazy"></figure>
+<p><em>图 2：DP-SG 的通信模式以及 Horovod、BytePS 和 PyTorch-DDP 如何优化此通信模式的执行</em></p>
+<blockquote>
+<p>点评：这个图需要关注一下</p>
+</blockquote>
+<p>用于两阶段通信的现有系统：首先，范式将模型/梯度划分为 n 个块（其中 n 是节点数），并使用具有不同起点和终点的 n 个环来聚合 n 个块； 其次，通过环广播位于不同节点的每个块的聚合结果。</p>
+<h3 id="性能优化">性能优化</h3>
+<p>在决定使用哪种通信范式之后，一个关键的设计是如何在计算过程中隐藏尽可能多的通信。 这通常是以前系统的核心技术组件。Horovod、BytePS 和 PyTorch-DDP。 这些系统通过开发不同的方法来平衡通信和计算来优化 DP-SG 通信模式。 关键的复杂性源于这样一个事实，即 DP-SG 的训练过程由不同层之间的微妙依赖及其自身的 (1) 前向传递、(2) 反向传递、(3) 梯度同步和 (4) 模型更新四个阶段组成 。</p>
+<p>图 2（Vanilla）说明了 DP-SG 在四层模型上的简单实现。 一旦向后传递（蓝色）完成，系统就会为每一层传达梯度（绿色），并在所有层（粉色）完成所有通信后一次性更新所有层的模型。 然后系统开始下一次向前传递（黄色）。</p>
+<p>PyTorch-DDP 和 Horovod 是两个基于 Allreduce 的系统，<strong>并通过将通信 (Allreduce) 与反向传递重叠</strong>并将多个<strong>梯度分桶为一个 Allreduce 操作来专门优化此流水线</strong>。 通过重叠，Allreduce 操作可以与梯度计算并行进行。 Allreduce 操作仅在存储桶中的所有梯度都准备就绪时触发。 分桶的直觉是，像 Allreduce 这样的集体通信在大张量上更有效。 所有的 Allreduce 操作完成后，模型将通过聚合梯度进行更新。BytePS 遵循参数服务器范例，以不同的方式优化了这个管道。</p>
+<p><strong>BytePS 将每个梯度分割成大小相同的小块来进行 Push/Pull</strong>。 BytePS 重叠向前和向后推/拉。 它有一个调度器来维护梯度块的通信顺序。 其原理是，阻塞下一次前向传递执行的参数将优先进行通信。 一旦从服务器中提取了参数的所有梯度块，该参数将单独更新。 因此，下一次迭代的前向传递可能会与当前迭代的通信重叠。 在异步 DP-SG 方面，BytePS 通过允许每个worker单独更新服务器状态而不等待其他worker 来支持它。 而 PyTorch-DDP 和 Horovod 不支持异步通信，因为它们依赖于 Allreduce 运算符。</p>
+<h2 id="23-分布式-dp-sg-的系统放松">2.3 分布式 DP-SG 的系统放松</h2>
+<p>虽然现有系统主要关注同步和异步 DP-SG 算法，但研究界已经开发出一套多样化的技术来进一步优化通信的不同方面。 这些技术通常会导致不同的训练算法，从而导致不同的通信模式，如 DP-SG。鉴于这些差异，Horovod、BytePS 和 PyTorch-DDP 都没有提供对这些算法的系统支持，如表 1 所述。BAGUA 的目标是提供灵活的抽象来支持这些具有自动性能优化框架的不同训练算法，而无需 假设特定的通信模式，例如 DP-SG 之一。 提出了不同的策略来加速 DP-SG 中昂贵的参数交换阶段。 为了减少通信量，引入了有损通信压缩方法，如量化，稀疏化，素描（sketching）和误差补偿 . 为了摆脱延迟瓶颈，人们提出了分散式通信方法。 此外，还讨论了 localSGD 以优化训练期间的通信轮数。最后，值得一提的是，有些方法结合了上面列出的多种策略。</p>
+<p><strong>示例</strong><br>
+为了说明这些高级训练算法与普通 DP-SG 之间的通信模式的差异，以及仅考虑使用 DP-SG 进行优化的系统在以模块化和系统的方式支持这些新算法方面面临挑战的原因，我们取 QSGD 和去中心化低精度 SGD 的示例。 图 3 说明了 DP-SG、QSGD 和分散的低精度 SGD 的执行管道和通信模式。 与DP-SG相比，流水线的执行组件及其依赖关系可以在高级算法中改变。例如，DP-SG 中甚至不存在两种算法所需的组件“量化”，而去中心化低精度 SGD 中的“模型更新”组件需要在通信之前发生。 由于这些高级算法无法适应 DP-SG 通信模式，因此为 DP-SG 而生的系这些统处理这些算法具有挑战性。</p>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1630755592348.png" alt="" loading="lazy"></figure>
+<p><em>图 3：BAGUA 自动优化的系统松弛训练算法的通信模式</em></p>
+<blockquote>
+<p>点评：</p>
+</blockquote>
+<h1 id="3-系统设计">3 系统设计</h1>
+<p>BAGUA 的目标是提供一个灵活的框架来支持 DP-SG 之外的高级训练算法。 为了实现这一点，我们重新审视了控制以前系统设计的两个基本问题，而不假设 DP-SG 的模式：</p>
+<ol>
+<li>（抽象通信）应该如何通信和聚合梯度和模型？ 在 BAGUA 中，除了参数服务器和 Allreduce 之外，我们设计了一系列 MPI 风格的集体操作，以促进具有不同精度和中心化策略的通信。</li>
+<li>（优化）如何通过平衡通信和计算来优化端到端执行？ 在 BAGUA 中，我们开发了一个简单但有效的自动优化框架，可用于优化在 BAGUA 中实现的算法的执行。</li>
+</ol>
+<p>这两个设计决策使 BAGUA 具有灵活性和效率——通过系统松弛实现新的高级算法（例如，1-big Adam 或去中心化 SGD ）在 BAGUA 中，开发人员无需担心手动平衡通信与计算； 相反，开发人员可以在高层指定逻辑语义，BAGUA 将自动优化其执行。 在本节中，我们首先提供高级系统概述，然后描述这些原语及其实现，然后是 BAGUA 中简单但有效的优化框架。</p>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1630755614240.png" alt="" loading="lazy"></figure>
+<h2 id="31-系统总览">3.1 系统总览</h2>
+<p>BAGUA 的目标是促进利用系统松弛的高效且可扩展的分布式训练算法的开发。 如图 4 所示，存在三个参与者：最终用户、优化算法和 BAGUA 运行时。</p>
+<figure data-type="image" tabindex="5"><img src="https://DragonFive.github.io//post-images/1630755631672.png" alt="" loading="lazy"></figure>
+<p><strong>终端用户</strong> 从最终用户的角度来看，使用 BAGUA 非常类似于在单台机器上使用 PyTorch 或 TensorFlow 进行训练，只需对其现有代码进行最少的更改。 最终用户应提供：（1）需要训练的神经网络模型，在 PyTorch 中指定为图形，以及（2）数据样本流。 然后，最终用户指定要使用的训练算法，例如 QSGD （通信压缩训练）、1 位 Adam 或 DecentralizedSGD，以及训练基础设施的信息，例如 机器数量以及是否应该使用 MPI 或 NCCL 进行通信。</p>
+<p>BAGUA 的核心是一个训练算法，由开发人员使用 BAGUA 提供的通信原语和抽象实现。 算法将最终用户提供的神经网络作为输入，并为其配备特定于算法的通信功能。 具体来说，算法的开发者通过在不同的执行阶段将此通信函数注册为钩子来实现这一点。 一个例子是在每一层的反向计算之后注册一个钩子。 通信函数包含训练算法的核心逻辑，其签名如下：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mo>(</mo><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>g</mi><mn>1</mn></msub><mo>)</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo>(</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><msub><mi>g</mi><mi>n</mi></msub><mo>)</mo><mo>)</mo><mo>−</mo><mo>&gt;</mo><mo>(</mo><msubsup><mi>x</mi><mn>1</mn><mi>l</mi></msubsup><mo separator="true">,</mo><msubsup><mi>g</mi><mn>1</mn><mi>l</mi></msubsup><mo>)</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo>(</mo><msubsup><mi>x</mi><mi>n</mi><mi>l</mi></msubsup><mo separator="true">,</mo><msubsup><mi>g</mi><mi>n</mi><mi>l</mi></msubsup><mo>)</mo></mrow><annotation encoding="application/x-tex">f((x_1, g_1)...(x_n, g_n)) -&gt; (x^l_1 , g^l_1 )...(x^l_n , g^l_n )
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mclose">)</span><span class="mord">−</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.1491079999999998em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>其中 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>g</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">(x_i, g_i)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> 是第 i 台机器上的当前模型 (<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>) 和梯度 (<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>g</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">g_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>)， (<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mi>l</mi></msubsup><mo separator="true">,</mo><msubsup><mi>g</mi><mi>i</mi><mi>l</mi></msubsup></mrow><annotation encoding="application/x-tex">x^l_i, g^l_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.107772em;vertical-align:-0.258664em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-2.441336em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-2.441336em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span></span></span></span>) 是第 i 台机器上的更新模型和梯度。为了实现通信功能，算法的开发者假设了一个类似 MPI 的执行模型。 关键的区别在于，开发者不仅配备了 MPI 中的标准通信原语（例如 Allreduce），还配备了 BAGUA 提供的一组通信原语。 这些原语支持系统放宽，例如带有错误补偿的压缩通信或分散式通信。</p>
+<p>在 BAGUA 中实现通信功能时，开发者提供了这种功能的批处理版本，将一组层作为输入。 这允许 BAGUA 稍后自动批处理通信并优化其与计算的重叠。 当BAGUA调用该函数时，它会将所有层的参数重新排列到连续的内存空间中，并传入这些层的扁平版本，将它们视为单个变量。 算法开发者可以决定她的算法是否可以使用这个扁平化的版本，通过对所有层进行一次通信来避免对每一层进行通信。</p>
+<p>BAGUA Runtime 对通信功能的每次调用（由注册的钩子触发）都向 BAGUA 注册，这为 BAGUA 提供了工作负载的全局视图，<strong>以实现自动调度和批处理。 BAGUA 的关键技术贡献是自动对计算和通信应用一系列优化</strong>。 为了实现这一点，BAGUA 的核心是执行优化器，它分两个阶段运行。</p>
+<ol>
+<li>分析阶段。 在梯度下降计算的第一次前向/后向传递期间，BAGUA 保留所有通信函数调用的日志，在没有任何优化的情况下执行它们。然后它会自动： (1. Bucketing) 将层分组到不同的桶中，它们的通信将同时发生； (2.Flattening)将同一组内所有层的所有模型和梯度重新排列到连续的内存空间中，以达到更好的局部性； (3. Scheduling) 调度何时进行每个桶的通信，与计算重叠。</li>
+<li>执行阶段。 对于梯度下降计算的其余前向/后向传递，BAGUA 将在模型的自动优化版本上执行。 默认情况下，BAGUA 每个桶进行一次通信。</li>
+</ol>
+<blockquote>
+<p>点评：这个自动优化应该是这篇论文为数不多的亮点。<br>
+除了这个自动优化，其他就像是系统工程上的大杂烩</p>
+</blockquote>
+<h2 id="32-通信原语">3.2 通信原语</h2>
+<p>BAGUA 的一个关键组件是一组通信原语。 所有这些算子都遵循类似于 MPI 的执行模型，将 n 个张量 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>1</mn></msub><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">x_1...x_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>（可以存储参数、梯度等）作为输入，每个张量在不同的 worker 上，并输出新的数据产出 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mn>1</mn><mi>l</mi></msubsup><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><msubsup><mi>x</mi><mi>n</mi><mi>l</mi></msubsup></mrow><annotation encoding="application/x-tex">x^l_1...x^l_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.097216em;vertical-align:-0.24810799999999997em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-2.4518920000000004em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.24810799999999997em;"><span></span></span></span></span></span></span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span> ，每个在不同的worker：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>o</mi><mi>p</mi><mo>(</mo><msub><mi>x</mi><mn>1</mn></msub><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><msub><mi>x</mi><mi>n</mi></msub><mo>)</mo><mo>→</mo><mo>&gt;</mo><msubsup><mi>x</mi><mn>1</mn><mi>l</mi></msubsup><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><msubsup><mi>x</mi><mi>n</mi><mi>l</mi></msubsup></mrow><annotation encoding="application/x-tex">op(x_1...x_n) →&gt; x^l_1 ...x^l_n
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">o</span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">→</span></span><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.146108em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mord">.</span><span class="mord">.</span><span class="mord">.</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<h3 id="集中式全精度">集中式全精度</h3>
+<p>BAGUA 提供了一个简单的原语 C FP S，它提供与标准 Allreduce 运算符相同的功能。</p>
+<p>我们使用这个符号来表示，CFPS 算子的作用是计算所有本地副本的总和 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mo>∑</mo><mi>j</mi></msub><msub><mi>x</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\sum_jx_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.185818em;vertical-align:-0.43581800000000004em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16195399999999993em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.43581800000000004em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span> ，并使其可供所有worker 访问。</p>
+<h3 id="集中式-低精度">集中式、低精度</h3>
+<p>鉴于许多深度神经网络可以容忍其梯度的激进有损压缩，最近通信压缩引起了广泛的兴趣。BAGUA 为此提供了 CLPS 原语。 具体来说：</p>
+<figure data-type="image" tabindex="6"><img src="https://DragonFive.github.io//post-images/1630755670795.png" alt="" loading="lazy"></figure>
+<p>其中 Q 是有损压缩函数，由开发人员指定，CLPS 支持带有错误补偿的通用通信压缩形式。 请注意，将 δi 和 i 设置为 None 将禁用误差补偿并给出。直观上，δi 和 i 保留了上次迭代压缩引起的误差。 误差补偿方法引入的收敛效率对压缩非常稳健。 当压缩功能相对激进时，此技术特别有用。</p>
+<h3 id="去中心化-全精度">去中心化、全精度</h3>
+<p>BAGUA 还支持去中心化通信，消除了模型同步的延迟瓶颈——而不是在集群中的所有 n 个 worker 之间同步，每个 worker <strong>只将更新发送给它的邻居</strong>。 例如，根据<strong>基于环的拓扑</strong>，工人的邻居包括环中的紧邻左worker和紧邻右worker。 形式上，BAGUA 的去中心化全精度通信原语 DFPS 可以形式化如下：</p>
+<blockquote>
+<p>点评：就是ring allreduce 呀</p>
+</blockquote>
+<figure data-type="image" tabindex="7"><img src="https://DragonFive.github.io//post-images/1630755688224.png" alt="" loading="lazy"></figure>
+<h3 id="去中心化-低精度">去中心化、低精度</h3>
+<p>BAGUA 还为去中心化低精度通信提供原始 DLPS</p>
+<h3 id="讨论支持异步算法">讨论：支持异步算法</h3>
+<p>当前版本的 BAGUA 没有提供这些原语的任何异步版本，而是支持使用这些同步原语的异步算法，如下所示。 一个算法可以实现两个并发线程，一个处理计算，另一个处理通信。 这两个线程不会互相等待。 这提供了许多异步算法的实现。总结在表 1 中。它还可以实现 LocalSGD 和模型平均。 进一步探索提供异步版本的原语的好处很有趣，我们将其留作未来的工作。</p>
+<h2 id="33-原语的实现">3.3 原语的实现</h2>
+<h3 id="集中原语">集中原语</h3>
+<p>BAGUA 使用 ScatterReduce 通信模式运行集中原语。 特别地，目标张量被分成n个分区，其中n是worker的数量。 第 i 个工作器负责聚合第 i 个分区。 由于底层通信库 NCCL 不提供 ScatterReduce 原语，我们使用基本的 send 和 recv NCCL 操作符来实现这个原语。</p>
+<blockquote>
+<p>点评，在nccl 2 里面提供了 <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/api/colls.html#c.ncclReduceScatter">reducescatter</a>，不太确定底层通信库 NCCL 不提供 ScatterReduce 原语指的是什么</p>
+</blockquote>
+<p>每个worker 1) 对本地张量进行分区，2) 将分区发送给相应的worker，3) 从其他worker 接收负责的分区，4) 合并收到的分区，以及5) 将合并的分区发送给其他worker。</p>
+<blockquote>
+<p>点评：这个意思是中心化是worker 当ps用了？</p>
+</blockquote>
+<p>ScatterReduce 通信模式可以利用所有 worker（如 Allreduce）的聚合带宽，并支持压缩技术（与 Allreduce 不同）。 低精度原语 CLPS 利用 ScatterReduce 通信来合并两个压缩阶段。每个工作人员在发送之前只压缩本地张量的分区（阶段 1）和合并的分区（阶段 2）。 请注意，压缩和解压缩过程可以与错误补偿技术相结合可以减少信息丢失（参见第 3.2 节中的语义）。</p>
+<h3 id="分散原语">分散原语</h3>
+<p>与所有 worker 都参与交流的集中式培训不同，分散式培训中的每个worker只与一个或几个同伴进行交流。 BAGUA 设计了两种机制来分配对等点——环和随机。 环形策略为worker提供连续的等级并将所有worker组织成一个环。rank-i worker 只与两个相邻的 peer 通信，rank-(i − 1) 和 rank-(i + 1)。 或者，随机策略为每个worker随机选择一个对等点。 当通信对等点被分配时，每个worker将本地张量发送给对等点，从对等点接收张量，并计算它们的平均值。 低精度原语 D L P S 使用与 D FP S 相同的对等点选择和通信过程。不同之处在于 D L P S 在发送前使用压缩函数 Q 压缩张量并在接收后解压张量。</p>
+<blockquote>
+<p>点评：如果分散式指的是仅用两个worker 的信息进行参数更新，这需要首先证明是有效的。</p>
+</blockquote>
+<h2 id="34-bagua优化框架">3.4 bagua优化框架</h2>
+<p>BAGUA 的核心组件是它的执行优化器。 给定一个神经网络作为输入，训练算法（例如，QSGD）将在每一层的计算过程中利用一系列通信原语。 BAGUA 执行优化器的目标是自动调度和优化这些计算和通信。 我们在 BAGUA 中探索了以下技术。</p>
+<h3 id="重叠通信和计算">重叠通信和计算</h3>
+<p>重叠通信和计算是加速分布式 DP-SG 的一项核心优化。不限于 DP-SG 算法，BAGUA 能够以灵活和自动的方式重叠通信原语以及其他算法的计算。 BAGUA 自动分析包含就地张量操作和张量通信原语的计算图。尽管可以通过静态分析构建此图，但 BAGUA 决定利用动态分析方法，在第一次迭代中收集张量操作和通信原语的调用依赖性。与现有系统相比，BAGUA 考虑了更复杂的调度。在vanilla DP-SG中，优化只能通过逆序将Allreduce通信隐藏在反向传播的计算中；相比之下，BAGUA 负责调度额外的元素，例如低精度压缩/解压缩和优化算法指定的模型更新计算。</p>
+<blockquote>
+<p>点评：但如果没有低精度需求，是不是就跟现有的方法一样了？通过scatterreduce 合并压缩解压。vanilla 这里需要关注一下。</p>
+</blockquote>
+<h3 id="张量分桶和内存扁平化">张量分桶和内存扁平化</h3>
+<p>为了有效地将通信与计算重叠，将层划分为桶是必不可少的步骤——频繁调用通信范式来传输小片段参数对于充分利用网络带宽而言远非理想。 因此，Horovod 和 PyTorch-DDP 都采用了分桶技巧。 然而，他们的分桶模式可以简单地将 Allreduce 通信硬编码为启发式中的成本，并使用<strong>神经网络中层的相反顺序来确定桶</strong>。</p>
+<p>相比之下，由于 BAGUA 支持更多由优化算法指定并由 BAGUA 的通信原语形式化的通信方式，因此根据<strong>分析阶段收集的依赖关系确定分桶</strong>。 一旦我们将计算图拆分成桶，BAGUA 就会对桶进行融合。 这使 BAGUA 可以实现更有效的流水线，尤其是在包含低精度系统松弛时</p>
+<blockquote>
+<p>点评：所以关键在于分桶方式，分析阶段的依赖关系确定是重点</p>
+</blockquote>
+<p>在第一次反向传播中确定桶的分区后，BAGUA 会仔细地将<strong>桶内的参数（例如模型参数、梯度和优化器状态）对齐到连续的内存空间中</strong>。 然后，这种扁平化的参数视图被用于所有流水线执行。 例如，低精度压缩/解压 lambda 直接应用于桶的扁平视图而不是单个参数； 用于模型更新的基于 SG 的优化器也在存储桶级别进行（来自 NVIDIA 的 Apex 也使用了类似的优化）。 请注意，这种<strong>扁平化视图可以更有效地利用计算单元提供的并行性</strong>。</p>
+<blockquote>
+<p>点评：看来扁平化优化的也是通信时候的操作。扁平化在取计算的时候是否会拖慢计算的速度呢，为什么可以有效利用计算的并行性呢，是说一边计算一边通信吗</p>
+</blockquote>
+<h3 id="分层通信">分层通信</h3>
+<p>BAGUA 的通信可以分层进行。 这在处理网络连接的异构性时特别有用，例如，服务器内 GPU 之间的带宽远高于服务器之间的带宽。 因此，BAGUA <strong>以节点内和节点间</strong>两个层次进行分层通信，并基于此抽象优化通信原语的实现。</p>
+<p>例如，集中式低精度原语（CLPS）可以优化为首先在没有压缩的情况下在每个节点内部的本地 worker上聚合张量，然后对从每个节点选出的leader worker进行压缩进行节点间聚合，最后 让每个leader worker在节点内广播聚合数据。</p>
+<blockquote>
+<p>点评：那么分层和leader worker 的好处在哪里呢</p>
+</blockquote>
+<p>请注意，这种优化可能会改变通信原语的语义。 对于去中心化原语，节点内的工作人员将始终更改为中心化的 Allreduce 方式。</p>
+<blockquote>
+<p>点评：所以去中心化就不能用这个分层优化呗，但这个算是什么优化呢</p>
+</blockquote>
+<h1 id="4-评估">4. 评估</h1>
+<p>我们围绕三个假设进行了广泛的实验研究：</p>
+<ul>
+<li>与最先进的系统相比，BAGUA 能够在以下方面提供显着的性能改进<br>
+端到端的培训时间和可扩展性，超过现实的工业规模基础设施。</li>
+<li>BAGUA 支持的不同算法为不同网络条件下的不同模型和数据集提供了好处。 因此， BAGUA 支持所有这些算法非常重要。</li>
+<li>BAGUA 的自动执行优化器有效优化了各种分布式训练算法的执行？</li>
+</ul>
+<h2 id="44-系统优化的消融研究">4.4 系统优化的消融研究</h2>
+<p>我们现在验证 BAGUA 优化框架的有效性。 如 3.4 节所述，优化框架由三个优化组成： <strong>O：训练计算和 BAGUA 执行之间的重叠； F：张量的融合和扁平化。 H：分层通信</strong></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/hua-wei-de-scalefreectr/">
+              <h3 class="post-title">
+                下一篇：华为的《ScaleFreeCTR:a MixCache-based distributed training system for CTR》
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
