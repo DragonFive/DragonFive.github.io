@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2021-09-04T11:45:41.956Z</updated>
+    <updated>2021-09-04T11:51:01.840Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -151,7 +151,7 @@ model = model.with_bagua([optimizer], algorithm)
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[快手的八卦：bagua论文翻译与赏析]]></title>
+        <title type="html"><![CDATA[快手的八卦：BAGUA: Scaling up Distributed Learning with System Relaxations论文翻译与赏析]]></title>
         <id>https://DragonFive.github.io/post/kuai-shou-de-ba-gua-bagua-lun-wen-fan-yi-yu-shang-xi/</id>
         <link href="https://DragonFive.github.io/post/kuai-shou-de-ba-gua-bagua-lun-wen-fan-yi-yu-shang-xi/">
         </link>
