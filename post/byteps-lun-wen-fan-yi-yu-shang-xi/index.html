@@ -1,10 +1,11 @@
 
+<!DOCTYPE html>
 <html>
   <head>
     
 <meta charset="utf-8" >
 
-<title>dragon</title>
+<title>byteps 论文翻译与赏析 | dragon</title>
 <meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
 ">
 
@@ -77,15 +78,32 @@
 
 
       <div class="content-container">
-        
-        
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/byteps-lun-wen-fan-yi-yu-shang-xi/">
-        <h2 class="post-title">byteps 论文翻译与赏析</h2>
-      </a>
-      <div class="post-abstract">
-        <p>byteps 代码开源在 <a href="https://github.com/bytedance/byteps">byteps repo</a>.<br>
+        <div class="post-detail">
+          
+          <h2 class="post-title">byteps 论文翻译与赏析</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-09-15</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
+                    训练框架
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>byteps 代码开源在 <a href="https://github.com/bytedance/byteps">byteps repo</a>.<br>
 论文地址 <a href="https://www.usenix.org/conference/osdi20/presentation/jiang">A Unified Architecture for Accelerating Distributed DNN Training in Heterogeneous GPU/CPU Clusters | USENIX</a></p>
 <p>《用于在异构 GPU/CPU 集群中加速分布式 DNN 训练的统一架构》</p>
 <h1 id="摘要">摘要</h1>
@@ -428,457 +446,23 @@
 最近有许多新芯片，如 TPU [38] 和 Habana [6]，专门用于 DNN 训练。 事实上，BytePS 的设计并不是针对 GPU 的，只要它们也是 PCIe 设备就应该适用于它们。 有些人还建议使用 InfiniBand 交换机 ASIC [28] 来加速 all-reduce，或使用 P4 交换机 [58, 59] 来加速 PS。 E3 [46] 利用 SmartNIC 来加速网络应用程序，并且可以通过将梯度求和从 CPU 卸载到 SmartNIC 来潜在地使 BytePS 受益。 PHub [48] 提出了一种具有定制网络配置的机架级硬件架构，例如，一台服务器上有 10 个 NIC。 BytePS 专注于在商品数据中心使用普遍可用的 CPU 和 GPU 服务器。</p>
 <h1 id="10-结论">10 结论</h1>
 <p>BytePS 是一个统一的分布式 DNN 训练加速系统，可在异构 GPU/CPU 集群中实现最佳通信效率。 BytePS 处理不同数量的 CPU 机器的情况，并将传统的 all-reduce 和 PS 作为其框架的两个特殊情况。 为了进一步加速 DNN 训练，<strong>BytePS 提出了 Summation Service，并将 DNN 优化器拆分为两部分：梯度求和和参数更新。</strong> 它将 CPU 友好的部分，梯度求和保留在 CPU 中，并将计算量更大的参数更新移动到 GPU。 我们已经实施了 BytePS 并解决了许多实施问题，包括<strong>影响 RDMA 性能的问题</strong>。 BytePS 已被部署、广泛使用和开源 [4]。 已经基于它开发了多个外部项目。 重现评估的工件附录位于 [3]。</p>
+<!-- more -->
 
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-09-15</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
-                训练框架
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
+          </div>
+        </div>
 
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/kuai-shou-bagua-shi-yong-jiao-cheng-fan-yi-yu-zhai-chao/">
-        <h2 class="post-title">快手bagua使用教程翻译与摘抄</h2>
-      </a>
-      <div class="post-abstract">
         
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/kuai-shou-bagua-shi-yong-jiao-cheng-fan-yi-yu-zhai-chao/">
+              <h3 class="post-title">
+                下一篇：快手bagua使用教程翻译与摘抄
+              </h3>
+            </a>
+          </div>
+          
       </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-09-01</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
-                训练框架
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
 
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/kuai-shou-de-ba-gua-bagua-lun-wen-fan-yi-yu-shang-xi/">
-        <h2 class="post-title">快手的八卦：BAGUA: Scaling up Distributed Learning with System Relaxations论文翻译与赏析</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-08-31</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/gd01ID-F3/">
-                论文阅读
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/hua-wei-de-scalefreectr/">
-        <h2 class="post-title">华为的《ScaleFreeCTR:a MixCache-based distributed training system for CTR》</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-06-15</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/gd01ID-F3/">
-                论文阅读
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/ye-jie-ctr-shen-du-xue-xi-kuang-jia-de-yi-xie-xin-de-jin-zhan/">
-        <h2 class="post-title">业界CTR深度学习框架的一些新的进展 </h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-05-31</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
-        <h2 class="post-title">百度的《AIBox: CTR Prediction Model Training on a Single Node》</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-03-11</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
-                训练框架
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/gd01ID-F3/">
-                论文阅读
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/seastar-jiao-cheng-fan-yi/">
-        <h2 class="post-title">seastar教程翻译</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2021-01-06</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/gao-xing-neng-bian-cheng/">
-                高性能编程
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/tensorflow2x-fen-bu-shi-xun-lian/">
-        <h2 class="post-title">tensorflow2.x 分布式训练</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2020-06-24</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/ufT52llrR/">
-                tensorflow
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/uber-de-horovod/">
-        <h2 class="post-title">uber的Horovod</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2020-05-14</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
-                训练框架
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/xdl-de-op-diao-yong/">
-        <h2 class="post-title">XDL的OP调用</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2020-03-23</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xdl/">
-                XDL
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/xdl-de-te-zheng-zhun-ru-yu-tui-chu-ji-zhi/">
-        <h2 class="post-title">XDL 的特征准入与退出机制</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2019-11-08</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/xdl/">
-                XDL
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/tensorflow-1x-de-fen-bu-shi-xun-lian/">
-        <h2 class="post-title">tensorflow 1.x 的分布式训练</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2019-09-05</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/ufT52llrR/">
-                tensorflow
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/tf-de-op-yu-tensor/">
-        <h2 class="post-title">TF的OP与Tensor</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2019-04-18</span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/fen-bu-shi-jia-gou-ring-all-reduce-suan-fa/">
-        <h2 class="post-title">分布式架构：ring all-reduce算法</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2019-03-22</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/tensorflow-jia-gou-yu-she-ji-op-ben-zhi-lun-liu-guang-cong/">
-        <h2 class="post-title">[转自刘光聪]TensorFlow架构与设计：OP本质论</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2019-03-05</span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-
-<div class="pagination-container">
-  
-  
-    <a href="https://DragonFive.github.io/page/2" class="next">下一页 <i class="icon-arrow-ios-forward-outline"></i></a>
-  
-</div>
-
-
-      </div>
+      
 
       <div class="site-footer">
   <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=

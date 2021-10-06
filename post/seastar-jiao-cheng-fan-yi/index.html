@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>seastar教程翻译 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1633502512496">
+<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io/">
+        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1633502512496" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io/">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">seastar教程翻译</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-01-06</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/gao-xing-neng-bian-cheng/">
+                    高性能编程
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <h1 id="引言">引言</h1>
+<p>Seastar是一个用于在现代多核机器上实现高性能复杂服务端应用的C++库。</p>
+<p>传统来说，针对服务端医用的库和框架主要分为2大阵营：</p>
+<ul>
+<li>一些专注于性能，另一些专注于处理复杂性。</li>
+<li>一些框架性能非常好，但是只能用来搭建简单的应用</li>
+</ul>
+<p>例如，DPDK只允许应用独立地处理包 (DPDK allows applications which process packets individually)，而其他一些框架通过牺牲运行效率来实现搭建非常复杂的应用。Seastar是我们集两者之长的一次尝试：创造一个可以用于搭建复杂服务端应用并达到最优性能的库。</p>
+<p>Seastar使用2个概念——<strong>future 和 continuation</strong>  ——提供了一个完整的异步编程框架。它们提供了对任何类型的异步事件的一种一致的表达和处理方法，包括但不限于网络I/O，磁盘I/O，以及各种事件的复杂组合。</p>
+<p>在现代多核多socket机器上在核间共享数据会带来严重的性能损失。Seastar程序采用了share-nothing模型，也就是说，内存被分给各个核，每个核只处理自己的那份内存中的数据，核间通信需要通过显示的消息传输完成。</p>
+<h1 id="异步编程">异步编程</h1>
+<p>同步、每个进程一个连接的这种server模式不是没有缺点和成本的。慢慢地，server的作者们发现创建一个新进程是很慢的，context switch很慢，每次处理都会有显著的overhead——最明显的是对堆栈大小的要求。Server和内核的作者们非常努力地去缓解这些overhead：他们从进程切换至线程，从创建新线程切换至使用线程池，降低了每个线程的默认堆栈大小，以及提高了虚拟内存大小来partially-utilize stacks。但是仍旧，使用同步设计的server的性能不够理想，扩展性不佳。在1999年，Dan Kigel普及了&quot;the C10K problem&quot;，需要单个server能够高效处理10000个并发连接——其中大多数为慢甚至inactive的连接。</p>
+<h2 id="异步方式">异步方式</h2>
+<p>这个问题的解决方法，也是在后续的几十年中逐渐变得流行的方法，就是抛弃方便但是低效的同步设计，转为一种新型的设计——异步，或者说是事件驱动的server 。一个事件驱动的server仅有一个线程，或者更准确的说，每个CPU一个线程。这个线程会运行一个循环，在循环的每个迭代步里，通过<code>poll()</code>（或者是更高效的<code>epoll</code> [[高性能开发综述#I O 优化：多路复用技术]]）来监察绑定在开启的file descriptor上的新事件，如sockets。举例来说，一个socket变得可读（有新数据抵达）或者变得可写（我们可以用这个连接发发送更多数据了）都是一个事件。应用通过进行一些非阻塞性的操作，修改一个或多个fd，后者维护这个连接的状态来处理这些事件。</p>
+<p>基于事件驱动的服务器，无需为每一个请求创建额外的对应线程，虽然可以省去创建线程与销毁线程的开销，但它在处理网络请求时，会把侦听到的请求放在事件队列中交给观察者，事件循环会不停的处理这些网络请求。  在事件循环中，每一次循环都会查看是否有事件待处理，如果有的话就取出来执行。</p>
+<p>写异步server应用的人们在今天仍然会遇到2个主要问题。</p>
+<ul>
+<li>复杂性：写一个简单的异步server是很简单的。然而写复杂异步server的难度臭名昭著。我们不再能用一些简单易读的函数调用来处理一个连接，而是需要引入大量<strong>回调函数，和一个复杂的状态机</strong>，用于记录对于哪些事件应该调用哪些函数。</li>
+<li>非阻塞：因为context switch很慢，所以一个核只有一个线程是对性能很重要的。然而，如果我们每个核只有一个线程，处理事件的函数永远不能阻塞，不然这个核就会被闲置。这时候如果有IO ，就需要有多线程。</li>
+</ul>
+<p>当需求更高的性能的时候，server应用，以及其使用的框架，需要考虑以下问题：</p>
+<p>现代机器：现代的机器和约10年前机器有着非常大的区别。他们有很多核和很深的内存层级（从L1 cache到NUMA），这种结构更适合特定的编程范式。：不可扩展性的编程范式（如，加锁）可能会极大地影响程序在多核上的性能；共享内存和无锁同步primitives虽然是可用的（比如原子操作和memory-ordering fences），但是比只用一个核的cache中的数据进行操作要慢很多，并且也会让程序不好扩展至多核。</p>
+<p>Seastar是一个旨在解决上述的4个问题的异步框架：它是一个用于实现同时包括磁盘和网络I/O的复杂server的框架。它的fast path完全是<strong>单线程的（每核）</strong>，可扩展至多核并最小化了代价高昂的核间内存共享。Seastar是一个C++14的库，让用户能利用上复杂的编译优化特征与充分的控制力，且没有运行时overhead。</p>
+<h2 id="非阻塞异步的事件驱动">非阻塞异步的事件驱动</h2>
+<p>Seastar是一个让人可以比较直接地实现非阻塞、异步代码的事件驱动框架。它的API基于future。Seastar利用了如下的概念以获得极致的性能。</p>
+<ul>
+<li>Cooperative micro-task scheduler：每个核执行一个协作任务调度器而不是一个线程，每个任务都很轻量，只处理上一次 I/O 操作的结果并提交新的任务。</li>
+<li>Share-nothing SMP架构：每个内核独立于 SMP 系统中的其他内核运行，核间通过消息传递进行通信，一个seastar核经常称作一个分片。</li>
+<li>基于future的APIs：</li>
+<li><strong>Share-nothing TCP stack</strong>：Seastar可以直接使用本机操作系统的TCP stack。在此之外，它也提供了一套基于task scheduler和share-nothing架构的高性能TCP/IP stack。这套stack提供双向零拷贝：你可以直接用TCP stack的buffer处理数据，并在不进行拷贝的情况下发送你的数据结构。</li>
+<li>DMA-based存储APIs：基于网络栈，提供zero copy的存储api</li>
+</ul>
+<p>[[seastar smp]], [[seastar networking]]</p>
+<h1 id="getting-started">Getting started</h1>
+<p>最简单的Seastar程序如下：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/app-template.hh&gt;
+#include &lt;seastar/core/reactor.hh&gt;
+#include &lt;iostream&gt;
+
+int main(int argc, char** argv) {
+    seastar::app_template app;
+    app.run(argc, argv, [] {
+            std::cout &lt;&lt; &quot;Hello world\n&quot;;
+            return seastar::make_ready_future&lt;&gt;();
+    });
+}
+</code></pre>
+<p>如我们在例子中所示，每个Seastar程序必须定义并运行一个<code>app_template</code>对象。这个对象会在1个或多个CPU上启动主事件循环(event loop)（the Seastar engine），并运行给定的函数一次——在本例中，是一个lambda函数。</p>
+<p><code>return make_ready_future&lt;&gt;();</code>会使事件循环以及整个程序在打印&quot;Hello world&quot;之后立即退出。在一个更典型的Seastar程序中，我们会希望事件循环持续运行，并处理收到的包，直到显式退出。这样的程序会返回一个用于判断何时退出的 <code>future</code>。我们将在下文介绍future以及如何使用它。无论何时都不要使用常规的C <code>exit()</code>，因为其会阻止Seastar正确地在退出时进行清理工作。</p>
+<p>如例子所示，所有Seastar的函数都处于&quot;<code>seastar</code>&quot; namespace中。我们推荐使用namespace 前缀而不是<code>using namespace seastar</code>，在之后的例子中也会如此。</p>
+<p>一些编译选项可以参考 <a href="https://github.com/scylladb/seastar/blob/master/doc/tutorial.md#introduction">wiki 原文</a>。</p>
+<h1 id="线程和内存">线程和内存</h1>
+<h2 id="seastar-线程">Seastar 线程</h2>
+<p>正如在引言中提到的，基于Seastar的程序每个CPU上运行单一线程。每个线程有自己的事件循环，在Seastar的术语中被称为 engine。默认情况下，Seastar程序会占据所有可用的核，每个核启动一个线程。</p>
+<p>我们可以通过如下程序来验证这点，其中<code>seastar::smp::count</code>是启动的线程总数：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/app-template.hh&gt;
+#include &lt;seastar/core/reactor.hh&gt;
+#include &lt;iostream&gt;
+
+int main(int argc, char** argv) {
+    seastar::app_template app;
+    app.run(argc, argv, [] {
+            std::cout &lt;&lt; seastar::smp::count &lt;&lt; &quot;\n&quot;;
+            return seastar::make_ready_future&lt;&gt;();
+    });
+}
+</code></pre>
+<p>在一个4硬件线程的机器上（2核并开启超线程），Seastar默认会使用4个engine thread。</p>
+<pre><code class="language-bash">$ ./a.out
+4
+</code></pre>
+<p>这4个engine thread会被绑定至（a la <code>taskset(1)</code>）不同的硬件线程。注意，如我们提到的，启动函数只在一个线程上运行，所以我们只看到&quot;4&quot;被打印了1次。之后的教程会告诉大家该如何使用所有的线程。</p>
+<p>用户可以通过传入一个命令行参数<code>-c</code>来告诉Seastar去启动更少的线程数。例如，可以通过如下方式只启动2个线程：</p>
+<pre><code class="language-bash">$ ./a.out -c2
+2
+</code></pre>
+<p>在这种情况下，Seastar会保证每个线程绑定在不同的核上，我们不会让这2个线程在同一个核上作为超线程相互争夺的（不然会影响性能）。</p>
+<p>我们不能分配超过硬件线程总数的线程，这么做会报错：</p>
+<pre><code class="language-bash">$ ./a.out -c5
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  insufficient processing units
+abort (core dumped)
+</code></pre>
+<p>上面的程序来自于app.run的异常。为了能更好的catch这种启动异常并在不生成core dump的情况下优雅退出，我们可以这样写：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/app-template.hh&gt;
+#include &lt;seastar/core/reactor.hh&gt;
+#include &lt;iostream&gt;
+#include &lt;stdexcept&gt;
+
+int main(int argc, char** argv) {
+    seastar::app_template app;
+    try {
+        app.run(argc, argv, [] {
+            std::cout &lt;&lt; seastar::smp::count &lt;&lt; &quot;\n&quot;;
+            return seastar::make_ready_future&lt;&gt;();
+        });
+    } catch(...) {
+        std::cerr &lt;&lt; &quot;Failed to start application: &quot;
+                  &lt;&lt; std::current_exception() &lt;&lt; &quot;\n&quot;;
+        return 1;
+    }
+    return 0;
+}
+
+</code></pre>
+<pre><code class="language-bash">$ ./a.out -c5
+Couldn't start application: std::runtime_error (insufficient processing units)
+</code></pre>
+<p>注意这样<strong>不能</strong>catch到程序实际的异步代码引发的异常。对于那些异常我们会在后文介绍。</p>
+<h2 id="seastar-内存">Seastar 内存</h2>
+<p>正如在引言中介绍的，Seastar程序会将他们的内存分片 (shard)。每个线程会被预分配一大块内存（在运行这个线程的那个NUMA 节点上），并且只使用这块被分配的内存进行程序中的内存分配（例如在<code>malloc()</code>或<code>new</code>中）。</p>
+<p>默认除去给OS保留的1.5G或7%的内存外的<strong>全部内存</strong>都会被通过这种方式分配给应用。这个默认值可以通过<code>--reserve_memory</code>来改变给系统剩余的内存，或者<code>-m</code>来改变给Seastar应用分配的内存来改变。内存值可以以字节为单位，或者用&quot;k&quot;, &quot;M&quot;, &quot;G&quot;, &quot;T&quot;为单位。这些单位均遵从2的幂。</p>
+<p>试着给Seastar超过物理内存的内存值会直接异常退出：</p>
+<pre><code class="language-bash">$ ./a.out -m10T
+Couldn't start application: std::runtime_error (insufficient physical memory)
+
+</code></pre>
+<h1 id="future和continuation简介">future和continuation简介</h1>
+<p>future和continuation是Seastar的异步编程模型的基石。通过组合它们可以轻松地组件大型、复杂的异步程序，并保证代码可读、易懂。</p>
+<h2 id="future">future</h2>
+<p>future是一个还不可用的计算结果。例如：</p>
+<ul>
+<li>我们从网络读取的数据buffer</li>
+<li>计时器的到时</li>
+<li>磁盘写操作的完成</li>
+<li>一个需要其他一个或多个future的值来进行的计算的值</li>
+</ul>
+<p><code>future&lt;int&gt;</code>类型承载了一个终将可用的int——现在可能已经可用，或者还不能。成员函数<code>available()</code>可以用来测试一个值是否已经可用，<code>get()</code>可以用来获取它的值。<code>future&lt;&gt;</code>类型表示一些终将完成的事件，但是不会返回任何值。</p>
+<p>future往往是一个<strong>异步函数</strong>的返回值。异步函数是指一个返回future，并将会将这个future的值确定下来的函数。因为异步函数_保证_将确定future的值，有时他们被称作&quot;promise&quot;。</p>
+<p>Seastar的<code>sleep()</code>函数就是一个简单的异步函数的例子：</p>
+<pre><code class="language-cpp">future&lt;&gt; sleep(std::chrono::duration&lt;Rep, Period&gt; dur);
+</code></pre>
+<p>这个函数设置了一个计时器，从而使在经过指定时间之后future变得可用（并没有携带的值）。</p>
+<h2 id="continuation">continuation</h2>
+<p><strong>continuation</strong>是一个在future变得可用时会运行的回调函数（常为lambda函数）。continuation会用<code>then()</code>方法附于一个future。例如：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/app-template.hh&gt;
+#include &lt;seastar/core/sleep.hh&gt;
+#include &lt;iostream&gt;
+
+int main(int argc, char** argv) {
+    seastar::app_template app;
+    app.run(argc, argv, [] {
+        std::cout &lt;&lt; &quot;Sleeping... &quot; &lt;&lt; std::flush;
+        using namespace std::chrono_literals;
+        return seastar::sleep(1s).then([] {
+            std::cout &lt;&lt; &quot;Done.\n&quot;;
+        });
+    });
+}
+</code></pre>
+<p>在这个例子里，我们从<code>seastar::sleep(1s)</code>中获得了一个future，并把一个打印&quot;Done.&quot;的continuation附于其上。1s后future会变得可用，这时continuation就会被执行。运行这个程序，我们的确会看到立即被打印的&quot;Sleeping...&quot;，和1s后打印的&quot;Done.&quot;，之后程序退出。</p>
+<p><code>then()</code>的返回值也是一个future，从而使得链式的continuation变得可能，这点我们之后会提到。现在我们只需要注意我们把这个future作为了<code>app.run</code>的返回值，所以程序会在运行完sleep以及其continuation后才会退出。</p>
+<p>为了避免在左右的例子里都重复&quot;app_engine&quot;部分的代码，让我们创建一个可以复用的模板：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/app-template.hh&gt;
+#include &lt;seastar/util/log.hh&gt;
+#include &lt;iostream&gt;
+#include &lt;stdexcept&gt;
+
+extern seastar::future&lt;&gt; f();
+
+int main(int argc, char** argv) {
+    seastar::app_template app;
+    try {
+        app.run(argc, argv, f);
+    } catch(...) {
+        std::cerr &lt;&lt; &quot;Couldn't start application: &quot;
+                  &lt;&lt; std::current_exception() &lt;&lt; &quot;\n&quot;;
+        return 1;
+    }
+    return 0;
+}
+</code></pre>
+<p>使用这个<code>main.cc</code>，上述的sleep例子变成了：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+#include &lt;iostream&gt;
+
+seastar::future&lt;&gt; f() {
+    std::cout &lt;&lt; &quot;Sleeping... &quot; &lt;&lt; std::flush;
+    using namespace std::chrono_literals;
+    return seastar::sleep(1s).then([] {
+        std::cout &lt;&lt; &quot;Done.\n&quot;;
+    });
+}
+</code></pre>
+<p>至此，这个样例非常普通——没有并行，我们用普通的<code>POSIX sleep()</code>也能做到。事情会在我们启动多个<code>sleep</code>的时候变得有趣。<code>future</code>和<code>continuation</code>让并行变得非常简单与自然：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+#include &lt;iostream&gt;
+
+seastar::future&lt;&gt; f() {
+    std::cout &lt;&lt; &quot;Sleeping... &quot; &lt;&lt; std::flush;
+    using namespace std::chrono_literals;
+    seastar::sleep(200ms).then([] { std::cout &lt;&lt; &quot;200ms &quot; &lt;&lt; std::flush; });
+    seastar::sleep(100ms).then([] { std::cout &lt;&lt; &quot;100ms &quot; &lt;&lt; std::flush; });
+    return seastar::sleep(1s).then([] { std::cout &lt;&lt; &quot;Done.\n&quot;; });
+}
+</code></pre>
+<p>每个<code>sleep()</code>和<code>then()</code>都会立即退出：<code>sleep()</code>仅仅启动计时器，而<code>then()</code>只是设置到到时的时候应该调用什么函数。所以3行代码都会马上被执行，f也会直接返回。在那之后，时间循环会开始等3个future变得可用，且每个可用的时候都会运行他们对应的continuation。上述代码的输出显然会是：</p>
+<pre><code class="language-cpp">$ ./a.out
+Sleeping... 100ms 200ms Done.
+</code></pre>
+<p><code>sleep()</code>返回的是<code>future&lt;&gt;</code>，也就是在完成时不会返回任何值。更有趣的future 会在可用时返回一个（或多个）任意类型的值。在下面的例子里，有一个返回<code>future&lt;int&gt;</code>的函数，以及对应的<code>continuation</code>。注意<code>continuation</code>是如何得到<code>future</code>中包着的值的：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+#include &lt;iostream&gt;
+
+seastar::future&lt;int&gt; slow() {
+    using namespace std::chrono_literals;
+    return seastar::sleep(100ms).then([] { return 3; });
+}
+
+seastar::future&lt;&gt; f() {
+    return slow().then([] (int val) {
+        std::cout &lt;&lt; &quot;Got &quot; &lt;&lt; val &lt;&lt; &quot;\n&quot;;
+    });
+}
+</code></pre>
+<p>我们需要再解释一下<code>slow()</code>。和往常一样，这个函数立即返回一个<code>future&lt;int&gt;</code>，不会等sleep完。但是其中<code>continuation</code><strong>返回的是3，而非<code>future</code></strong>。我们在下文介绍<code>then()</code>是怎么返回future的，以及这种机制是怎么让链式future变得可能的。</p>
+<p>这个例子展示了future这种编程模型的便捷性。因为其让程序员可以很简洁地包装复杂的异步程序。<code>slow()</code>可能实际是调用了一个复杂的设计多步的异步操作，但是它可以和<code>sleep()</code>同样被使用，并且Seastar的engine会保证在正确的时间运行continuation。</p>
+<h2 id="ready-futures">Ready futures</h2>
+<p>一个future可能在运行<code>then()</code>之前就已经准备好了。我们优化过这种这种重要的情况。对于这种情况，往往<code>continuation</code>会被直接运行，而不再用被注册进事件循环，等待事件循环的下一个迭代步了。</p>
+<p>在_大多数时候_都会进行上述优化，除了以下情况：<code>then()</code>的内部实现里面维护了一个会记录有多少个continuation被立刻执行了用的计数器，在超过一定量continuation被直接运行后（目前限制为256个），下一个continuation一定会被转移到事件循环里。之所以引入这种机制是因为我们发现在一些情况下（例如后文会讨论的future循环），每个准备好的continuation会立刻生成一个新的准备好的continuation。</p>
+<p>那么如果没有上述的计数器限制，我们就会一直在立即执行continuation，而不再进入事件循环，从而导致事件循环饿死（starve）。让事件循环可以正常运行非常重要，不然无法运行在事件循环中的其他的continuation了，也会饿住事件循环会进行的<strong>polling</strong>（例如，检查是否网卡有新的活动 <em>(activity)</em> ），这种polling非常重要。</p>
+<p><code>make_ready_future&lt;&gt;</code>可以被用来返回一个已经准备好了的future。下面的例子和之前的几乎完全相同，只是<code>fast()</code>会返回一个已经准备好了的future。所幸future的接受者不在乎这个区别，并会用相同的方式处理这两种情况：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/future.hh&gt;
+#include &lt;iostream&gt;
+
+seastar::future&lt;int&gt; fast() {
+    return seastar::make_ready_future&lt;int&gt;(3);
+}
+
+seastar::future&lt;&gt; f() {
+    return fast().then([] (int val) {
+        std::cout &lt;&lt; &quot;Got &quot; &lt;&lt; val &lt;&lt; &quot;\n&quot;;
+    });
+}
+</code></pre>
+<h1 id="coroutines协程">Coroutines（协程）</h1>
+<p>注意：协程需要 C++20 和支持的编译器。 众所周知，Clang 10 及更高版本可以工作。<br>
+使用 Seastar 编写高效异步代码的最简单方法是使用协程。 协程不具有传统 continuations（如下）的大部分缺陷，因此是编写新代码的首选方式。</p>
+<p>协程是一个函数，这个函数返回 <code>seastar::future&lt;T&gt;</code> ，并且使用 <code>co_await</code> 或 <code>co_return</code>关键字。协程对其调用者和被调用者不可见。它们以任一角色与传统的 Seastar 代码集成。如果您不熟悉 C++ 协程，您可以看 <a href="https://medium.com/pranayaggarwal25/coroutines-in-cpp-15afdf88e17e">A more general introduction to C++ coroutines</a>，本节重点介绍协程如何与 Seastar 集成。</p>
+<p>这是一个简单的 Seastar 协程示例：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/coroutine.hh&gt;
+
+seastar::future&lt;int&gt; read();
+seastar::future&lt;&gt; write(int n);
+
+seastar::future&lt;int&gt; slow_fetch_and_increment() {
+    auto n = co_await read();     // #1
+    co_await seastar::sleep(1s);  // #2
+    auto new_n = n + 1;           // #3
+    co_await write(new_n);        // #4
+    co_return n;                  // #5
+}
+
+</code></pre>
+<p>在#1 中，我们调用 read() 函数，它返回一个<code>future</code>。<code>co_await</code> 关键字指示 <code>Seastar</code> 检查返回的<code>future</code>。</p>
+<p>如果<code>future</code>已准备好，则从<code>future</code>中提取值（一个整数）并分配给 n。 如果<code>future</code>未准备好，协程会安排自己在<code>future</code>准备好时被调用，并将控制权返回给<code>seastar</code>。 一旦<code>future</code>准备好，协程就会被唤醒，从<code>future</code>中提取值并赋值给n。</p>
+<p>在#2 中，我们调用 seastar::sleep() 并等待返回的<code>future</code>准备就绪，它会在一秒钟内完成。 这表明 n 在 <code>co_await</code> 调用之间被保留，并且协程的作者不需要为协程局部变量安排存储。</p>
+<p>第 3 行演示了加法运算，假定读者熟悉它。</p>
+<p>在#4 中，我们调用了一个返回 <code>seastar::future&lt;&gt;</code> 的函数。 在这种情况下，<code>future</code>不带数据，因此没有价值被提取和分配。</p>
+<p>第 5 行演示了返回值。 整数值用于返回给我们的调用者在调用协程时得到的 <code>future&lt;int&gt;</code>。</p>
+<h2 id="exceptions-in-coroutines">Exceptions in coroutines</h2>
+<p>#todo，暂时用不到，先不翻译</p>
+<h2 id="concurrency-in-coroutines">Concurrency in coroutines</h2>
+<p>co_await 运算符允许简单的顺序执行。 多个协程可以并行执行，但每个协程一次只有一个 outstanding 的计算。</p>
+<p>#todo，后面有点复杂，先不翻译</p>
+<h1 id="continuations延续">Continuations（延续）</h1>
+<h2 id="在continuation中捕获状态">在continuation中捕获状态</h2>
+<h3 id="按值捕获">按值捕获</h3>
+<p>我们已经看到 Seastar Continuations是 lambdas，带着一个future 传递给 then() 方法。<br>
+在我们目前看到的例子中，lambda 只不过是匿名函数。 但是 C++11 lambdas 还有一个技巧，这对于 Seastar 中基于future的异步编程非常重要：Lambdas 可以捕获状态。考虑下面的例子：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+#include &lt;iostream&gt;
+
+seastar::future&lt;int&gt; incr(int i) {
+    using namespace std::chrono_literals;
+    return seastar::sleep(10ms).then([i] { return i + 1; });
+}
+
+seastar::future&lt;&gt; f() {
+    return incr(3).then([] (int val) {
+        std::cout &lt;&lt; &quot;Got &quot; &lt;&lt; val &lt;&lt; &quot;\n&quot;;
+    });
+}
+
+</code></pre>
+<p><code>future</code>操作<code>incr(i)</code>需要一定时间执行完成（它需要先睡一会儿......），在这段时间内，它需要保存它正在处理的 i 值。 在早期的事件驱动编程模型中，程序员需要明确定义一个对象来保持这种状态，并管理所有这些对象。在这段时间内，它需要保存它正在处理的 i 值。 在早期的事件驱动编程模型中，程序员需要明确定义一个对象来保持这种状态，并管理所有这些对象。在 Seastar 中，一切都变得简单得多，使用 C++11 的 lambda 表达式：上面示例中的捕获语法“[i]”意味着 i 的值，因为它在调用 incr() 时存在() 被捕获到 lambda 中。 lambda 不仅仅是一个函数——它实际上是一个对象，包含代码和数据。本质上，编译器自动为我们创建了状态对象，我们不需要定义它，也不需要跟踪它（它与<code>Continuations</code>一起保存，当<code>Continuations</code>被延迟时，并在<code>Continuations</code>运行后自动删除） ）。</p>
+<p>一个值得理解的实现细节是，当<code>Continuations</code>捕获状态并立即运行时，此捕获不会产生运行时开销。但是，当<code>continuation</code>不能立即运行（因为<code>future</code>还没有准备好）需要保存到后面，就需要在堆上为这个数据分配内存。并且需要将<code>Continuations</code>的捕获数据复制到那里。 这有运行时开销，但它是不可避免的，并且与线程编程模型中的相关开销相比非常小（在线程程序中，这种状态通常驻留在阻塞线程的堆栈上，但堆栈要 比我们的捕获状态大得多，占用大量内存并在这些线程之间的上下文切换时导致大量缓存污染）。</p>
+<p>在上面的例子中，我们按值捕获了 i ， i 的值的副本被保存到<code>Continuations</code>中。 C++ 有两个额外的捕获选项：通过引用捕获和通过移动捕获：</p>
+<h3 id="引用捕获">引用捕获</h3>
+<p>在延续中使用<strong>按引用捕获通常是一个错误，并可能导致严重的错误</strong>。 例如，如果在上面的例子中我们捕获了对 i 的引用，而不是复制它。</p>
+<pre><code class="language-cpp">seastar::future&lt;int&gt; incr(int i) {
+    using namespace std::chrono_literals;
+    // Oops, the &quot;&amp;&quot; below is wrong:
+    return seastar::sleep(10ms).then([&amp;i] { return i + 1; });
+}
+</code></pre>
+<p>这意味着延续将包含 i 的地址，而不是它的值。 但是 i 是一个堆栈变量，并且 incr() 函数会立即返回，因此当<code>Continuations</code>最终开始运行时，在 incr() 返回很久之后，该地址将包含不相关的内容。</p>
+<p>引用捕获通常是错误规则的一个例外是 do_with() 习语，我们将在后面介绍。 这个习惯用法确保对象在<code>Continuations</code>的整个生命周期中都存在，并使按引用捕获成为可能，并且非常方便。</p>
+<h3 id="移动捕获">移动捕获</h3>
+<p>在<code>Continuations</code>中使用按<strong>移动捕获</strong>在 Seastar 应用程序中也非常有用。 通过将一个对象移动到一个<code>Continuations</code>中，我们将这个对象的所有权转移给了<code>Continuations</code>，并使得在<code>Continuations</code>结束时对象很容易被自动删除。</p>
+<p>例如，考虑一个传统的函数<code>std::unique_ptr&lt;T&gt;</code>。</p>
+<pre><code class="language-cpp">int do_something(std::unique_ptr&lt;T&gt; obj) {
+     // 根据obj的内容做一些计算，假设结果是17
+     return 17;
+     // 此时， obj 超出范围，因此编译器 delete()s 它。
+</code></pre>
+<p>通过以这种方式使用 unique_ptr，调用者将一个对象传递给函数，但告诉它该对象现在是它的专属责任——当函数完成该对象时，它会自动删除它。 我们如何在<code>Continuations</code>中使用 unique_ptr ？ 以下将不起作用</p>
+<pre><code class="language-cpp">seastar::future&lt;int&gt; slow_do_something(std::unique_ptr&lt;T&gt; obj) {
+    using namespace std::chrono_literals;
+    // The following line won't compile...
+    return seastar::sleep(10ms).then([obj] () mutable { return do_something(std::move(obj)); });
+}
+</code></pre>
+<p>问题在于，unique_ptr 不能通过值传递到<code>Continuations</code>中，因为这需要复制它，这是被禁止的，因为它违反了仅存在此指针的一个副本的保证。 但是，我们可以将 obj 移动到<code>Continuations</code>中：</p>
+<pre><code class="language-cpp">seastar::future&lt;int&gt; slow_do_something(std::unique_ptr&lt;T&gt; obj) {
+    using namespace std::chrono_literals;
+    return seastar::sleep(10ms).then([obj = std::move(obj)] () mutable {
+        return do_something(std::move(obj));
+    });
+}
+</code></pre>
+<p>这里使用 std::move() 导致 obj 的移动赋值用于将对象从外部函数移动到延续中。 C++11 中引入的移动（移动语义）的概念类似于浅拷贝，然后使源拷贝无效（这样两个拷贝就不会共存，因为 unique_ptr 禁止这样做）。 将 obj 移入 continuation 后，上层函数就不能再使用它（in this case it's of course ok, 因为我们无论如何都会返回）。</p>
+<h3 id="c14捕获语法">c++14捕获语法</h3>
+<p>我们在这里使用的 <code>[obj = ...]</code> <strong>捕获语法是 <code>C++14</code> 的新内容</strong>。 这是 Seastar 需要 C++14，并且不支持旧的 C++11 编译器的主要原因。</p>
+<p>这里需要额外的 () 可变语法，因为默认情况下，当 C++ 将一个值（在这种情况下，std::move(obj) 的值）捕获到一个 lambda 中时，它使这个值成为只读的，所以我们的 lambda 不能， 在本例中，再次移动它。 添加 mutable 消除了这种人为限制。</p>
+<h2 id="求值顺序的注意事项">求值顺序的注意事项</h2>
+<p><strong>（只在c++14）</strong></p>
+<p>C++14（及更低版本的C++）不能保证<code>continuation</code>中的<code>lambda</code> 捕获会在他们相关的<code>future</code>被计算之后才被求值（见 <a href="https://en.cppreference.com/w/cpp/language/eval_order%EF%BC%89%E3%80%82">https://en.cppreference.com/w/cpp/language/eval_order）。</a></p>
+<p>因此，请避免以下编程模式：</p>
+<pre><code class="language-cpp">    return do_something(obj).then([obj = std::move(obj)] () mutable {
+        return do_something_else(std::move(obj));
+    });
+</code></pre>
+<p>这个例子中<code>[obj = std::move(obj)]</code>可能会先于<code>do_something(obj)</code>，导致出现使用了被move出去之后的<code>obj</code>。</p>
+<p>为了保证我们期望的顺序，上面的表达式可以拆分为：</p>
+<pre><code class="language-cpp">    auto fut = do_something(obj);
+    return fut.then([obj = std::move(obj)] () mutable {
+        return do_something_else(std::move(obj));
+    });
+
+</code></pre>
+<p>c++17后，<code>then</code>对应的对象会在<code>then</code>的参数之前才被求值，使得<code>do_something(obj)</code>会保证先被执行。所以C++17中可以不采用上面的改正方法。</p>
+<h2 id="链式continuation">链式continuation</h2>
+<p>TODO: 我们已经在上面的 slow() 中看到了链接示例。 谈论从then 的返回，并返回future 并链接更多then。</p>
+<h1 id="处理异常">处理异常</h1>
+<p>在<code>continuation</code>中抛出的异常被系统隐式捕获并存储在<code>future</code>。 存储此类异常的 <code>future</code> 与就绪的 <code>future</code> 类似，因为它可以启动<code>continuation</code>，但它不包含值——仅包含异常。</p>
+<p>在这样的<code>future</code>上调用 <code>.then()</code> 会跳过<code>continuation</code>，并将输入<code>future</code>（调用 .then() 的对象）的异常转移到输出<code>future</code>（<code>.then()</code> 的返回值）。</p>
+<pre><code class="language-cpp">line1();
+line2(); // throws!
+line3(); // skipped
+</code></pre>
+<p>类似于</p>
+<pre><code class="language-cpp">return line1().then([] {
+    return line2(); // throws!
+}).then([] {
+    return line3(); // skipped
+});
+</code></pre>
+<p>通常，需要中止当前的操作链并返回异常，但有时需要更细粒度的控制。 有几种用于处理异常的原语：</p>
+<ol>
+<li>.then_wrapped(): .then_wrapped() 不是将<code>future</code>携带的值传递给<code>continuation</code>，而是将输入<code>future</code>传递给<code>continuation</code>。 保证<code>future</code>处于就绪状态，因此<code>continuation</code>可以检查它是否包含值或异常，并采取适当的行动。</li>
+<li>.finally()：类似于Java的finally块，无论输入的<code>future</code>是否带有异常，.finally()延续都会被执行。 finally 延续的结果是它的输入<code>future</code>，因此 .finally() 可用于在无条件执行的流中插入代码，否则不会改变流。<br>
+TODO：给出上面的示例代码。 还要提到 handle_exception，可能会延迟到后面的章节。</li>
+</ol>
+<h2 id="exceptions-vs-exceptional-futures">Exceptions vs. exceptional futures</h2>
+<p>异步函数可以通过以下两种方式之一失败：它可以立即失败，通过抛出异常，或者它可以返回一个最终会失败的未来（解析为异常）。 这两种失败模式看起来与未初始化(uninitiated)相似。但在尝试使用 finally()、handle_exception() 或 then_wrapped() 处理异常时，行为会有所不同。 例如，考虑以下代码：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/future.hh&gt;
+#include &lt;iostream&gt;
+#include &lt;exception&gt;
+
+class my_exception : public std::exception {
+    virtual const char* what() const noexcept override { return &quot;my exception&quot;; }
+};
+
+seastar::future&lt;&gt; fail() {
+    return seastar::make_exception_future&lt;&gt;(my_exception());
+}
+
+seastar::future&lt;&gt; f() {
+    return fail().finally([] {
+        std::cout &lt;&lt; &quot;cleaning up\n&quot;;
+    });
+}
+
+</code></pre>
+<p>正如预期的那样，此代码将打印<code>cleaning up</code>消息 - 异步函数 fail() 返回一个解析为失败的<code>future</code>，并且 finally() 继续运行，尽管有此失败。</p>
+<p>现在考虑在上面的例子中我们对 fail() 有不同的定义：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; fail() {
+    throw my_exception();
+}
+</code></pre>
+<p>在这里，fail() 不会返回失败的<code>future</code>。 相反，它根本无法返回<code>future</code>！ 它抛出的异常会停止整个函数 f()，并且 finally() 延续不会附加到<code>future</code>（从未返回），并且永远不会运行。 现在不打印<code>cleaning up</code>消息。</p>
+<p>我们建议为了减少出现此类错误的机会，异步函数应始终返回失败的<code>future</code>，而不是抛出实际异常。 如果异步函数在返回<code>future</code>之前调用另一个函数，并且第二个函数可能会抛出，它应该使用 try/catch 来捕获异常并将其转换为失败的<code>future</code>：</p>
+<pre><code class="language-cpp">void inner() {
+    throw my_exception();
+}
+seastar::future&lt;&gt; fail() {
+    try {
+        inner();
+    } catch(...) {
+        return seastar::make_exception_future(std::current_exception());
+    }
+    return seastar::make_ready_future&lt;&gt;();
+}
+</code></pre>
+<p>在这里，fail() 捕获由 inner() 抛出的异常，无论它可能是什么，并返回一个失败的<code>future</code>。 以这种方式编写，将到达 finally() 延续，并打印<code>cleaning up</code>消息。</p>
+<p>尽管建议异步函数避免抛出异常，但一些异步函数除了返回异常<code>future</code>外，还会抛出异常。 一个常见的例子是分配内存并在内存不足时抛出 <code>std::bad_alloc</code> 的函数，而不是返回<code>future</code>。 <code>future&lt;&gt; seastar::semaphore::wait()</code> 方法就是这样的一个函数：它返回一个<code>future</code>，如果信号量 <code>was broken()</code> 或等待超时，它可能是异常的，但也可能在分配内存（用来保存waiters列表的内存）失败时抛出异常。 因此，除非一个函数——包括异步函数——被明确标记为“noexcept”，否则应用程序应该准备好处理从它抛出的异常。 在现代 C++ 中，代码通常<strong>使用 RAII</strong> 来保证异常安全，而不用 try/catch。 <strong>seastar::defer() 是一个基于 RAII 的习惯用法</strong>，它确保即使抛出异常也能运行一些清理代码。</p>
+<p>Seastar 有一个方便的通用函数<code>futurize_invoke()</code>，在这里很有用。<code>futurize_invoke(func, args...)</code> 运行一个可能返回<code>future</code>值或立即值的函数。并且在这两种情况下都将结果转换为未来值。<code>futurize_invoke()</code> 还将函数抛出的立即异常（如果有）转换为失败的<code>future</code>，就像我们上面所做的一样。</p>
+<p>所以使用 <code>futurize_invoke()</code> 我们可以使上面的例子工作，即使 <code>fail()</code> 确实抛出了异常：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; fail() {
+    throw my_exception();
+}
+seastar::future&lt;&gt; f() {
+    return seastar::futurize_invoke(fail).finally([] {
+        std::cout &lt;&lt; &quot;cleaning up\n&quot;;
+    });
+}
+</code></pre>
+<p>请注意，如果异常风险存在于<code>continuation</code>中，则大部分讨论将变得毫无意义。 考虑以下代码：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::sleep(1s).then([] {
+        throw my_exception();
+    }).finally([] {
+        std::cout &lt;&lt; &quot;cleaning up\n&quot;;
+    });
+}
+</code></pre>
+<p>在这里，第一个<code>continuation</code>的 <code>lambda</code> 函数确实抛出异常而不是返回失败的<code>future</code>。 然而，我们没有像以前一样的问题，这只是因为异步函数在返回一个有效的<code>future</code>之前抛出了一个异常。</p>
+<h1 id="管理生命周期">管理生命周期</h1>
+<p>一个异步函数可能会启动一个会在本函数返回后还会运行很久的操作：函数自身会在运行的时候立即返回一个<code>future&lt;T&gt;</code>，但是等这个future准备好需要很久。</p>
+<p>当这样的异步操作需要操作现存的对象，或者是临时对象，我们需要留心这些对象的_生命周期_：我们得保证这些对象不会在异步操作完成之前被释放，并保证对象在不被需要的时候能最终被释放（以防内存泄漏）。Seastar提供了很多种用于安全高效地保证对象在合适的时间保活的机制。在本节中，我们会探索这些机制，并告诉大家每一种该何时使用。</p>
+<h2 id="传递所有权给continuation">传递所有权给continuation</h2>
+<p>我们已经看到如何通过<strong>捕获</strong>(capturing)来让<code>continuation</code>获取一个对象的所有权：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_incr(int i) {
+    return seastar::sleep(10ms).then([i] { return i + 1; });
+}
+
+</code></pre>
+<p>在上例中，continuation捕获了<code>i</code>的值，换句话说，continuation有一份<code>i</code>的拷贝。当continuation在10ms后开始运行时，它可以访问到这个值，并在其运行结束的时候，continuation本身这个对象会被释放，它捕获的<code>i</code>的拷贝也随之被释放了。continuation拥有<code>i</code>的这个拷贝。</p>
+<p>如我们在这里进行的用值捕获(capturing by value)——创建一个我们需要的对象的拷贝——大多数情况下适用于例子中像整数这样的很小的对象。其他一些对象的拷贝成本可能很高，甚至不能被拷贝。例如，下面这么做就不太好。</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(std::vector&lt;int&gt; v) {
+    // this makes another copy of v:
+    return seastar::sleep(10ms).then([v] { /* do something with v */ });
+}
+
+</code></pre>
+<p>上面这样可能会很低效——因为需要拷贝可能很长的vector<code>v</code>，并且要在continuation中存一份。在本例中，我们没必要复制<code>v</code>——在<code>slow_op</code>中我们已经传值了，并且在capture之后没有再对<code>v</code>做其他的操作了，所以<code>slow_op</code>再返回的时候会释放自己的那份<code>v</code>。</p>
+<p>对于这种情况，C++14允许把对象move进continuation：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(std::vector&lt;int&gt; v) {
+    // v is not copied again, but instead moved:
+    return seastar::sleep(10ms).then([v = std::move(v)] { /* do something with v */ });
+}
+</code></pre>
+<p>C++11引入了move constructor，可以把vector的数据移进<code>continuation</code>，并释放原始的vector。Moving会很快——对于vector，moving操作只需要复制几个指针这样的小field。如之前那样，一旦continuation退出了vector就会被释放——并且其底层的数组（是被move操作移进来的）也会随之被释放。</p>
+<p>TODO: 将临时缓冲区作为设计为以这种方式移动的对象的示例。</p>
+<p>一些情况下，move对象不是很合适。例如，一些对象的引用或者一些成员以引用的形式被存在其他对象里了，那么这些引用会在这个对象被move之后变得不可用。在一些更复杂的例子里，move constructor甚至都有些慢。对于这些情况，C++提供了<code>std::unique_ptr&lt;T&gt;</code>。<code>std::unique_ptr&lt;T&gt;</code>是一个拥有另一个类型的<code>T</code>的对象的对象。当<code>std::unique_ptr&lt;T&gt;</code>被move了，内部的<code>T</code>对象并没有变化——仅仅是指向<code>T</code>对象的指针发生了变化。<code>std::unique_ptr&lt;T&gt;</code>的用例如下：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(std::unique_ptr&lt;T&gt; p) {
+    return seastar::sleep(10ms).then([p = std::move(p)] { /* do something with *p */ });
+}
+
+</code></pre>
+<p><code>std::unique_ptr&lt;T&gt;</code>是传递unique 对象所有权的C++标准机制：对象在同一时刻只会被一段代码拥有，且所有权通过move <code>unique_ptr</code>对象进行转移。<code>unique_ptr</code>对象不能被复制：如果我们尝试用值去捕获<code>p</code>，会引发编译错误。</p>
+<h2 id="保持调用者的所有权">保持调用者的所有权</h2>
+<p>我们上面描述的技术——赋予它需要处理的对象的<code>continuation</code>所有权——是强大且安全的。 但通常它会变得难以使用且冗长。 当异步操作不仅涉及一个<code>continuation</code>，而且涉及一系列<code>continuation</code>，每个<code>continuation</code>都需要在同一个对象上工作时，我们需要在每个连续的<code>continuation</code>之间传递对象的所有权，这会变得不方便。 当我们需要将同一个对象传递给两个单独的异步函数（或<code>continuation</code>）时，这尤其不方便——在我们将对象移入一个之后，需要返回该对象，以便它可以再次移入第二个。</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(T o) {
+    return seastar::sleep(10ms).then([o = std::move(o)] {
+        // first continuation, doing something with o
+        ...
+        // return o so the next continuation can use it!
+        return std::move(o);
+    }).then([](T o) {
+        // second continuation, doing something with o
+        ...
+    });
+}
+</code></pre>
+<p>之所以会出现这种复杂性，是因为我们希望异步函数和<code>continuation</code>获得它们所操作对象的所有权。 一种更简单的方法是让异步函数的调用者<code>continuation</code>是对象的所有者，并将对象的引用传递给需要该对象的各种其他异步函数和<code>continuation</code>。比如：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(T&amp; o) {           // &lt;-- pass by reference
+    return seastar::sleep(10ms).then([&amp;o] {// &lt;-- capture by reference
+        // first continuation, doing something with o
+        ...
+    }).then([&amp;o]) {                        // &lt;-- another capture by reference
+        // second continuation, doing something with o
+        ...
+    });
+}
+
+</code></pre>
+<p>这种方法提出了一个问题：slow_op 的调用者现在负责保持对象 o 处于活动状态，而由 slow_op 启动的异步代码需要这个对象。 但是这个调用者如何知道它启动的异步操作实际需要这个对象多长时间呢？</p>
+<p>最合理的答案是异步函数可能需要访问其参数，直到它返回的<code>future</code>得到解决——此时异步代码完成并且不再需要访问其参数。 因此，我们建议 Seastar 代码采用以下约定：</p>
+<blockquote>
+<p>每当异步函数通过引用获取参数时，调用者必须确保被引用的对象一直存在，直到函数返回的未来被解析。</p>
+</blockquote>
+<p>请注意，这只是 Seastar 建议的约定，不幸的是 C++ 语言中没有强制执行它。 非 Seastar 程序中的 C++ 程序员经常将大对象作为常量引用传递给函数，以避免慢速复制，并假设被调用的函数不会将这个引用保存在任何地方。 但在 Seastar 代码中，这是一种危险的做法，因为即使异步函数不打算将引用保存在任何地方，它最终可能会通过将此引用传递给另一个函数并最终在<code>continuation</code>中捕获它来隐式保存。</p>
+<blockquote>
+<p>如果 C++ 的未来版本可以帮助我们发现引用的错误使用，那就太好了。 也许我们可以有一个特殊类型的引用的标签，一个函数可以立即使用的“立即引用”（即在返回<code>future</code>之前），但不能被捕获到<code>continuation</code>中。</p>
+</blockquote>
+<p>有了这个约定，就可以很容易地编写复杂的异步函数，比如 slow_op，它通过引用传递对象，直到异步操作完成。 但是调用者如何确保对象在返回的<code>future</code>被解析之前一直存在？ 以下是错误的：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    T obj; // wrong! will be destroyed too soon!
+    return slow_op(obj);
+}
+</code></pre>
+<p>这是错误的，因为这里的对象 obj 对 f 的调用是本地的，并且一旦 f 返回一个<code>future</code>就被销毁——而不是当这个返回的<code>future</code>被解析时！ 正确的做法是调用者在堆上创建对象 obj（所以它不会在 f 返回时立即被销毁），然后运行 slow_op(obj) 并在<code>future</code>解析时（即，使用 .finally ())，销毁对象。</p>
+<p>Seastar 提供了一个方便的习惯用法 do_with() 来正确执行此操作：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::do_with(T(), [] (auto&amp; obj) {
+        // obj is passed by reference to slow_op, and this is fine:
+        return slow_op(obj);
+    }
+}
+
+</code></pre>
+<p>do_with 将使用给定的保活对象执行给定的函数。<br>
+do_with 将给定的对象保存在堆上，并使用对新对象的引用调用给定的 lambda。 最后，它确保在算出返回<code>future</code>的后销毁新对象。<br>
+通常，do_with 被赋予一个右值，即一个未命名的临时对象或一个 std::move()的对象，并且 do_with 将该对象移动到它在堆上的最终位置。<br>
+do_with 返回一个在上述所有内容完成后算出的<code>future</code>（lambda 的<code>future</code>被算出并且对象被销毁）。</p>
+<p>为方便起见，do_with 也可以被赋予多个对象以保持活动状态。 例如，这里我们创建了两个对象并让它们保持活动状态，直到算出<code>future</code>：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::do_with(T1(), T2(), [] (auto&amp; obj1, auto&amp; obj2) {
+        return slow_op(obj1, obj2);
+    }
+}
+
+</code></pre>
+<p>虽然 do_with 可以改变它持有的对象的生命周期，但如果用户不小心复制了这些对象，这些副本可能有错误的生命周期。 不幸的是，像忘记“&amp;”这样的简单错误会导致这种意外的复制。 例如，以下代码是错误的：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::do_with(T(), [] (T obj) { // WRONG: should be T&amp;, not T
+        return slow_op(obj);
+    }
+}
+
+</code></pre>
+<p>在这个错误的片段中， obj 不是对 do_with 分配的对象的引用，而是它的一个副本——一个副本一旦 lambda 函数返回就会被销毁（lambda函数返回，是说在主线程里面），而不是在它返回的<code>future</code>被解析时被销毁。 这样的代码很可能会崩溃，因为对象在被释放后被使用。 不幸的是，编译器不会警告此类错误。 用户应该习惯于始终使用带有 do_with 的类型“auto&amp;”——如上面正确的例子——以减少出现此类错误的机会。</p>
+<p>出于同样的原因，以下代码片段也是错误的：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_op(T obj); // WRONG: should be T&amp;, not T
+seastar::future&lt;&gt; f() {
+    return seastar::do_with(T(), [] (auto&amp; obj) {
+        return slow_op(obj);
+    }
+}
+</code></pre>
+<p>在这里，虽然 obj 被正确地通过引用传递给了 lambda，但我们后来不小心传递了一个 slow_op() 它的副本（因为这里slow_op 是通过值而不是通过引用获取对象），并且这个副本会在slow_op 返回后立即被销毁 ，不要等到返回的算出<code>future</code>。</p>
+<p>使用 do_with 时，请始终记住它需要遵守上述约定：我们在 do_with 内部调用的异步函数在返回的 future 被解析后不得使用 do_with 持有的对象。 对于异步函数来说，这是一个严重的释放后使用错误，返回一个未来解决，同时仍然使用 do_with() 的对象进行后台操作。</p>
+<p>通常，在留下后台操作的同时解析异步函数很少是一个好主意 - 即使这些操作不使用 do_with() 的对象。 我们不等待的后台操作可能会导致我们耗尽内存（如果我们不限制它们的数量）并且很难干净地关闭应用程序。</p>
+<h2 id="共享所有权引用计数">共享所有权（引用计数）</h2>
+<p>在本章的开头，我们已经注意到，将对象的副本捕获到<code>continuation</code>中是确保在<code>continuation</code>运行时对象处于活动状态并随后被销毁的最简单方法。 但是，复制复杂对象通常很昂贵（在时间和内存方面）。 有些对象根本无法复制，或者是可读写的，并且<code>continuation</code>应该修改原始对象，而不是新的副本。 所有这些问题的解决方案是引用计数，也就是共享对象：</p>
+<p>Seastar 中引用计数对象的一个简单示例是 <code>seastar::file</code>，一个保存打开文件对象的对象（我们将在后面的部分介绍 <code>seastar::file</code>）。文件对象可以被复制，但复制不涉及复制文件描述符（更不用说文件了）。 相反，两个副本都指向同一个打开的文件，并且引用计数增加 1。当一个文件对象被销毁时，文件的引用计数减一，只有当引用计数达到 0 时，底层文件才真正关闭。</p>
+<p>文件对象可以非常快速地复制并且所有副本实际上都指向同一个文件，这使得将它们传递给异步代码非常方便； 例如，</p>
+<pre><code class="language-cpp">seastar::future&lt;uint64_t&gt; slow_size(file f) {
+    return seastar::sleep(10ms).then([f] {
+        return f.size();
+    });
+}
+</code></pre>
+<p>注意调用 <code>slow_size</code> 就像调用 <code>slow_size(f)</code> 一样简单，传递 f 的副本，不需要做任何特殊的事情来确保 f 只在不再需要时被销毁。 当没有任何东西再提到 f 时，这很自然地发生。</p>
+<p>你可能想知道为什么上面例子中的 <code>return f.size()</code> 是安全的：它不是在 f 上启动一个异步操作吗（文件的大小可能存储在磁盘上，所以不是立即可用的），并且 f 可能会立即被销毁，当 我们回来了，什么都没有持有 f 的副本？ 如果 f 真的是最后一个引用，那确实是一个错误，但还有另一个：文件永远不会关闭。 使代码有效的假设是有另一个对 f 的引用将用于关闭它。 <code>close</code> 成员函数持有该对象的引用计数，因此即使没有其他人继续持有它，它也会继续存在。 由于文件对象生成的所有<code>future</code>在关闭之前已完成，因此正确性所需的只是记住始终关闭文件。</p>
+<p>引用计数有运行时成本，但通常非常小； 重要的是要记住 Seastar 对象始终仅由单个 CPU 使用，因此引用计数递增和递减操作并不是采用经常用来做引用计数的慢速原子操作的这种方案，而只是常规的 CPU 本地整数操作。 此外，明智地使用 std::move() 和编译器的优化器可以减少不必要的来回增加和减少引用计数的次数。</p>
+<p>C++11 提供了一种创建引用计数共享对象的标准方法——使用模板 <code>std::shared_ptr&lt;T&gt;</code>。 <code>shared_ptr</code> 可用于将任何类型包装到引用计数共享对象中，如上面的 <code>seastar::file</code>。 然而，标准 <code>std::shared_ptr</code> 是为多线程应用程序设计的，因此它对引用计数使用缓慢的原子递增/递减操作，我们已经注意到在 <code>Seastar</code> 中这是不必要的。 为此，<code>Seastar</code> 提供了自己的该模板的单线程实现，<code>seastar::shared_ptr&lt;T&gt;</code>。 除了不使用原子操作外，它类似于<code>std::shared_ptr&lt;T&gt;</code>【太牛了】。</p>
+<p>此外，<code>Seastar</code> 还提供了一个开销更低的<code>shared_ptr</code>变体：<code>seastar::lw_shared_ptr&lt;T&gt;</code>。 由于需要正确支持多态类型（由一个类创建的共享对象，并通过指向基类的指针访问），功能齐全的 <code>shared_ptr</code> 变得复杂。 它使得 <code>shared_ptr</code> 需要向共享对象添加两个变量，并且每个 <code>shared_ptr</code> 副本添加两个变量。 简化的 <code>lw_shared_ptr</code> - 不支持多态类型 - 在对象中只添加一个变量（引用计数），并且每个副本只是一个变量 - 就像复制常规指针一样。 出于这个原因，轻量级的 <code>seastar::lw_shared_ptr&lt;T&gt;</code>应该尽可能优先（T 不是多态类型），否则 <code>seastar::shared_ptr&lt;T&gt;</code>。 更慢的 <code>std::shared_ptr&lt;T&gt;</code>永远不应该用在分片 <code>Seastar</code> 应用程序中。</p>
+<h2 id="在堆栈上保存对象">在堆栈上保存对象</h2>
+<p>如果我们可以像通常在同步代码中那样将对象保存在堆栈上，那不是很方便吗？ 类似于：</p>
+<pre><code class="language-cpp">int i = ...;
+seastar::sleep(10ms).get();
+return i;
+
+</code></pre>
+<p><code>Seastar</code> 允许编写此类代码，方法是使用带有自己的堆栈的<code>seastar::thread</code> 对象。 使用<code>seastar::thread</code>的完整示例可能如下所示：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; slow_incr(int i) {
+    return seastar::async([i] {
+        seastar::sleep(10ms).get();
+        // We get here after the 10ms of wait, i is still available.
+        return i + 1;
+    });
+}
+
+</code></pre>
+<p>我们会在Seastar thread一节介绍 <code>seastar::thread</code>, <code>seastar::async()</code> 和 <code>seastar::future::get()</code> 。</p>
+<h1 id="高级future">高级future</h1>
+<h2 id="fututre和中断">fututre和中断</h2>
+<p>TODO：一个<code>future</code>，例如<code>sleep(10s)</code> 不能被中断。 所以如果我们需要，<code>promise</code> 需要有一个机制来中断它。 提到管道的关闭功能，信号量停止功能等。</p>
+<h2 id="future只能被用一次">future只能被用一次</h2>
+<p>TODO：假设我们有一个<code>future&lt;int&gt;</code>变量，一旦我们 <code>get()</code>或<code>then()</code> 它，它就会变得无效——我们需要将值存储在其他地方。 想想是否有我们可以建议的替代方案。</p>
+<h1 id="fibers纤维">Fibers（纤维？）</h1>
+<p>这些<code>fiber</code>并不是线程——每个都只是一串<code>continuation</code>——但是他们也有和传统线程一样的一些要求。例如，我们会避免一个<code>fiber</code>被<code>starve</code>，而另一个一直在运行。又如，<code>fiber</code>之间可能会进行通信——一个fiber生成另一个fiber使用的数据，我们希望能保证2个fiber都能运行，并且如果1个过早地停止了，另一个不要一直<code>hang</code>。</p>
+<p>TODO：讨论与Fibers相关的部分，如循环、信号量、门、管道等。</p>
+<h1 id="loops循环">Loops（循环）</h1>
+<p>大多数很消耗时间的计算都需要循环。Seastar提供了很多用future/promise的方式表示循环的原语。有关Seastar的循环原语一个非常重要的点是，每个迭代步的后面都会有一个抢占点(preemption point)，因而允许其他任务在迭代步之间运行。</p>
+<h2 id="repeat">repeat</h2>
+<p>一个用<code>repeat</code>创建的循环会执行其body，然后收到一个<code>stop_iteration</code>对象。这个对象会告诉循环是该继续运行（<code>stop_iteration::no</code>）还是该停止（<code>stop_iteration::yes</code>），下一个迭代步会在前一个执行完再执行。被传给<code>repeat</code>的body需要返回<code>future&lt;stop_iteration&gt;</code>。</p>
+<pre><code class="language-cpp">seastar::future&lt;int&gt; recompute_number(int number);
+
+seastar::future&lt;&gt; push_until_100(
+			seastar::lw_shared_ptr&lt;std::vector&lt;int&gt;&gt; queue,
+			int element) {
+    return seastar::repeat([queue, element] {
+        if (queue-&gt;size() == 100) {
+            return make_ready_future&lt;stop_iteration&gt;(stop_iteration::yes);
+        }
+        return recompute_number(element).then([queue] (int new_element) {
+            queue-&gt;push_back(element);// 感觉这里应该是new_element
+            return stop_iteration::no;
+        });
+    });
+}
+
+</code></pre>
+<h2 id="do_until">do_until</h2>
+<p><code>do_until</code>和<code>repeat</code>非常接近，只是其会显示传入一个判断条件。下列代码展示了该如何使用<code>do_until</code>：</p>
+<pre><code class="language-cpp">seastar::future&lt;int&gt; recompute_number(int number);
+
+seastar::future&lt;&gt; push_until_100(seastar::lw_shared_ptr&lt;std::vector&lt;int&gt;&gt; queue, int element) {
+    return seastar::do_until([queue] { return queue-&gt;size() == 100; }, [queue, element] {
+        return recompute_number(element).then([queue] (int new_element) {
+            queue-&gt;push_back(new_element);
+        });
+    });
+}
+
+</code></pre>
+<p>注意循环body需要返回<code>future&lt;&gt;</code>，从而使我们能够在循环中创建复杂的continuation。</p>
+<h2 id="do_for_each">do_for_each</h2>
+<p><code>do_for_each</code> 相当于 Seastar 世界中的 for 循环。 它接受一个范围（或一对迭代器）和一个函数体，它按顺序一个一个地应用于每个参数。 只有在第一个迭代完成后才会启动下一个迭代，就像 <code>repeat</code> 一样。 像往常一样，<code>do_for_each</code> 期望它的循环体返回一个 <code>future&lt;&gt;</code>。</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; append(
+			seastar::lw_shared_ptr&lt;std::vector&lt;int&gt;&gt; queue1, 
+			seastar::lw_shared_ptr&lt;std::vector&lt;int&gt;&gt; queue2) {
+    return seastar::do_for_each(queue2, [queue1] (int element) {
+        queue1-&gt;push_back(element);
+    });
+}
+
+seastar::future&lt;&gt; append_iota(
+			seastar::lw_shared_ptr&lt;std::vector&lt;int&gt;&gt; queue1,
+			int n) {
+    return seastar::do_for_each(
+			boost::make_counting_iterator&lt;size_t&gt;(0), 
+			boost::make_counting_iterator&lt;size_t&gt;(n),
+			[queue1] (int element) {
+        		queue1-&gt;push_back(element);
+			});
+}
+
+</code></pre>
+<p><code>do_for_each</code> 接受对容器的左值引用或一对迭代器。 这意味着在整个循环执行期间确保容器处于活动状态的责任属于调用者。 如果容器需要延长其生命周期，可以使用 <code>do_with</code> 轻松实现：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; do_something(int number);
+
+seastar::future&lt;&gt; do_for_all(std::vector&lt;int&gt; numbers) {
+    // Note that the &quot;numbers&quot; vector will be destroyed as soon as this function
+    // returns, so we use do_with to guarantee it lives during the whole loop execution:
+    return seastar::do_with(std::move(numbers), [] (std::vector&lt;int&gt;&amp; numbers) {
+        return seastar::do_for_each(numbers, [] (int number) {
+            return do_something(number);
+        });
+    });
+}
+</code></pre>
+<h2 id="parallel_for_each">parallel_for_each</h2>
+<p><code>parallel_for_each</code> 是 <code>do_for_each</code> 的高并发变体。 使用 <code>parallel_for_each</code> 时，所有迭代都会同时排队——这意味着无法保证它们以何种顺序完成操作。</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; flush_all_files(seastar::lw_shared_ptr&lt;std::vector&lt;seastar::file&gt;&gt; files) {
+    return seastar::parallel_for_each(files, [] (seastar::file f) {
+        // file::flush() returns a future&lt;&gt;
+        return f.flush();
+    });
+}
+
+</code></pre>
+<p><code>parallel_for_each</code> 是一个强大的工具，因为它允许并行生成许多任务。 这可能会带来巨大的性能提升，但也有一些注意事项。 首先，过高的并发可能会很麻烦——详细信息可以在限制循环的并行性(<strong>Limiting parallelism of loops</strong>.)一章中找到。</p>
+<p>要通过整数限制 <code>parallel_for_each</code> 的并发性，请使用下面描述的 <code>max_concurrent_for_each</code>。 有关处理并行性的更多详细信息，请参见限制循环的并行性(<strong>Limiting parallelism of loops</strong>.)一章。</p>
+<p>其次，请注意，在 <code>parallel_for_each</code> 循环中执行迭代的顺序是任意的——如果需要严格的顺序，请考虑使用 <code>do_for_each</code>。</p>
+<p>TODO：<code>map_reduce</code>，作为 <code>parallel_for_each</code> 的快捷方式（？），它需要产生一些结果（例如，布尔结果的<code>logical_or</code>），因此我们不需要显式创建 <code>lw_shared_ptr</code>（或 <code>do_with</code>）。</p>
+<p>TODO：请参阅 seastar 提交“input_stream: Fix possible infinite recursion in consume()”的示例，了解为什么递归是可能替代<code>repeat()</code>的，但很糟糕。 另见我的评论  <a href="https://groups.google.com/d/msg/seastar-dev/CUkLVBwva3Y/3DKGw-9aAQAJ">为什么 Seastar 的迭代原语应该用于尾调用优化</a> 。</p>
+<p>【摘录并翻译于此】</p>
+<blockquote>
+<p><strong>Nadav Har'El</strong><br>
+抱歉，伙计们（Avi 实际上最初编写了这段代码，但我对其进行了大修，本应该早已发现这一点）。<br>
+我在 Seastar 教程中给自己做了个笔记来解释为什么递归 <strong>不是</strong> Seastar 迭代原语（do_until、repeat 等）的良好替代品。<br>
+话虽如此，这里有一些我没有完全理解的东西：<br>
+代码做这样的事情：</p>
+<pre><code class="language-cpp">future&lt;&gt; consume() {  
+return fd.get().then([] { return consume(); });  
+}
+</code></pre>
+<p>所以如果 <code>fd.get()</code> 没有准备好，我们这里根本没有递归——<code>consumer()</code> 立即返回一个 <code>future</code>，稍后会再次调用（没有递归）。<br>
+所以递归只有在 fd.get() 立即准备好时才会发生。<br>
+但是当此代码立即运行时，由于“返回”并且编译器可以确定代码不需要任何堆栈上的变量，编译器可以进行“尾调用优化”以<em>替换</em> 最后一帧，而不是添加到它，并避免递归。 为什么编译器不这样做？ 是因为 C++ 销毁顺序的原因（例如，C++ 认为它需要保证在 then() 返回之后销毁对象，而不是之前？或者只是优化器的限制？<br>
+无论如何，最好避免依赖尾调用优化。</p>
+</blockquote>
+<h2 id="max_concurrent_for_each">max_concurrent_for_each</h2>
+<p><code>max_concurrent_for_each</code> 是 <code>parallel_for_each</code> 的变体，具有受限的并行性。 它接受一个额外的参数 - <code>max_concurrent</code> - 最多 <code>max_concurrent</code> 迭代同时排队，不保证它们完成操作的顺序。</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; flush_all_files(seastar::lw_shared_ptr&lt;std::vector&lt;seastar::file&gt;&gt; files, size_t max_concurrent) {
+    return seastar::max_concurrent_for_each(files, max_concurrent, [] (seastar::file f) {
+        return f.flush();
+    });
+}
+
+</code></pre>
+<p>确定最大并发限制超出了本文档的范围。 它通常应该从运行软件的系统的实际能力中推导出来，例如并行执行单元或 I/O 通道的数量，以便优化资源利用率而不会使系统不堪重负。</p>
+<h1 id="when_all-等待多个future">when_all: 等待多个future</h1>
+<p>上面我们见到了<code>parallel_for_each()</code>，其会开启若干异步操作，并等待所有的都完成。Seastar有另一个函数<code>when_all()</code>，用于等待若干已经存在的<code>future</code>完成。</p>
+<p><code>when_all()</code>的第一种变体是一个变长函数，也就是<code>future</code>可以作为分隔的参数传入，有多少个<code>future</code>是在编译期就确定下来的。每个<code>future</code>可以类型不同。例如：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+
+future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    future&lt;int&gt; slow_two = sleep(2s).then([] { return 2; });
+    return when_all(sleep(1s), std::move(slow_two), 
+                    make_ready_future&lt;double&gt;(3.5)
+           ).discard_result();
+}
+
+</code></pre>
+<p>这将启动三个 <code>futures</code> - 一个休眠一秒钟（并且不返回任何内容），一个休眠两秒钟并返回整数 2，一个立即返回双精度 3.5 - 然后等待它们。 <code>when_all()</code> 函数返回一个<code>futures</code>，一旦所有三个<code>futures</code>都计算出来了，即在两秒后解决。 这个<code>future</code>也有一个值，我们将在下面解释，但在这个例子中，我们只是等待算出<code>future</code>并丢弃它的值。</p>
+<p>请注意，<code>when_all()</code>仅接受右值，它可以是临时值（如异步函数的返回值或 <code>make_ready_future</code>）或保存未来的 <code>std::move()</code>变量。</p>
+<p><code>when_all()</code>返回的<code>future</code>解析为一个已经解析<code>future</code>的元组，并包含三个输入<code>future</code>的结果。 继续上面的例子，</p>
+<pre><code class="language-cpp">future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    future&lt;int&gt; slow_two = sleep(2s).then([] { return 2; });
+    return when_all(sleep(1s), std::move(slow_two),
+                    make_ready_future&lt;double&gt;(3.5)
+           ).then([] (auto tup) {
+            std::cout &lt;&lt; std::get&lt;0&gt;(tup).available() &lt;&lt; &quot;\n&quot;;
+            std::cout &lt;&lt; std::get&lt;1&gt;(tup).get0() &lt;&lt; &quot;\n&quot;;
+            std::cout &lt;&lt; std::get&lt;2&gt;(tup).get0() &lt;&lt; &quot;\n&quot;;
+    });
+}
+
+</code></pre>
+<p>该程序的输出（两秒后出现）是 1, 2, 3.5：元组中的第一个<code>future</code>可用（但没有值），第二个具有整数值 2，第三个具有双精度值 3.5 - 正如预期的那样。</p>
+<p>一个或多个等待的<code>future</code>可能会解决中出现异常，但这不会改变 <code>when_all()</code> 的工作方式：它仍然等待所有<code>future</code>解决，每个<code>future</code>都有一个值或异常，并且在返回的元组中 <code>future</code>可能包含异常而不是值。 例如，</p>
+<pre><code class="language-cpp">future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    future&lt;&gt; slow_success = sleep(1s);
+    future&lt;&gt; slow_exception = sleep(2s).then([] { throw 1; });
+    return when_all(std::move(slow_success), std::move(slow_exception)
+           ).then([] (auto tup) {
+            std::cout &lt;&lt; std::get&lt;0&gt;(tup).available() &lt;&lt; &quot;\n&quot;;
+            std::cout &lt;&lt; std::get&lt;1&gt;(tup).failed() &lt;&lt; &quot;\n&quot;;
+            std::get&lt;1&gt;(tup).ignore_ready_future();
+    });
+}
+
+</code></pre>
+<p>两个<code>future</code>都可用（已解决），但第二个<code>future</code>已失败（导致异常而不是返回一个值）。 请注意我们如何在这个失败的<code>future</code>上调用 <code>ignore_ready_future()</code> ，因为默默地忽略一个失败的<code>future</code>被认为是一个错误，并将导致“异常<code>future</code>被忽略”错误消息。 更典型的是，应用程序将记录失败的<code>future</code>而不是忽略它。</p>
+<p>上面的例子表明<code>when_all()</code>使用起来不方便且冗长。 结果被包装在一个元组中，导致冗长的元组语法，并使用准备好的<code>future</code>，必须单独检查所有异常以避免错误消息。</p>
+<p>所以SeaStar还提供了一个更容易使用的<code>when_all_succeed()</code>函数。 这个函数当每个给定的<code>future</code>都解决了也是返回一个<code>future</code>。如果它们都成功，它将结果值传递给<code>continuation</code>，而不将它们包装在<code>future</code>或元组中。但是，如果一个或多个<code>future</code>失败，则 <code>when_all_succeed()</code> 将解析为失败的<code>future</code>，其中包含来自失败<code>future</code>之一的异常。如果给定的<code>future</code>有多个失败，其中一个将被传递（未指定选择哪个），其余的将被默默忽略。 例如，</p>
+<pre><code class="language-cpp">using namespace seastar;
+future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    return when_all_succeed(sleep(1s), make_ready_future&lt;int&gt;(2),
+                    make_ready_future&lt;double&gt;(3.5)
+            ).then([] (int i, double d) {
+        std::cout &lt;&lt; i &lt;&lt; &quot; &quot; &lt;&lt; d &lt;&lt; &quot;\n&quot;;
+    });
+}
+</code></pre>
+<p>请注意<code>future</code>持有的整数和双精度值如何方便地单独（没有元组）传递到延续。 由于 sleep() 不包含值，因此会等待它，但不会将第三个值传递给<code>continuation</code>。 这也意味着如果我们<code>when_all_succeed()</code>在几个 <code>future&lt;&gt;</code>（没有值）上，结果也是一个 <code>future&lt;&gt;</code>：</p>
+<pre><code class="language-cpp">using namespace seastar;
+future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    return when_all_succeed(sleep(1s), sleep(2s), sleep(3s));
+}
+</code></pre>
+<p>此示例仅等待 3 秒（最多 1、2 和 3 秒）。</p>
+<p><code>when_all_succeed()</code> 的示例，但有异常：</p>
+<pre><code class="language-cpp">using namespace seastar;
+future&lt;&gt; f() {
+    using namespace std::chrono_literals;
+    return when_all_succeed(make_ready_future&lt;int&gt;(2),
+                    make_exception_future&lt;double&gt;(&quot;oops&quot;)
+            ).then([] (int i, double d) {
+        std::cout &lt;&lt; i &lt;&lt; &quot; &quot; &lt;&lt; d &lt;&lt; &quot;\n&quot;;
+    }).handle_exception([] (std::exception_ptr e) {
+        std::cout &lt;&lt; &quot;exception: &quot; &lt;&lt; e &lt;&lt; &quot;\n&quot;;
+    });
+}
+
+</code></pre>
+<p>在这个例子中，其中一个futures失败，所以<code>when_all_succeed</code>的结果是一个失败的future，所以正常的<code>continuation</code>没有运行，<code>handle_exception()</code> continuation就完成了。</p>
+<p>TODO：还要解释用于 vectors 的 when_all 和when_all_succeed。</p>
+<h1 id="semaphores信号量">Semaphores（信号量）</h1>
+<p>Seastar 的信号量是标准的计算机科学信号量，适用于未来。 信号量是一个计数器，您可以将单位存入或取走。 如果没有足够的单位可用，从计数器取走单位可能需要等待。</p>
+<h2 id="用信号量限制并行性">用信号量限制并行性</h2>
+<p>Seastar 中信号量的最常见用途是限制并行性，即限制可以并行运行的某些代码的实例数量。 当每个并行调用使用有限的资源（例如，内存）时，这可能很重要，因此让无限数量的并行调用可以耗尽此资源。</p>
+<p>考虑外部事件源（例如，传入的网络请求）导致异步函数 g() 被调用的情况。 想象一下，我们要将并发 g() 操作的数量限制为 100。即，如果 g() 在其他 100 个调用仍在进行时启动，我们希望它延迟其实际工作，直到其他调用之一完成。 我们可以用信号量做到这一点：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; g() {
+    static thread_local seastar::semaphore limit(100);
+    return limit.wait(1).then([] {
+        return slow(); // do the real work of g()
+    }).finally([] {
+        limit.signal(1);
+    });
+}
+
+</code></pre>
+<p>在这个例子中，信号量以计数器为 100 开始。 异步操作 slow() 仅在我们可以将计数器减一（wait(1)）时启动，并且当 slow() 完成时，无论成功还是异常 ，计数器加一（信号（1））。 这样，当 100 个操作已经开始工作并且尚未完成时，第 101 个操作将等待，直到其中一个正在进行的操作完成并将一个单元返回给信号量。 这确保了每次我们在上面的代码中最多运行 100 个并发的 slow() 操作。</p>
+<p>请注意我们如何使用静态 thread_local 信号量，以便从同一分片对 g() 的所有调用都计入相同的限制。像往常一样，一个 Seastar 应用程序是分片的，所以这个限制是单独的每个分片（CPU 线程）。 这通常很好，因为分片应用程序认为每个分片的资源是分开的。</p>
+<p>幸运的是，上面的代码恰好是异常安全的：limit.wait(1) 可以在内存不足时抛出异常（保留一个等待者列表），在这种情况下，信号量计数器不会减少，但后续的<code>continuation</code>是 不运行所以它也不会增加。limit.wait(1) 也可以在信号量被破坏时返回一个特殊的未来（我们将在后面讨论）但在这种情况下额外的 signal() 调用被忽略。最后，slow() 也可能抛出或返回一个特殊的未来，但 finally() 确保信号量仍然增加。</p>
+<p>但是，随着应用程序代码变得越来越复杂，无论发生哪个代码路径或异常，都很难确保我们在操作完成后永远不会忘记调用 signal()。 作为可能出错的示例，请考虑以下错误代码片段，它与上面的代码片段略有不同，而且乍一看似乎是正确的：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; g() {
+    static thread_local seastar::semaphore limit(100);
+    return limit.wait(1).then([] {
+        return slow().finally([] { limit.signal(1); });
+    });
+}
+
+</code></pre>
+<p>但是这个版本不是异常安全的：考虑如果slow() 在返回一个<code>future</code> 之前抛出一个异常会发生什么（这与slow() 返回一个异常的<code>future</code>不同，我们在有关异常处理的部分讨论了这种差异）。在这种情况下，我们减少了计数器，但 finally() 永远不会到达，并且计数器永远不会增加。有一种方法可以修复此代码，即用 seastar::futurize_invoke(slow) 替换对 slow() 的调用。 但是我们在这里试图说明的不是如何修复有问题的代码，而是通过使用单独的 semaphore::wait() 和 semaphore::signal() 函数，您很容易出错。</p>
+<p>为了异常安全，在C++中一般不推荐有单独的资源获取和释放函数。 相反，C++ 提供了更安全的机制来获取资源（在这种情况下是信号量单元）并稍后释放它：lambda 函数和 RAII（“资源获取即初始化”）：</p>
+<p>基于 lambda 的解决方案是一个函数 seastar::with_semaphore() ，它是上面示例中代码的快捷方式：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; g() {
+    static thread_local seastar::semaphore limit(100);
+    return seastar::with_semaphore(limit, 1, [] {
+        return slow(); // do the real work of g()
+    });
+}
+
+</code></pre>
+<p>with_semaphore() 与前面的代码片段一样，等待来自信号量的给定数量的单位，然后运行给定的 lambda，当 lambda 返回的<code>future</code>被解析时，with_semaphore() 将单位返回给信号量。 with_semaphore() 返回一个只有在所有这些步骤完成后才能解析的<code>future</code>。</p>
+<p>函数 seastar::get_units() 更通用。 它基于 C++ 的 RAII 哲学，为 seastar::semaphore 的单独 wait() 和 signal() 方法提供了一个异常安全的替代方案。该函数返回一个不透明的单位对象，该对象在保持时保持信号量的计数器减少 - 一旦该对象被析构，计数器就会增加回来。 有了这个接口，你不能忘记增加计数器，或增加两次，或增加而不减少。</p>
+<p>在创建单位对象时，计数器将始终减少一次，如果成功，则在对象被销毁时增加。 当units对象被移动到continuation中时，不管continuation如何结束，当continuation被破坏时，units对象被破坏并且units被返回给信号量的计数器。 上面使用 get_units() 编写的示例如下所示：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; g() {
+    static thread_local semaphore limit(100);
+    return seastar::get_units(limit, 1).then([] (auto units) {
+        return slow().finally([units = std::move(units)] {});
+    });
+}
+
+</code></pre>
+<p>请注意需要使用 get_units() 的有点复杂的方式：必须嵌套continuation，因为我们需要将单位对象移动到最后一个continuation。 如果slow() 返回一个future（并且不会立即抛出），finally() 继续捕获units 对象，直到一切都完成，但不运行任何代码。</p>
+<p>Seastars 程序员通常应该避免直接使用 semaphore::wait() 和 semaphore::signal() 函数，并且总是优先 with_semaphore()（如果适用）或 get_units()。</p>
+<h2 id="限制资源利用量">限制资源利用量</h2>
+<p>因为信号量支持等待任意数量的单元，而不仅仅是 1，所以我们可以将它们用于不仅仅是限制并行调用的数量。 例如，假设我们有一个异步函数 using_lots_of_memory(size_t bytes)，它使用 bytes 字节的内存，并且我们希望确保该函数的所有并行调用使用的内存（合起来）不超过 1 MB --- 以及额外的 调用会延迟到之前的调用完成。 我们可以用信号量做到这一点：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; using_lots_of_memory(size_t bytes) {
+    static thread_local seastar::semaphore limit(1000000); // limit to 1MB
+    return seastar::with_semaphore(limit, bytes, [bytes] {
+        // do something allocating 'bytes' bytes of memory
+    });
+}
+
+</code></pre>
+<p>注意在上面的例子中，调用 using_lots_of_memory(2000000) 将返回一个永远不会解析的future，因为信号量永远不会包含足够的单元来满足信号量等待。 using_lots_of_memory() 可能应该检查字节是否超过限制，并在这种情况下抛出异常。 seastar不会为你做这件事。</p>
+<h2 id="限制循环的并行数">限制循环的并行数</h2>
+<p>上面，我们看到了一个被一些外部事件调用的函数 g()，并希望控制它的并行性。 在本节中，我们看看循环的并行性，它也可以用信号量来控制。</p>
+<p>考虑以下简单循环：</p>
+<pre><code class="language-cpp">#include &lt;seastar/core/sleep.hh&gt;
+seastar::future&lt;&gt; slow() {
+    std::cerr &lt;&lt; &quot;.&quot;;
+    return seastar::sleep(std::chrono::seconds(1));
+}
+seastar::future&lt;&gt; f() {
+    return seastar::repeat([] {
+        return slow().then([] { return seastar::stop_iteration::no; });
+    });
+}
+
+</code></pre>
+<p>这个循环在没有任何并行性的情况下运行slow() 函数（需要一秒钟才能完成）——下一个slow() 调用仅在前一个调用完成时开始。 但是，如果我们不需要串行化对 slow() 的调用，并且希望允许它的多个实例同时进行呢？</p>
+<p>朴素的做法，我们可以通过在上一次调用之后立即开始下一次对slow() 的调用来实现更多的并行性——忽略上一次对slow() 的调用返回的future，而不是等待它解决：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::repeat([] {
+        slow();
+        return seastar::stop_iteration::no;
+    });
+}
+
+</code></pre>
+<p>但在这个循环中，并行度没有限制——在第一个返回之前，数百万个 sleep() 调用可能并行活动。 最终，这个循环可能会消耗所有可用内存并崩溃。</p>
+<p>使用信号量允许我们并行运行多个 slow() 实例，但将这些并行实例的数量限制为（在以下示例中）为 100：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::do_with(seastar::semaphore(100), [] (auto&amp; limit) {
+        return seastar::repeat([&amp;limit] {
+            return limit.wait(1).then([&amp;limit] {
+                seastar::futurize_invoke(slow).finally([&amp;limit] {
+                    limit.signal(1); 
+                });
+                return seastar::stop_iteration::no;
+            });
+        });
+    });
+}
+
+</code></pre>
+<p>请注意此代码与我们在上面看到的用于限制函数 g() 并行调用次数的代码有何不同：</p>
+<ol>
+<li>这里我们不能使用单个 thread_local 信号量。 对 f() 的每次调用都有其并行度为 100 的循环，因此需要自己的信号量“限制”，在循环期间使用 do_with() 保持活动状态</li>
+<li>在这里，我们在继续循环之前不等待 slow() 完成，即我们不返回从 futurize_invoke(slow) 开始的future链。 当信号量单元可用时，循环继续进行下一次迭代，而（在我们的示例中）99 个其他操作可能在后台进行，我们不会等待它们。</li>
+</ol>
+<p>在本节的示例中，我们不能使用 with_semaphore() 快捷方式。 with_semaphore() 返回一个future ，它只在 lambda 返回的future 解析后解析。 但是在上面的例子中，循环需要知道什么时候只有信号量单元可用，才能开始下一次迭代——而不是等待前一次迭代完成。 我们无法通过 with_semaphore() 实现这一点。 但是在这种情况下可以使用更通用的异常安全习惯用法 seastar::get_units()，并且推荐使用：</p>
+<pre><code class="language-cpp">seastar::future&lt;&gt; f() {
+    return seastar::do_with(seastar::semaphore(100), [] (auto&amp; limit) {
+        return seastar::repeat([&amp;limit] {
+    	    return seastar::get_units(limit, 1).then([] (auto units) {
+	            slow().finally([units = std::move(units)] {});
+	            return seastar::stop_iteration::no;
+	        });
+        });
+    });
+}
+
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/tensorflow2x-fen-bu-shi-xun-lian/">
+              <h3 class="post-title">
+                下一篇：tensorflow2.x 分布式训练
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
