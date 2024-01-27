@@ -5,7 +5,7 @@
     
 <meta charset="utf-8" >
 
-<title>业界CTR深度学习框架的一些新的进展  | dragon</title>
+<title>Transformer结构 | dragon</title>
 <meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
 ">
 
@@ -80,57 +80,34 @@
       <div class="content-container">
         <div class="post-detail">
           
-          <h2 class="post-title">业界CTR深度学习框架的一些新的进展 </h2>
+          <h2 class="post-title">Transformer结构</h2>
           <div class="post-info post-detail-info">
-            <span><i class="icon-calendar-outline"></i> 2021-03-31</span>
-            
-              <span>
-                <i class="icon-pricetags-outline"></i>
-                
-                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                    深度学习
-                    
-                  </a>
-                
-              </span>
+            <span><i class="icon-calendar-outline"></i> 2022-01-27</span>
             
           </div>
           <div class="post-content">
-            <p>为了充分利用GPU的能力和高速带宽<br>
-英伟达的 hugeCtr https://github.com/NVIDIA/HugeCTR 和 脸书 的 DLRM<br>
-<a href="https://arxiv.org/abs/1906.00091">【CoRR2019】Deep Learning Recommendation Model for Personalization and Recommendation Systems</a><br>
-把emb参数分成不同的份放在GPU HMB中，需要需要昂贵的GPU，不实用。</p>
-<p>腾讯的DES<br>
-<a href="https://arxiv.org/abs/1909.04823">Distributed Equivalent Substitution Training for Large-Scale Recommender Systems</a><br>
-和 百度的 HierPs<br>
-<a href="https://arxiv.org/abs/2003.05622">Distributed Hierarchical GPU Parameter Server for Massive Scale Deep Learning Ads System</a><br>
-使用主存保存emb ，DES采用 field-aware 分片策略来reduce(减少or规约)GPU间的数据通信，但没有进行主存和GPU之间通信优化。<br>
-HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输延时。</p>
-<p>Tensorflow, MxNet 和 PyTorch 并不能很好的支持大规模embedding的训练:</p>
-<ul>
-<li>PyTorch 中没有官方支持的ps</li>
-<li>Mxnet 支持的模型大小因为实现问题受到了限制</li>
-<li>tensorflow 使用它的ps后吞吐会严重下降</li>
-</ul>
-<p>为了提升tensorflow, mxnet, pytorch较差的分布式性能，uber 的horovod<br>
-<a href="https://arxiv.org/abs/1802.05799">Horovod: fast and easy distributed deeplearninginTensorFlow</a><br>
-和字节的byteps<br>
-<a href="https://arxiv.org/abs/1807.00311">Product-based Neural Networks for User Response Prediction over Multi-field Categorical Data</a><br>
-都支持不同的平台:</p>
-<ul>
-<li>horovod 使用Ring-AllReduce实现来加速dense模型的训练</li>
-<li>byteps 通过调度优先来在不同的层加速同步参数，优化不同层的顺序来在反向传播和前向计算的时候同步参数</li>
-</ul>
-<p>之前写过一篇关于 horovod 的知识总结：<a href="https://dragonfive.github.io/post/uber-de-horovod/">uber的Horovod | dragon</a></p>
+            <p>Transformer由论文<a href="https%3A//arxiv.org/abs/1706.03762">《Attention is All You Need》</a>提出，Tensorflow的代码可以从 GitHub 上的 Tensor2Tensor 仓库获取。</p>
+<h1 id="1-transformer-的结构">1. Transformer 的结构</h1>
+<p>Transformer 由 Encoder 和 Decoder 两个部分组成，Encoder 和 Decoder 都包含 6 个 block。每一个encoder和decoder的内部结构如下图：</p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1706350731616.png" alt="" loading="lazy"></figure>
+<p>encoder，包含两层，一个self-attention层和一个前馈神经网络，self-attention能帮助当前节点不仅仅只关注当前的词，从而能获取到上下文的语义。<br>
+decoder也包含encoder提到的两层网络，但是在这两层中间还有一层attention层，帮助当前节点获取到当前需要关注的重点内容。</p>
+<p>Transformer 的工作流程大体如下：<br>
+第一步：获取输入句子的每一个单词的表示向量 X，X由单词的 Embedding（Embedding就是从原始数据提取出来的Feature） 和单词位置的 Embedding 相加得到。</p>
+<p>第二步：将得到的单词表示向量矩阵传入 Encoder 中，经过 6 个 Encoder block 后可以得到句子所有单词的编码信息矩阵 C。</p>
+<p>第三步：将 Encoder 输出的编码信息矩阵 C传递到 Decoder 中，Decoder 依次会根据当前翻译过的单词 1~ i 翻译下一个单词 i+1，如下图所示。在使用的过程中，翻译到单词 i+1 的时候需要通过 Mask (掩盖) 操作遮盖住 i+1 之后的单词。</p>
+<p>Encoder block 包含一个 Multi-Head Attention，而 Decoder block 包含两个 Multi-Head Attention (其中有一个用到 Masked)。Multi-Head Attention 上方还包括一个 Add &amp; Norm 层，Add 表示残差连接 (Residual Connection) 用于防止网络退化，Norm 表示 Layer Normalization，用于对每一层的激活值进行归一化。</p>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1706352386198.png" alt="" loading="lazy"></figure>
+<p>上图是 Self-Attention 的结构，在计算的时候需要用到矩阵Q(查询),K(键值),V(值)。在实际中，Self-Attention 接收的是输入(单词的表示向量x组成的矩阵X) 或者上一个 Encoder block 的输出。而Q,K,V正是通过 Self-Attention 的输入进行线性变换得到的。</p>
 
           </div>
         </div>
 
         
           <div class="next-post">
-            <a class="purple-link" href="https://DragonFive.github.io/post/byteps-lun-wen-fan-yi-yu-shang-xi/">
+            <a class="purple-link" href="https://DragonFive.github.io/post/gpu-bian-cheng/">
               <h3 class="post-title">
-                下一篇：byteps 论文翻译与赏析
+                下一篇：gpu 编程
               </h3>
             </a>
           </div>

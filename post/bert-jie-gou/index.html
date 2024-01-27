@@ -5,7 +5,7 @@
     
 <meta charset="utf-8" >
 
-<title>docker | dragon</title>
+<title>Bert 结构 | dragon</title>
 <meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
 ">
 
@@ -78,113 +78,37 @@
 
 
       <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">Bert 结构</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2022-03-15</span>
+            
+          </div>
+          <div class="post-content">
+            <p>BERT 模型是 Google 发表的论文《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》而提出的模型。它一种 Transformer 的双向编码器。<br>
+BERT 的输入是由三个 Embedding 相加而成的，分别是 Token Embeddings，Segment Embeddings，Position Embeddings。</p>
+<ul>
+<li>Token Embeddings：把输入句子中每个字通过查询字向量表的方式转换为一维向量，作为模型的输入。在 Tokenization 之前，先把特殊标记符 [CLS] 和 [SEP] 额外添加到句首和句尾。在 BERT 中，Tokenization 是用 WordPiece 来完成的</li>
+<li>Segment Embeddings：用于区分两个不同句子的，第一个句子是 0，第二个句子是 1。如果只有一个句子，那就都使用索引 0</li>
+<li>Position Embeddings：Position Embeddings 用于给模型提供序列顺序信息的。与 Transformer 中 Positional Encoding 不同，Positional Encoding 通过三角函数计算得到的，而 Position Embeddings 是通过模型训练学习得到的。BERT 使用 Position Embeddings 是因为 BERT 作为通用预训练模型，下游任务通常对词序特征要求比较高，所以选了 Postion Embeddings 这种因通过模型训练学习而潜能比较大的方式</li>
+</ul>
 
-        <div class="current-tag-container">
-          <h2 class="title">
-            <i class="icon icon-pricetags-outline"></i> docker
-          </h2> 
+          </div>
         </div>
 
         
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/caffe-docker/">
-        <h2 class="post-title">零门槛玩坏caffe</h2>
-      </a>
-      <div class="post-abstract">
-        <hr>
-<p>title: 零门槛玩坏caffe<br>
-date: 2017/5/26 15:04:12</p>
-<p>categories:</p>
-<ul>
-<li>深度学习</li>
-<li>虚拟化<br>
-tags:</li>
-<li>nvidia驱动</li>
-<li>深度学习</li>
-<li>caffe</li>
-<li>docker</li>
-<li>deeplearning</li>
-<li>python</li>
-</ul>
-<hr>
-<p>DL如今已经快成为全民玄学了，感觉离民科入侵不远了。唯一的门槛可能是环境不好配，特别是caffe这种依赖数10种其它软件打框架。不过有了docker之后，小学生也能站撸DL了。</p>
-<p>![enter description here][1]</p>
-
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/transformer-jie-gou/">
+              <h3 class="post-title">
+                下一篇：Transformer结构
+              </h3>
+            </a>
+          </div>
+          
       </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2017-05-26</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/uCHl6QLvI/">
-                docker
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/o9zBQ9B4NY/">
-                神经网络
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/WzibKNMac/">
-                深度学习
-                
-                  ，
-                
-              </a>
-            
-              <a href="https://DragonFive.github.io/tag/584K3DWjv/">
-                caffe
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
 
-<section class="post-item">
-    <div class="content">
-      <a href="https://DragonFive.github.io/post/dockerfile/">
-        <h2 class="post-title">docker 用 dockerfile 制作镜像</h2>
-      </a>
-      <div class="post-abstract">
-        
-      </div>
-      <div class="post-info">
-        <span><i class="icon icon-calendar-outline"></i> 2016-07-23</span>
-        
-          <span>
-            <i class="icon icon-pricetags-outline"></i>
-            
-              <a href="https://DragonFive.github.io/tag/uCHl6QLvI/">
-                docker
-                
-              </a>
-            
-          </span>
-        
-      </div>
-    </div>
-    
-  </section>
-
-
-<div class="pagination-container">
-  
-  
-</div>
-
-
-      </div>
+      
 
       <div class="site-footer">
   <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
