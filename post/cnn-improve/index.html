@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>CNN中卷积计算的内存和速度优化 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1740895247802">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1740895247802" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">CNN中卷积计算的内存和速度优化</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-09-20</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <hr>
+<p>title: CNN中卷积计算的内存和速度优化</p>
+<p>date: 2017/9/20 12:04:12</p>
+<p>categories:</p>
+<ul>
+<li>深度学习<br>
+tags:</li>
+<li>deeplearning</li>
+<li>网络优化</li>
+<li>神经网络</li>
+</ul>
+<hr>
+<p>在现在的DNN中，不管是前向传播还是反向传播，绝大多数时间花费在卷积计算中。因此对于速度提升来说，优化卷积层意义重大。</p>
+<p>虽说从参数量来讲，早期的一些网络(alexbnet,VGG，googlnet等)70%以上的参数都是全连接层的。但是现在从架构上的改进已经开始减少全连接层了，比如squeezenet,mobilenet已经使用global avg pooling层取代全连接层了。那么接下来再想提速那就得从卷积层下手了。当然还有一中思路是从量化的方式减少参数量和内存消耗的（如BNN，eBNN），对于提速来说意义并不大。</p>
+<h1 id="以往的卷积计算方法">以往的卷积计算方法</h1>
+<h2 id="sum循环法">sum循环法</h2>
+<p>时间复杂度最高，为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>H</mi><mi>W</mi><mi>M</mi><mi>K</mi><mi>K</mi><mi>C</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(HWMKKC)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span> 最笨的方法，只是用来理解。</p>
+<pre><code>input[C][H][W];
+kernels[M][K][K][C];
+output[M][H][W];
+for h in 1 to H do
+	for w in 1 to W do
+		for o in 1 to M do
+			sum = 0;
+			for x in 1 to K do
+				for y in 1 to K do
+					for i in 1 to C do
+						sum += input[i][h+y][w+x]
+						*kernels[o][x][y][i];
+			output[o][w][h] = sum;
+</code></pre>
+<h2 id="patch-building-dnn-convolution-algorithms">patch-building DNN convolution algorithms</h2>
+<p>based on gemm convolution algorithm</p>
+<p>优点是：比较简单，方便理解和计算</p>
+<p>缺点是：需要大量的内存做中间存储</p>
+<h3 id="im2col过程">im2col过程</h3>
+<p>图片来自 ：贾扬清的demo convolution in caffe<br>
+<a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194578418.jpg" alt="1" loading="lazy"><br>
+把卷积的第一个感受野里的矩阵转化成一个vector，并把各个channel的feature连接起来。<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194598695.jpg" alt="2" loading="lazy"><br>
+随着划窗的进行，把接下来的窗口都转化乘vector,并排放在下面<br>
+<img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194615038.jpg" alt="3" loading="lazy"></p>
+<p><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507194630559.jpg" alt="4" loading="lazy"><br>
+最后把有Cout个卷积核，每个卷积核有C个channel,那么转化乘Cout行的vector组。最后卷积就编程矩阵乘法了。</p>
+<h2 id="各种方法占用内存量">各种方法占用内存量</h2>
+<figure data-type="image" tabindex="1"><img src="https://www.github.com/DragonFive/CVBasicOp/raw/master/1507511974026.jpg" alt="enter description here" loading="lazy"></figure>
+<h1 id="reference">reference</h1>
+<p><a href="https://www.zhihu.com/question/28385679">在 Caffe 中如何计算卷积？</a></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/cpp-innnertype/">
+              <h3 class="post-title">
+                下一篇：c++ 的类型回顾
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

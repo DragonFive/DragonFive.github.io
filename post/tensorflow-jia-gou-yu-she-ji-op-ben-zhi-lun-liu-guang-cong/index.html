@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>[转自刘光聪]TensorFlow架构与设计：OP本质论 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1740895247802">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1740895247802" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">[转自刘光聪]TensorFlow架构与设计：OP本质论</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2019-03-05</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <blockquote>
+<blockquote>
+<p>最近在读《TensorFlow 内核剖析》这本书，作者<a href="https://www.jianshu.com/u/49d1f3b7049e">刘光聪</a>。本篇文章摘自 <a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+</blockquote>
+</blockquote>
+<h1 id="符号编程">符号编程</h1>
+<p>TensorFlow的计算过程是一个延迟计算，是一种典型的基于符号的编程范式。从计算时间轴看，计算过程基本分为2个阶段：</p>
+<ul>
+<li>图构造期：负责计算图的构造；</li>
+<li>图执行期：负责计算图的执行。</li>
+</ul>
+<p>其中，在系统初始化时，系统实现对所有OP进行扫描注册，并保存于OpRegistry之中。</p>
+<h2 id="注册op">注册OP</h2>
+<p>理论上，OP的注册发生在系统初始化阶段。后端系统，可以使用REGISTER_OP实用宏注册OP。前端系统，也存在类似的OP注册机制。</p>
+<p>使用REGISTER_OP注册OP过程，实际上是一个REGISTER_OP描述到OpDef表示的翻译过程。OpDefBuilder通过链式调用Input, Output, Attr方法分别构造OP的输入、输出列表，及其属性列表。最后，通过调用Finalize成员函数，经过解析字符串表示，将其翻译为OpDef的内在表示，最后注册到OpRegistry之中。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/2254249-66c28d1f68d97448.png" alt="" loading="lazy"></figure>
+<p>例如，REGISTER_OP(&quot;ZerosLike&quot;)向系统注册了一个zeros_like的OP，在运行时实现了OpDef的翻译表达。</p>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/2254249-b1cffcdf5b4e6795.png" alt="" loading="lazy"></figure>
+<h2 id="构造op">构造OP</h2>
+<p>在前端，用户使用OP构造器实现OP的构造，并将OP注册到计算图中。在计算图构造期间，OP的输入/输出的类型，Shape得以确定，OP属性值也得以确定。</p>
+<p>计算图的构造过程，实际上就是GraphDef定义过程。其中，OP的属性值承载于NodeDef，计算图构造期间，NodeDef的属性值得以确定。</p>
+<p>在计算图执行启动时，通过调用Session.run，将整个GraphDef传递给后端，并启动计算图的执行。</p>
+<h2 id="执行op">执行OP</h2>
+<p>在计算图执行期间，输入由上游OP流入得以确定，根据特定设备类型，输入输出类型，多态选择合适的Kernel实现，并启动Kernel的计算过程。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.jianshu.com/p/236335897b30">TensorFlow架构与设计：OP本质论 - 简书</a></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/tf-de-session-yu-graph/">
+              <h3 class="post-title">
+                下一篇：TF的session 与graph
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

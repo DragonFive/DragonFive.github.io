@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>CI进阶 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1740895247802">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1740895247802" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">CI进阶</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-08-10</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/jEAcmIy-d/">
+                    ci
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <h1 id="ci好用的一些runner">CI好用的一些runner</h1>
+<p>ssh ： runner中指定远端机器，传artifacts需要在远端安装gitlab-runner<br>
+docker：runner中指定image</p>
+<h1 id="ci好用的一些variable">CI好用的一些variable</h1>
+<p>CI_PROJECT_NAME: 项目名称<br>
+CI_PROJECT_PATH: 项目在本地的相对路径</p>
+<h1 id="ci的触发条件">CI的触发条件</h1>
+<pre><code class="language-YAML">when always
+only
+  - master
+</code></pre>
+<h1 id="ci的并行化">CI的并行化</h1>
+<h2 id="ci-runner-基于docker的安装">CI-runner 基于docker的安装</h2>
+<pre><code class="language-bash">docker run -d --name gitlab-runner --restart always \
+-v $(pwd)/config:/etc/gitlab-runner \
+gitlab/gitlab-runner:latest
+</code></pre>
+<h1 id="ci的监控与可视化">CI的监控与可视化</h1>
+<h1 id="reference">reference</h1>
+<p><a href="https://docs.gitlab.com/runner/install/docker.html">gitlab-ci docker installation</a></p>
+<p><a href="https://docs.gitlab.com/runner/configuration/advanced-configuration.html">advanced-configuration</a></p>
+<p><a href="https://docs.gitlab.com/runner/monitoring/">GitLab Runner monitoring</a></p>
+<p><a href="https://docs.gitlab.com/ee/user/project/integrations/prometheus.html">Prometheus integration</a></p>
+<p><a href="https://about.gitlab.com/2017/01/05/prometheus-and-gitlab/">prometheus-and-gitla</a></p>
+<p><a href="https://docs.gitlab.com/ee/user/project/integrations/prometheus_library/metrics.html">Prometheus Metrics library</a></p>
+<p>[Project services](</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/network_compression/">
+              <h3 class="post-title">
+                下一篇：神经网络的压缩优化方法总结
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

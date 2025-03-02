@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>linux常用脚本 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1740895247802">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1740895247802" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">linux常用脚本</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2018-02-13</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/LoClL4RQ1/">
+                    linux
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <hr>
+<p>title: linux常用工具<br>
+date: 2018/2/13 22:04:12<br>
+tags:</p>
+<ul>
+<li>linux</li>
+</ul>
+<hr>
+<p><strong>Expect脚本</strong><br>
+安装方法：</p>
+<pre><code class="language-bash">sudo apt-get install tcl tk expect
+
+</code></pre>
+<p>脚本例子自动SSH连接：</p>
+<pre><code class="language-YAML">#!/usr/bin/expect
+set timeout 30
+set ip [lindex $argv 0]
+spawn ssh -l maxiaolong 10.0.8.241
+expect &quot;password:&quot;
+send &quot;mxl@lt.776688\r&quot;
+expect &quot;Ip:*&quot;
+send &quot;$ip\r&quot;
+expect &quot;$*&quot;
+send &quot;hostname\r&quot;
+expect &quot;$*&quot;
+interact
+</code></pre>
+<h1 id="gcc升级完整不留遗憾的方法">gcc升级完整不留遗憾的方法</h1>
+<p>自己编译安装gcc4.9——&gt;替换软链接——&gt;替换libstdc++.so的软链接</p>
+<p>通过下面的命令可以查看Glibcxx的版本</p>
+<pre><code class="language-bash"> strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+</code></pre>
+<p>nvidia-docker run -it --rm -v /usr/local/cuda:/usr/local/cuda -v /usr/local/cuda-8.0:/usr/local/cuda-8.0 -v /home/maxiaolong/:/workdir centos:cuda8_gcc4.9.4 bash</p>
+<h1 id="linux-使用方法">linux 使用方法</h1>
+<p><a href="https://blog.csdn.net/fdipzone/article/details/24329523">生成随机数和随机字符串</a></p>
+<p><a href="https://blog.csdn.net/StephenLu0422/article/details/78471551">docker 后台运行</a><br>
+<a href="http://blog.sina.com.cn/s/blog_17b46b5e40102xilj.html">docker 非root运行| linux新建用户</a></p>
+<p><a href="https://blog.csdn.net/Apollon_krj/article/details/70148022">shell环境变量</a></p>
+<p><a href="https://stackoverflow.com/questions/9639103/is-there-a-goto-statement-in-bash">bash实现goto</a><br>
+<a href="https://blog.csdn.net/train006l/article/details/79007483">linux 修改用户uid</a></p>
+<p><a href="http://daizj.iteye.com/blog/2212559">shell 脚本切换用户执行命令</a></p>
+<p>[centos安装gcc4.9.4](</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/tensorflow-note/">
+              <h3 class="post-title">
+                下一篇：google tensorflow
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

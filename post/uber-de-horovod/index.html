@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>uber的Horovod | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1740895247802">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1740895247802" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">uber的Horovod</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2020-05-14</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
+                    训练框架
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/WzibKNMac/">
+                    深度学习
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>uber的Horovod 发表在 <a href="https://arxiv.org/abs/1802.05799">Horovod: fast and easy distributed deeplearninginTensorFlow</a>。</p>
+<p>horovod 提供的各种框架的支持可以让 horovod 比较好的在各个框架的基础上使用，他支持 tensorflow/keras/mxnet/pytorch，MPI 的实现也有很多，比如 OpenMPI 还有 Nvidia 的 NCCL，还有 facebook 的 gloo，他们都实现了一种并行计算的通信和计算方式。</p>
+<h1 id="用法">用法</h1>
+<p>horovod追求以尽可能小的代码侵入性。<br>
+<img src="https://DragonFive.github.io/post-images/1625217840093.png" alt="" loading="lazy"></p>
+<p>在用户已经构建的代码上，只需要插入三段很短的代码即可，Horovod易用性甚好。因为只要用户的代码没问题，Horovod这三段植入不会让你的程序break。</p>
+<ul>
+<li>
+<p>hvd.init()</p>
+</li>
+<li>
+<p>创建horovod的优化器，即DistributedOptimizer，将旧的优化器封装起来</p>
+</li>
+<li>
+<p>创建horovod的初始化hook，即BroadcastGlobalVariablesHook，将master的初始化值广播给其他worker</p>
+</li>
+</ul>
+<p>hvd.init()这个函数。用户的这一句话，启动了Horovod的所有轮询进程及资源管理过程，下图描述了hvd.init()的宏观调用栈，核心就是background thread上启动的BackgroundThreadLoop()函数，它将常驻在进程中并不断轮询，直到程序完全结束。</p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625218453054.png" alt="" loading="lazy"></figure>
+<p>Horovod借助BackgroundThreadLoop()函数对RunLoopOnce()函数做无限循环调用。<br>
+若某份gradients已经产生，何时做AllReduce才能不死锁？显然，不可能见到一份gradients就马上做，因为这有概率会陷入死锁。正确答案应该是：</p>
+<blockquote>
+<p>“当该份gradients在所有的worker上均已经产出时，才能统一发动AllReduce”</p>
+</blockquote>
+<p>此时，不会有worker因为在等待其他某个worker没有产出该份gradients而进入无限等待的情况。那么就需要有一种机制，能够观察每份gradients在每个worker上的产出情况。</p>
+<p>实际上，上述过程其实就是Horovod的做法。BackgroundThreadLoop为什么一直要轮询？就是要不断地做通知，计数等管理工作。因此，rank 0又被称为——Coordinator。等到真正需要做AllReduce时，RunLoopOnce会调用PerformOperation发动通信过程。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://ggaaooppeenngg.github.io/zh-CN/2019/08/30/horovod-%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/">horovod 实现分析 | ggaaooppeenngg</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/332825987">Horovod 源码分析 - 知乎</a></p>
+<p><a href="https://mp.weixin.qq.com/s/7c7Q0P3g3IEL_r4BU2ZxRg">Horovod架构剖析——解密最成功的第三方DL分布式训练框架</a></p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/xdl-de-op-diao-yong/">
+              <h3 class="post-title">
+                下一篇：XDL的OP调用
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
