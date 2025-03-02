@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io</id>
     <title>dragon</title>
-    <updated>2025-03-02T13:05:30.762Z</updated>
+    <updated>2025-03-02T13:47:04.742Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -11,6 +11,99 @@
     <logo>https://DragonFive.github.io/images/avatar.png</logo>
     <icon>https://DragonFive.github.io/favicon.ico</icon>
     <rights>All rights reserved 2025, dragon</rights>
+    <entry>
+        <title type="html"><![CDATA[sglang 的 MLA 代码跟踪]]></title>
+        <id>https://DragonFive.github.io/post/sglang-de-mla-dai-ma-gen-zong/</id>
+        <link href="https://DragonFive.github.io/post/sglang-de-mla-dai-ma-gen-zong/">
+        </link>
+        <updated>2024-08-15T13:44:58.000Z</updated>
+        <content type="html"><![CDATA[<p>往期文章：</p>
+<p><a href="https://dragonfive.github.io/post/deepseek-v2-mla-de-li-jie/">deepseek V2 MLA 的理解</a></p>
+<p><a href="https://dragonfive.github.io/post/vllm-prefill-decode-kernel/">vllm prefill 和 decode 的kernel代码解读</a></p>
+<p>‍</p>
+<p>‍</p>
+<p>在前面文章中分析了一下 MLA 的 transformers 实现：<a href="https://dragonfive.github.io/post/deepseek-v2-mla-de-li-jie/">deepseek V2 MLA 的理解</a></p>
+<p>在8月5日，sglang 合入了MLA的实现， <a href="https://github.com/sgl-project/sglang/pull/905">upport MLA for DeepSeek-V2 with Triton - step 1#905</a>，虽然已经了解了矩阵吸收的概念，但是还是难以想象具体该怎么实现，这个 sglang 的实现也看上去似懂非懂的，索性看了<a href="https://www.zhihu.com/people/james0zan">章明星老师</a>的知乎文章：<a href="https://zhuanlan.zhihu.com/p/700214123">DeepSeek-V2 高性能推理 (1)：通过矩阵吸收十倍提速 MLA 算子</a>，了解了其中的关键（话说章老师的标题总是这么震惊吗 orz）。</p>
+<p>‍</p>
+<h2 id="公式部分">公式部分</h2>
+<p>最重要的就两点：</p>
+<p>‍</p>
+<p>1、key 的矩阵的吸收</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><msubsup><mi>c</mi><mi>q</mi><mi>T</mi></msubsup><mo>⋅</mo><msubsup><mi>W</mi><mrow><mi>U</mi><mi>Q</mi></mrow><mi>T</mi></msubsup><mo>)</mo><mo>⋅</mo><mo>(</mo><msub><mi>W</mi><mrow><mi>U</mi><mi>K</mi></mrow></msub><mo>⋅</mo><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub><mo>)</mo><mo>=</mo><mo>(</mo><msubsup><mi>c</mi><mi>q</mi><mi>T</mi></msubsup><mo>⋅</mo><msubsup><mi>W</mi><mrow><mi>U</mi><mi>Q</mi></mrow><mi>T</mi></msubsup><mo>⋅</mo><msub><mi>W</mi><mrow><mi>U</mi><mi>K</mi></mrow></msub><mo>)</mo><mo>⋅</mo><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub></mrow><annotation encoding="application/x-tex">(c_q^T\cdot W_{UQ}^T)\cdot (W_{UK}\cdot c_{kv}) = (c_q^T \cdot W_{UQ}^T \cdot W_{UK})\cdot c_{kv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2244389999999998em;vertical-align:-0.383108em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">q</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.383108em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.25277em;vertical-align:-0.411439em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.424669em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight">Q</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.411439em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.2244389999999998em;vertical-align:-0.383108em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">q</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.383108em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.25277em;vertical-align:-0.411439em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.424669em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight">Q</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.411439em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p>这样算 query 矩阵乘的时候直接把解析 key的矩阵一起算了，这样就可以一直使用 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub></mrow><annotation encoding="application/x-tex">c_{kv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>。</p>
+<p>‍</p>
+<p>2、value 的矩阵的吸收</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>s</mi><mi>c</mi><mi>o</mi><mi>r</mi><mi>e</mi><mo>⋅</mo><mo>(</mo><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub><mo>⋅</mo><msub><mi>W</mi><mrow><mi>U</mi><mi>V</mi></mrow></msub><mo>)</mo><mo>)</mo><mo>⋅</mo><msub><mi>W</mi><mi>O</mi></msub><mo>=</mo><mo>(</mo><mi>s</mi><mi>c</mi><mi>o</mi><mi>r</mi><mi>e</mi><mo>⋅</mo><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub><mo>)</mo><mo>⋅</mo><mo>(</mo><msub><mi>W</mi><mrow><mi>U</mi><mi>V</mi></mrow></msub><mo>⋅</mo><msub><mi>W</mi><mi>O</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">(score\cdot (c_{kv}\cdot W_{UV}))\cdot W_{O}=(score\cdot c_{kv})\cdot (W_{UV}\cdot W_{O})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault">e</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.02778em;">O</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mord mathdefault">c</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault">e</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.02778em;">O</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></p>
+<p>然后算出分数之后与value相成时，也可以不用解析出 value, 而是先算矩阵乘，然后一直使用 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub></mrow><annotation encoding="application/x-tex">c_{kv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>。</p>
+<p>‍</p>
+<p>然后我们就看到 key、value根本没有发生像 transformers 那样的broadcast，而且用的是低秩压缩的 kv，确实省了显存，sglang确实牛的。</p>
+<p>‍</p>
+<h2 id="代码部分">代码部分</h2>
+<p>那我们来把 sglang 中的实现跟这个公式对应一下</p>
+<p>跟 transformers的实现一样，sglang 也是有对于kv的低秩压缩矩阵和恢复矩阵的linear 层</p>
+<p>主要看这个 <a href="https://github.com/sgl-project/sglang/pull/905/files#diff-5b9e34dd492bd8a14702a18b594721091092276fad1cf8736fba6ef1f33c1b04">deepseek_v2.py</a></p>
+<pre><code class="language-python">        self.kv_a_proj_with_mqa = ReplicatedLinear(
+            self.hidden_size,
+            self.kv_lora_rank + self.qk_rope_head_dim,
+            bias=False,
+            quant_config=quant_config,
+        )
+        self.kv_a_layernorm = RMSNorm(self.kv_lora_rank, eps=config.rms_norm_eps)
+        self.kv_b_proj = ColumnParallelLinear(
+            self.kv_lora_rank,
+            self.num_heads * (self.qk_nope_head_dim + self.v_head_dim),
+            bias=False,
+            quant_config=quant_config,
+        )
+</code></pre>
+<p>不一样的地方在于：</p>
+<pre><code class="language-python">        kv_b_proj = self.kv_b_proj
+        w_kc, w_vc = kv_b_proj.weight.unflatten(
+            0, (-1, qk_nope_head_dim + v_head_dim)
+        ).split([qk_nope_head_dim, v_head_dim], dim=1)
+        self.w_kc = w_kc
+        self.w_vc = w_vc
+
+</code></pre>
+<p>‍</p>
+<p>这里把恢复维度的 linear 层给 split 了，split 成恢复key 的 w_kc 和恢复value 的 w_vc，这是为什么呢，就得继续往下看了：</p>
+<p>‍</p>
+<pre><code class="language-python">q_nope, q_pe = q.split([self.qk_nope_head_dim, self.qk_rope_head_dim], dim=-1)
+q_nope_out = q_input[..., : self.kv_lora_rank]
+torch.bmm(q_nope.transpose(0, 1), self.w_kc, out=q_nope_out.transpose(0, 1))
+
+</code></pre>
+<p>第一样行跟 transformers 的实现差不多，拆出做 NoPE 的1/3部分，和不做NoPE 的 2/3部分。</p>
+<p>然后后面就不一样了 。这里第三行就是公式部分中的</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>c</mi><mi>q</mi><mi>T</mi></msubsup><mo>⋅</mo><msubsup><mi>W</mi><mrow><mi>U</mi><mi>Q</mi></mrow><mi>T</mi></msubsup><mo>⋅</mo><msub><mi>W</mi><mrow><mi>U</mi><mi>K</mi></mrow></msub></mrow><annotation encoding="application/x-tex">c_q^T \cdot W_{UQ}^T \cdot W_{UK}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2244389999999998em;vertical-align:-0.383108em;"></span><span class="mord"><span class="mord mathdefault">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">q</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.383108em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.25277em;vertical-align:-0.411439em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.424669em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight">Q</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.411439em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p>所以就知道为什么要把 linear 层拆开了。</p>
+<p>另外 <code>torch.bmm</code>​ 是 PyTorch 中的批量矩阵乘法（Batch Matrix Multiplication）操作。它用于同时计算多个矩阵乘法。</p>
+<p>具体来说：</p>
+<ul>
+<li>bmm 接受两个三维张量作为输入：(batch_size, n, m) 和 (batch_size, m, p)</li>
+<li>输出也是一个三维张量：(batch_size, n, p)</li>
+<li>对每个 batch 中的矩阵执行矩阵乘法运算</li>
+</ul>
+<p>‍</p>
+<pre><code class="language-python">	attn_output = self.attn(q_input, k_input, v_input, input_metadata)
+        attn_output = attn_output.view(-1, self.num_local_heads, self.kv_lora_rank)
+        attn_bmm_output = attn_output.new_empty(
+            q_len, self.num_local_heads, self.v_head_dim
+        )
+        torch.bmm(
+            attn_output.transpose(0, 1),
+            self.w_vc.transpose(1, 2).contiguous(),
+            out=attn_bmm_output.transpose(0, 1),
+        )
+
+        attn_output = attn_bmm_output.flatten(1, 2)
+        output, _ = self.o_proj(attn_output)
+</code></pre>
+<p>这里就对应第二个吸收公式了，把 v_input （其实是 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>C</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub></mrow><annotation encoding="application/x-tex">C_{kv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>）传进去，当成普通的attention 去算score，然后外面的 output 的linear 权重跟解析 value 的矩阵去做矩阵乘。一直用比较低维的压缩的 kv，节省了显存。但模型大做TP的话，就像MQA那样，每张卡上应该都得存一份。</p>
+<p>‍</p>
+<p>‍</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[deepseek V2 MLA 的理解]]></title>
         <id>https://DragonFive.github.io/post/deepseek-v2-mla-de-li-jie/</id>
@@ -1785,119 +1878,6 @@ HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输
 <h1 id="10-结论">10 结论</h1>
 <p>BytePS 是一个统一的分布式 DNN 训练加速系统，可在异构 GPU/CPU 集群中实现最佳通信效率。 BytePS 处理不同数量的 CPU 机器的情况，并将传统的 all-reduce 和 PS 作为其框架的两个特殊情况。 为了进一步加速 DNN 训练，<strong>BytePS 提出了 Summation Service，并将 DNN 优化器拆分为两部分：梯度求和和参数更新。</strong> 它将 CPU 友好的部分，梯度求和保留在 CPU 中，并将计算量更大的参数更新移动到 GPU。 我们已经实施了 BytePS 并解决了许多实施问题，包括<strong>影响 RDMA 性能的问题</strong>。 BytePS 已被部署、广泛使用和开源 [4]。 已经基于它开发了多个外部项目。 重现评估的工件附录位于 [3]。</p>
 <!-- more -->
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[百度的《AIBox: CTR Prediction Model Training on a Single Node》]]></title>
-        <id>https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/</id>
-        <link href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
-        </link>
-        <updated>2020-12-11T12:43:07.000Z</updated>
-        <content type="html"><![CDATA[<p>AIBox 是百度提出的训练框架，论文 AIBox: CTR Prediction Model Training on a Single Node 进行了相关介绍。</p>
-<h1 id="一-aibox-的技术创新及优势">一、AIBox 的技术创新及优势</h1>
-<p>创新点与动机：<br>
-AIBox 的核心想法就是想在一台机器上用GPU加速训练，但是参数实在太大了，所以就把计算密集的模型运算部分（joint learning）放在GPU完成，把取embedding 部分放在cpu部分完成(embedding learning)，这就是AiBox 的第一个创新：把网络切分为两部分。</p>
-<p>但即便主存用了1TB 的内存，embedding 还是太大了，10^12 个key，每个key 的 weight 即使用8个字节存，key用8个字节存，也需要1.6TB , 所以论文提出了第二个创新：把embedding 存在SSD上，同时为了降低延迟和减少写操作对ssd寿命的影响，建立了二级缓存机制。</p>
-<p>为了提高速度，AIBOX使用了流水线，把从hdfs 读数据(socket IO)，从SSD查Embedding （SSD io） 和 cpu+gpu 计算组成3阶段的 pipeline</p>
-<p>优势：<br>
-AIBOX不存在像分布式系统普遍存在的网络通信开销问题，然后在系统稳定性方面AIBOX与具有数千台机器的分布式集群相比更加稳定不会轻易宕机，而且在同步开销方面AIBOX只是涉及到一些内存锁和GPU片之间的少量通信。</p>
-<h1 id="二-关于网络结构切分">二、关于网络结构切分</h1>
-<p>the first module focuses on the embedding learning with high-dimensional &amp; sparse features and the second module is for joint learning with dense features resulted from the first module.</p>
-<p>The embedding learning is processed on CPUs to help learn low dimensional dense embedding representations.</p>
-<p>By transferring the learned embedding vectors from CPUs to GPUs, the computation-intensive joint learning module can make full use of the powerful GPUs for CTR prediction.</p>
-<p>CPU 部分把数据从稀疏特征转化成 embedding （embedding learning），然后把embedding 传到 GPU，GPU进行一轮训练 (joint learning)</p>
-<p>论文这部分讲了一些网络的设计细节，但这块感觉跟 AIBox本身没什么关系，论文写到：</p>
-<p>把第一隐含层和最后一层隐含层的结果合并起来，第一层包含了low-level 的与输入信息最相关的feature，最后一层包含了high-level 的最抽象和有用的信息。这样会得到更准确的CTR预估结果。</p>
-<p>训练两阶段(cpu+gpu)，梯度更新也是两阶段(gpu+cpu)。</p>
-<h1 id="三-aibox-架构划分">三、AIBox 架构划分</h1>
-<p><strong>架构：</strong><br>
-分为三部分：CPU、GPU和 sparse table buff</p>
-<ul>
-<li>
-<p>cpu模块：协调调度和embedding学习<br>
-从hdfs读数据(一个pass)，向Sparse Table模块查embedding，然后发给GPU<br>
-拿到gpu传来的梯度，更新sparse table<br>
-定期save ckpt 到 hdfs</p>
-</li>
-<li>
-<p>sparse table：把10^12 的离散特征的数据存储到ssd上的kv系统里<br>
-内存中的key hash 索引存了特征到文件的映射关系，<br>
-in-memory cache strategy 构造cache 和 buffer 来减少延迟</p>
-</li>
-<li>
-<p>gpu模块：联合学习<br>
-cpu传来的 embedding 被放入 HBMs 中，然后被fed 给 dense 联合学习网络<br>
-emb通过pci-e总线进行传输<br>
-一个CUDA stream进行数据传输，另一个cuda stream 进行学习计算<br>
-HBMs如同片上ps一样工作，<br>
-每个pass 在每个gpu 上计算新的参数，各gpu通过NVLink进行同步</p>
-</li>
-</ul>
-<p><strong>3阶段流水线：network, SSDs and CPUs + GPUs</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625143570973.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1625143575338.png" alt="" loading="lazy"></figure>
-<h1 id="四-sparsetable-架构">四、sparseTable 架构</h1>
-<p>由两部分构成：key hash index and bi-level cache management</p>
-<h2 id="一key-hash-index">（一）key hash index</h2>
-<p>Key Hash Index 存的是 10^12 个 feature key 到 ssd 文件的映射关系，直接每个key 存一个文件需要1.6TB大小的内存，放不下。</p>
-<p>通过对key 取模进行分组建立 group 与 file 的对应关系，放在内存中。</p>
-<p>group(key) → key mod 1012/m. We set m = ⌊BLOCK/(8 + sizeof(value))⌋,其中Block 是每次从ssd取数据的最小单元。</p>
-<p>hash函数可以通过预训练一个模型来最大化feature 共现，把共现的feature 分到同样的桶里面。</p>
-<h2 id="二二级缓存机制">（二）二级缓存机制</h2>
-<p>ssd 的延迟是内存的1000倍，ssd是微秒级别延迟，内存是纳秒级别延迟</p>
-<p>在一个 pass of mini batch 中只有1%的参数会被用到，所以我们可以用in-memory cache 来存储高频访问的hot parameters</p>
-<p>SSD有物理性能限制：每个存储单元只能被写入（擦除）数千次，cache机制可以作为参数缓存，来减少更新参数对SSD使用寿命的影响</p>
-<p>使用两个分离的链表进行拉链来提升探测性能。对每个ssd文件使用Bloom filter来减少不必要的读取。</p>
-<p><strong>第一级缓存</strong></p>
-<p>使用 si =hash1(g_id) 来算出一个 cache slot 槽，对应一个ssd 文件，对于参数并未进行真正初始化，而是在第一次访问到参数的时候，先用 bloom filter 探测key 是否在 slot 集合里，如果不在就不用读取这个文件，而是直接使用默认值，以此来减少不必要的ssd读取。</p>
-<p><strong>二级缓存</strong></p>
-<p>hash2(g_id, bucket)</p>
-<p>对 一级的槽进行分桶bucket，来使得拉的链比较短。bucket 参数通过调节可以权衡空间和探测效率</p>
-<p><strong>两条拉链</strong></p>
-<ul>
-<li>LRU 链用于保存最近访问过的key，以此来减少探测次数</li>
-<li>LFU链按访问频次来保存key，用于缓存管理，只有当LFU满了需要删除低频key时，相应的数据才会写回到ssd上面</li>
-</ul>
-<p>由于经常有链条中的节点进行增删，所以使用线程池以Slab memory allocation mechanism机制 进行管理。</p>
-<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io/post-images/1625143705399.png" alt="" loading="lazy"></figure>
-<p><strong>文件管理系统</strong><br>
-batch产生的小文件对于先有的文件系统有很大的压力，把许多小文件组成一个组来创建较少的文件。小文件的名字由大文件的名字加上offset构成，保存在第一级cache slot 中</p>
-<p>监控文件系统的大小，合并访问量少的小问题，当model_size 达到最大冗余度的时候删掉访问少的文件，MAX_REPLICATION=SSD capacity ∗ (85% + overprovisioning)/model size<br>
-<img src="https://DragonFive.github.io/post-images/1625143710125.png" alt="" loading="lazy"></p>
-<h1 id="五-实验部分">五、实验部分</h1>
-<p><strong>实验</strong><br>
-AIBox 8 个GPU， 服务器级别的cpu, 1T 内存，Raid 0 nvme ssd<br>
-MPI集群方式用75个计算节点</p>
-<ul>
-<li>
-<p>AIBox 的硬件和维护费用比集群训练方式少 10%，执行时间多25%</p>
-</li>
-<li>
-<p>AIBox 的auc 比集群方式稍好，可能是因为AIBox 这种单节点的方式，同步参数频率更高</p>
-</li>
-</ul>
-<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io/post-images/1625143749656.png" alt="" loading="lazy"></figure>
-<p>六、总结与一些细节问题：<br>
-论文介绍了 AIBox 架构的一些细节方面，借助一系列系统设计方案如缓存机制来解决问题，通过这些并不是很fashion的技术合并，论文实现了集中式训练的技术突破，这种通过技术积累然后撬动难题的解决问题的方式值得我们学习。</p>
-<p>但是还有一些细节没有讲清楚：</p>
-<ol>
-<li>
-<p>AIBox 有几个worker 进行工作，他们是数据并行，还是使用同样的数据进行训练（文中提到AIBox 会在每个pass of mini batch 进行同步，所以应该不是一个worker 在参与训练）</p>
-</li>
-<li>
-<p>AIBox 使用集中的训练方式，那如果这台机器挂掉，是不是根本没有办法进行恢复，只能另找一个机器从 ckpt 训练</p>
-</li>
-<li>
-<p>文章没有介绍使用的具体计算引擎 (怀疑跟 horovod 接近）</p>
-</li>
-<li>
-<p>同样文章没有介绍参数同步的细节，没有相关 all_reduce 的介绍（可以是使用了一个开源的框架，而这部分论文没有进行改进，所以没有做深入介绍）</p>
-</li>
-<li>
-<p>文章开头提到使用 in-HBM ps 来减少数据传输，但是后面没有详细进行介绍</p>
-</li>
-</ol>
-<p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
 ]]></content>
     </entry>
 </feed>
