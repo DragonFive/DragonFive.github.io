@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io</id>
     <title>dragon</title>
-    <updated>2025-03-02T12:51:44.572Z</updated>
+    <updated>2025-03-02T13:05:30.762Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -493,38 +493,6 @@ decoder也包含encoder提到的两层网络，但是在这两层中间还有一
 <p>Encoder block 包含一个 Multi-Head Attention，而 Decoder block 包含两个 Multi-Head Attention (其中有一个用到 Masked)。Multi-Head Attention 上方还包括一个 Add &amp; Norm 层，Add 表示残差连接 (Residual Connection) 用于防止网络退化，Norm 表示 Layer Normalization，用于对每一层的激活值进行归一化。</p>
 <figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1706352386198.png" alt="" loading="lazy"></figure>
 <p>上图是 Self-Attention 的结构，在计算的时候需要用到矩阵Q(查询),K(键值),V(值)。在实际中，Self-Attention 接收的是输入(单词的表示向量x组成的矩阵X) 或者上一个 Encoder block 的输出。而Q,K,V正是通过 Self-Attention 的输入进行线性变换得到的。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[gpu 编程]]></title>
-        <id>https://DragonFive.github.io/post/gpu-bian-cheng/</id>
-        <link href="https://DragonFive.github.io/post/gpu-bian-cheng/">
-        </link>
-        <updated>2021-11-29T11:04:18.000Z</updated>
-        <content type="html"><![CDATA[<p>CPU 和 GPU 的主要区别在于它们的设计目标。CPU 的设计初衷是执行顺序指令。一直以来，为提高顺序执行性能，CPU 设计中引入了许多功能。其重点在于减少指令执行时延，使CPU 能够尽可能快地执行一系列指令。</p>
-<p>而 GPU 则专为并行和高吞吐量而设计，，但这种设计导致了中等至高程度的指令时延。当需要进行数百万甚至数十亿次这样的计算时，由于 GPU 具有强大的大规模并行能力，它将比 CPU 更快地完成这些计算任务。</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1706353703504.png" alt="" loading="lazy"></figure>
-<p>CPU 在芯片上有大量的内存和缓存以及控制单元，但只有少量的ALU和寄存器。GPU缓存较少，但ALU较多，GPU 拥有大量线程和强大的计算能力，即使单个指令具有高延迟，GPU 也会有效地调度线程运行，以便它们在任意时间点都能利用计算能力。</p>
-<h1 id="sm">SM</h1>
-<p>GPU 的计算架构GPU 由一系列流式多处理器（SM）组成，其中每个 SM 又由多个流式处理器、核心或线程组成。<br>
-每个 SM 都拥有一定数量的片上内存（on-chip memory），通常称为共享内存或临时存储器，这些共享内存被所有的核心所共享。同样，SM 上的控制单元资源也被所有的核心所共享。此外，每个 SM 都配备了基于硬件的线程调度器，用于执行线程。除此之外，每个 SM 还配备了几个功能单元或其他加速计算单元，例如张量核心（tensor core）。</p>
-<h1 id="gpu的内存架构">GPU的内存架构</h1>
-<ul>
-<li>寄存器：让我们从寄存器开始。GPU 中的每个 SM 都拥有大量寄存器。这些寄存器在核心之间共享，并根据线程需求动态分配。在执行过程中，每个线程都被分配了私有寄存器，其他线程无法读取或写入这些寄存器。</li>
-<li>常量缓存：接下来是芯片上的常量缓存。这些缓存用于缓存 SM 上执行的代码中使用的常量数据。为利用这些缓存，程序员需要在代码中明确将对象声明为常量，以便 GPU 可以将其缓存并保存在常量缓存中。</li>
-<li>共享内存：每个 SM 还拥有一块共享内存或临时内存，它是一种小型、快速且低时延的片上可编程 SRAM 内存，供运行在 SM 上的线程块共享使用。共享内存的设计思路是，如果多个线程需要处理相同的数据，只需要其中一个线程从全局内存（global memory）加载，而其他线程将共享这一数据。合理使用共享内存可以减少从全局内存加载重复数据的操作，并提高内核执行性能。共享内存还可以用作线程块（block）内的线程之间的同步机制。</li>
-<li>L1 缓存：每个 SM 还拥有一个 L1 缓存，它可以缓存从 L2 缓存中频繁访问的数据。</li>
-<li>L2 缓存：所有 SM 都共享一个 L2 缓存，它用于缓存全局内存中被频繁访问的数据，以降低时延。需要注意的是，SM 并不知道它是从 L1 还是 L2 中获取数据。SM 从全局内存中获取数据，这类似于 CPU 中 L1/L2/L3 缓存的工作方式。</li>
-<li>全局内存：GPU 还拥有一个片外全局内存，它是一种容量大且带宽高的动态随机存取存储器（DRAM）。由于与 SM 相距较远，全局内存的时延相当高。</li>
-</ul>
-<h1 id="gpu-kernel">GPU kernel</h1>
-<p>GPU 上执行 kernel，我们需要启用多个线程，这些线程总体上被称为一个网格（grid），但网格还具有更多的结构。一个网格由一个或多个线程块（有时简称为块）组成，而每个线程块又由一个或多个线程组成。线程块和线程的数量取决于数据的大小和我们所需的并行度。例如，在向量相加的示例中，如果我们要对 256 维的向量进行相加运算，那么可以配置一个包含 256 个线程的单个线程块，这样每个线程就可以处理向量的一个元素。</p>
-<p>由于 SM 的数量有限，而大型 kernel 可能包含大量线程块，因此并非所有线程块都可以立即分配执行。GPU 会维护一个待分配和执行的线程块列表，当有任何一个线程块执行完成时，GPU 会从该列表中选择一个线程块执行。</p>
-<p>线程还会进一步划分为大小为 32 的组（称为 warp），并一起分配到一个称为处理块（processing block）的核心集合上进行执行。SM 通过获取并向所有线程发出相同的指令，以同时执行 warp 中的所有线程。然后这些线程将在数据的不同部分，同时执行该指令。</p>
-<p>由于多个线程同时执行相同的指令，这种 warp 的执行模型也称为单指令多线程 （SIMT）。这类似于 CPU 中的单指令多数据（SIMD）指令。</p>
-<h2 id="warp">warp</h2>
-<p>即使 SM 内的所有处理块（核心组）都在处理 warp，但在任何给定时刻，只有其中少数块正在积极执行指令。因为 SM 中可用的执行单元数量是有限的。有些指令的执行时间较长，这会导致 warp 需要等待指令结果。在这种情况下，SM 会将处于等待状态的 warp 休眠，并执行另一个不需要等待任何结果的 warp。这使得 GPU 能够最大限度地利用所有可用计算资源，并提高吞吐量。</p>
-<p>零计算开销调度：由于每个 warp 中的每个线程都有自己的一组寄存器，因此 SM从执行一个 warp 切换到另一个 warp 时没有额外计算开销。</p>
 ]]></content>
     </entry>
     <entry>
@@ -1817,6 +1785,119 @@ HierPS使用大batch策略来在gpu中缓存使用大参数，以此减少传输
 <h1 id="10-结论">10 结论</h1>
 <p>BytePS 是一个统一的分布式 DNN 训练加速系统，可在异构 GPU/CPU 集群中实现最佳通信效率。 BytePS 处理不同数量的 CPU 机器的情况，并将传统的 all-reduce 和 PS 作为其框架的两个特殊情况。 为了进一步加速 DNN 训练，<strong>BytePS 提出了 Summation Service，并将 DNN 优化器拆分为两部分：梯度求和和参数更新。</strong> 它将 CPU 友好的部分，梯度求和保留在 CPU 中，并将计算量更大的参数更新移动到 GPU。 我们已经实施了 BytePS 并解决了许多实施问题，包括<strong>影响 RDMA 性能的问题</strong>。 BytePS 已被部署、广泛使用和开源 [4]。 已经基于它开发了多个外部项目。 重现评估的工件附录位于 [3]。</p>
 <!-- more -->
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[百度的《AIBox: CTR Prediction Model Training on a Single Node》]]></title>
+        <id>https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/</id>
+        <link href="https://DragonFive.github.io/post/bai-du-de-lesslessaibox-ctr-prediction-model-training-on-a-single-nodegreatergreater/">
+        </link>
+        <updated>2020-12-11T12:43:07.000Z</updated>
+        <content type="html"><![CDATA[<p>AIBox 是百度提出的训练框架，论文 AIBox: CTR Prediction Model Training on a Single Node 进行了相关介绍。</p>
+<h1 id="一-aibox-的技术创新及优势">一、AIBox 的技术创新及优势</h1>
+<p>创新点与动机：<br>
+AIBox 的核心想法就是想在一台机器上用GPU加速训练，但是参数实在太大了，所以就把计算密集的模型运算部分（joint learning）放在GPU完成，把取embedding 部分放在cpu部分完成(embedding learning)，这就是AiBox 的第一个创新：把网络切分为两部分。</p>
+<p>但即便主存用了1TB 的内存，embedding 还是太大了，10^12 个key，每个key 的 weight 即使用8个字节存，key用8个字节存，也需要1.6TB , 所以论文提出了第二个创新：把embedding 存在SSD上，同时为了降低延迟和减少写操作对ssd寿命的影响，建立了二级缓存机制。</p>
+<p>为了提高速度，AIBOX使用了流水线，把从hdfs 读数据(socket IO)，从SSD查Embedding （SSD io） 和 cpu+gpu 计算组成3阶段的 pipeline</p>
+<p>优势：<br>
+AIBOX不存在像分布式系统普遍存在的网络通信开销问题，然后在系统稳定性方面AIBOX与具有数千台机器的分布式集群相比更加稳定不会轻易宕机，而且在同步开销方面AIBOX只是涉及到一些内存锁和GPU片之间的少量通信。</p>
+<h1 id="二-关于网络结构切分">二、关于网络结构切分</h1>
+<p>the first module focuses on the embedding learning with high-dimensional &amp; sparse features and the second module is for joint learning with dense features resulted from the first module.</p>
+<p>The embedding learning is processed on CPUs to help learn low dimensional dense embedding representations.</p>
+<p>By transferring the learned embedding vectors from CPUs to GPUs, the computation-intensive joint learning module can make full use of the powerful GPUs for CTR prediction.</p>
+<p>CPU 部分把数据从稀疏特征转化成 embedding （embedding learning），然后把embedding 传到 GPU，GPU进行一轮训练 (joint learning)</p>
+<p>论文这部分讲了一些网络的设计细节，但这块感觉跟 AIBox本身没什么关系，论文写到：</p>
+<p>把第一隐含层和最后一层隐含层的结果合并起来，第一层包含了low-level 的与输入信息最相关的feature，最后一层包含了high-level 的最抽象和有用的信息。这样会得到更准确的CTR预估结果。</p>
+<p>训练两阶段(cpu+gpu)，梯度更新也是两阶段(gpu+cpu)。</p>
+<h1 id="三-aibox-架构划分">三、AIBox 架构划分</h1>
+<p><strong>架构：</strong><br>
+分为三部分：CPU、GPU和 sparse table buff</p>
+<ul>
+<li>
+<p>cpu模块：协调调度和embedding学习<br>
+从hdfs读数据(一个pass)，向Sparse Table模块查embedding，然后发给GPU<br>
+拿到gpu传来的梯度，更新sparse table<br>
+定期save ckpt 到 hdfs</p>
+</li>
+<li>
+<p>sparse table：把10^12 的离散特征的数据存储到ssd上的kv系统里<br>
+内存中的key hash 索引存了特征到文件的映射关系，<br>
+in-memory cache strategy 构造cache 和 buffer 来减少延迟</p>
+</li>
+<li>
+<p>gpu模块：联合学习<br>
+cpu传来的 embedding 被放入 HBMs 中，然后被fed 给 dense 联合学习网络<br>
+emb通过pci-e总线进行传输<br>
+一个CUDA stream进行数据传输，另一个cuda stream 进行学习计算<br>
+HBMs如同片上ps一样工作，<br>
+每个pass 在每个gpu 上计算新的参数，各gpu通过NVLink进行同步</p>
+</li>
+</ul>
+<p><strong>3阶段流水线：network, SSDs and CPUs + GPUs</strong></p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625143570973.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1625143575338.png" alt="" loading="lazy"></figure>
+<h1 id="四-sparsetable-架构">四、sparseTable 架构</h1>
+<p>由两部分构成：key hash index and bi-level cache management</p>
+<h2 id="一key-hash-index">（一）key hash index</h2>
+<p>Key Hash Index 存的是 10^12 个 feature key 到 ssd 文件的映射关系，直接每个key 存一个文件需要1.6TB大小的内存，放不下。</p>
+<p>通过对key 取模进行分组建立 group 与 file 的对应关系，放在内存中。</p>
+<p>group(key) → key mod 1012/m. We set m = ⌊BLOCK/(8 + sizeof(value))⌋,其中Block 是每次从ssd取数据的最小单元。</p>
+<p>hash函数可以通过预训练一个模型来最大化feature 共现，把共现的feature 分到同样的桶里面。</p>
+<h2 id="二二级缓存机制">（二）二级缓存机制</h2>
+<p>ssd 的延迟是内存的1000倍，ssd是微秒级别延迟，内存是纳秒级别延迟</p>
+<p>在一个 pass of mini batch 中只有1%的参数会被用到，所以我们可以用in-memory cache 来存储高频访问的hot parameters</p>
+<p>SSD有物理性能限制：每个存储单元只能被写入（擦除）数千次，cache机制可以作为参数缓存，来减少更新参数对SSD使用寿命的影响</p>
+<p>使用两个分离的链表进行拉链来提升探测性能。对每个ssd文件使用Bloom filter来减少不必要的读取。</p>
+<p><strong>第一级缓存</strong></p>
+<p>使用 si =hash1(g_id) 来算出一个 cache slot 槽，对应一个ssd 文件，对于参数并未进行真正初始化，而是在第一次访问到参数的时候，先用 bloom filter 探测key 是否在 slot 集合里，如果不在就不用读取这个文件，而是直接使用默认值，以此来减少不必要的ssd读取。</p>
+<p><strong>二级缓存</strong></p>
+<p>hash2(g_id, bucket)</p>
+<p>对 一级的槽进行分桶bucket，来使得拉的链比较短。bucket 参数通过调节可以权衡空间和探测效率</p>
+<p><strong>两条拉链</strong></p>
+<ul>
+<li>LRU 链用于保存最近访问过的key，以此来减少探测次数</li>
+<li>LFU链按访问频次来保存key，用于缓存管理，只有当LFU满了需要删除低频key时，相应的数据才会写回到ssd上面</li>
+</ul>
+<p>由于经常有链条中的节点进行增删，所以使用线程池以Slab memory allocation mechanism机制 进行管理。</p>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io/post-images/1625143705399.png" alt="" loading="lazy"></figure>
+<p><strong>文件管理系统</strong><br>
+batch产生的小文件对于先有的文件系统有很大的压力，把许多小文件组成一个组来创建较少的文件。小文件的名字由大文件的名字加上offset构成，保存在第一级cache slot 中</p>
+<p>监控文件系统的大小，合并访问量少的小问题，当model_size 达到最大冗余度的时候删掉访问少的文件，MAX_REPLICATION=SSD capacity ∗ (85% + overprovisioning)/model size<br>
+<img src="https://DragonFive.github.io/post-images/1625143710125.png" alt="" loading="lazy"></p>
+<h1 id="五-实验部分">五、实验部分</h1>
+<p><strong>实验</strong><br>
+AIBox 8 个GPU， 服务器级别的cpu, 1T 内存，Raid 0 nvme ssd<br>
+MPI集群方式用75个计算节点</p>
+<ul>
+<li>
+<p>AIBox 的硬件和维护费用比集群训练方式少 10%，执行时间多25%</p>
+</li>
+<li>
+<p>AIBox 的auc 比集群方式稍好，可能是因为AIBox 这种单节点的方式，同步参数频率更高</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io/post-images/1625143749656.png" alt="" loading="lazy"></figure>
+<p>六、总结与一些细节问题：<br>
+论文介绍了 AIBox 架构的一些细节方面，借助一系列系统设计方案如缓存机制来解决问题，通过这些并不是很fashion的技术合并，论文实现了集中式训练的技术突破，这种通过技术积累然后撬动难题的解决问题的方式值得我们学习。</p>
+<p>但是还有一些细节没有讲清楚：</p>
+<ol>
+<li>
+<p>AIBox 有几个worker 进行工作，他们是数据并行，还是使用同样的数据进行训练（文中提到AIBox 会在每个pass of mini batch 进行同步，所以应该不是一个worker 在参与训练）</p>
+</li>
+<li>
+<p>AIBox 使用集中的训练方式，那如果这台机器挂掉，是不是根本没有办法进行恢复，只能另找一个机器从 ckpt 训练</p>
+</li>
+<li>
+<p>文章没有介绍使用的具体计算引擎 (怀疑跟 horovod 接近）</p>
+</li>
+<li>
+<p>同样文章没有介绍参数同步的细节，没有相关 all_reduce 的介绍（可以是使用了一个开源的框架，而这部分论文没有进行改进，所以没有做深入介绍）</p>
+</li>
+<li>
+<p>文章开头提到使用 in-HBM ps 来减少数据传输，但是后面没有详细进行介绍</p>
+</li>
+</ol>
+<p>总体上感觉这篇论文实用性强，但是细节介绍得不多</p>
 ]]></content>
     </entry>
 </feed>
