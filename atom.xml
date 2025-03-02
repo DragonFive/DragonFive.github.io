@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://DragonFive.github.io/</id>
     <title>dragon</title>
-    <updated>2024-01-27T12:08:37.435Z</updated>
+    <updated>2025-03-02T04:40:12.132Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://DragonFive.github.io/"/>
     <link rel="self" href="https://DragonFive.github.io/atom.xml"/>
@@ -10,7 +10,7 @@
 </subtitle>
     <logo>https://DragonFive.github.io/images/avatar.png</logo>
     <icon>https://DragonFive.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2024, dragon</rights>
+    <rights>All rights reserved 2025, dragon</rights>
     <entry>
         <title type="html"><![CDATA[Bert 结构]]></title>
         <id>https://DragonFive.github.io/post/bert-jie-gou/</id>
