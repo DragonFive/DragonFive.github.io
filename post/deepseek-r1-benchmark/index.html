@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>deepseek R1 的部署性能 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">deepseek R1 的部署性能</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2025-02-17</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/vllm/">
+                    vllm
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/sglang/">
+                    sglang
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/tui-li/">
+                    推理
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>往期相关文章：</p>
+<p><a href="https://dragonfive.github.io/post/sglang-ep-de-shi-xian/">sglang ep实现</a></p>
+<p><a href="https://dragonfive.github.io/post/sglang-dp-shi-xian/">sglang dp的实现</a></p>
+<p><a href="https://dragonfive.github.io/post/deepseek-v2-mla-de-li-jie/">deepseek V2 MLA 的理解</a></p>
+<p><a href="https://dragonfive.github.io/post/vllm-prefill-decode-kernel/">vllm prefill 和 decode 的kernel代码解读</a></p>
+<p><a href="https://dragonfive.github.io/post/sglang-model-run">sglang的模型执行</a></p>
+<p><a href="https://dragonfive.github.io/post/sglang-de-mla-dai-ma-gen-zong/">sglang 的 MLA 代码跟踪</a></p>
+<p>‍</p>
+<p>deepseek R1 不同推理引擎部署的吞吐简单记录：</p>
+<p>‍使用benchmark脚本：https://github.com/sgl-project/sglang/blob/main/python/sglang/bench_serving.py</p>
+<p>1、在两台 H800 上分别使用vllm和 sglang部署deepseek，跑 benchmark 看产出数据的性能：</p>
+<p>每秒向server发4个请求，一共发960条请求，每条请求长2000个token，要求输出2000个token。</p>
+<p>（这时sglang还不支持dp）</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>qps</th>
+<th>input token/s</th>
+<th>Output token/s</th>
+<th>E2E均值/中位数(ms)</th>
+<th>TTFT均值/中位数/p99分位(ms)</th>
+<th>TPOT均值/中位数/p99分位(ms)</th>
+<th>ITL均值/中位数/p99分位(ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vllm_0.7.2_两机</td>
+<td>1.09</td>
+<td>1103.64</td>
+<td>1075.78</td>
+<td>367757.72/379839.38</td>
+<td>184617.36/195902.60/455122.99</td>
+<td>195.03/190.85/357.03</td>
+<td>187.69/156.33/586.61</td>
+</tr>
+<tr>
+<td>sglang两机</td>
+<td>0.67</td>
+<td>675.63</td>
+<td>658.57</td>
+<td>582352.85/589923.39</td>
+<td>297396.49/319688.85/715794.45</td>
+<td>311.18/288.19/828.12</td>
+<td>290.12/248.61/835.41</td>
+</tr>
+</tbody>
+</table>
+<p>‍</p>
+<p>2、在一台H20上分别使用vllm和 sglang部署deepseek，跑 benchmark 看产出数据的性能：</p>
+<p>总输入token：49851，总输出2574919，总请求数：500，平均输入token：99.7，平均输出token：5149.8，瞬间把500条请求打过去</p>
+<table>
+<thead>
+<tr>
+<th>后端</th>
+<th>配置(tp-pp)</th>
+<th>qps</th>
+<th>input token/s</th>
+<th>Output token/s</th>
+<th>E2E均值/中位数(ms)</th>
+<th>TTFT均值/中位数/(ms)</th>
+<th>TPOT均值/中位数(ms)</th>
+<th>ITL均值/中位数(ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sglang</td>
+<td>tp=8</td>
+<td>0.17</td>
+<td>16.98</td>
+<td>876.83</td>
+<td>1710813.62/1768756.35</td>
+<td>564953.54/419441.76</td>
+<td>231.00/179.63</td>
+<td>222.66/160.13</td>
+</tr>
+<tr>
+<td>tp8+dp</td>
+<td></td>
+<td>0.30</td>
+<td>29.84</td>
+<td>1541.31</td>
+<td>1114222.53/1144923.91</td>
+<td>10717.03/10949.87</td>
+<td>212.49/215.73</td>
+<td>214.32/219.45</td>
+</tr>
+<tr>
+<td>vllm0.7.2</td>
+<td>tp=8</td>
+<td>0.10</td>
+<td>10.13</td>
+<td>523.37</td>
+<td>2489494.11/2407268.89</td>
+<td>1105337.01/3756.43</td>
+<td>283.14/251.26</td>
+<td>269.63/160.38</td>
+</tr>
+</tbody>
+</table>
+<p>‍</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/sglang-ep-de-shi-xian/">
+              <h3 class="post-title">
+                下一篇：sglang ep 的实现
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

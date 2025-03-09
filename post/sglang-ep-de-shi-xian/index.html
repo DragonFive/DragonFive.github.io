@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>sglang ep 的实现 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">sglang ep 的实现</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-12-21</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/sglang/">
+                    sglang
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/tui-li/">
+                    推理
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>‍<br>
+往期相关文章：</p>
+<p><a href="https://dragonfive.github.io/post/sglang-dp-shi-xian/">sglang dp的实现</a></p>
+<p><a href="https://dragonfive.github.io/post/deepseek-v2-mla-de-li-jie/">deepseek V2 MLA 的理解</a></p>
+<p><a href="https://dragonfive.github.io/post/vllm-prefill-decode-kernel/">vllm prefill 和 decode 的kernel代码解读</a></p>
+<p><a href="https://dragonfive.github.io/post/sglang-model-run">sglang的模型执行</a></p>
+<p><a href="https://dragonfive.github.io/post/sglang-de-mla-dai-ma-gen-zong/">sglang 的 MLA 代码跟踪</a></p>
+<p>‍</p>
+<p>sglang 在 12月6日终于合入了ep功能，pr 连接：<a href="https://github.com/sgl-project/sglang/pull/2371">MoE Expert Parallel</a>，可以拿来学习一下。</p>
+<p>开启了一个 <code>enable_ep_moe</code>​ 的开关，在模型中通过判断是否开启来确定使用什么moe实现</p>
+<pre><code class="language-python"> MoEImpl = EPMoE if global_server_args_dict[&quot;enable_ep_moe&quot;] else FusedMoE
+</code></pre>
+<p>‍</p>
+<p>具体 ep 实现是在 python/sglang/srt/layers/moe/ep_moe/layer.py，看这代码不知道为啥还有点激动。</p>
+<p>EPMoE的核心是将专家分布在不同的 tensor parallel rank上，然后在 token 推理时每个rank 会过滤出属于自己负责的 expert 的 token，处理完之后各rank通过 allreduce 拿到全量的部分。</p>
+<p>‍</p>
+<h2 id="1-通信部分">1、通信部分</h2>
+<p>ep 前，如果 attention 做了 dp，就会做 allgather 让每个rank把数据都拿到;</p>
+<p>代码位于 python/sglang/srt/models/deepseek_v2.py</p>
+<pre><code class="language-python">        # Fully Connected
+        if self.enable_dp_attention:
+            hidden_states, start_idx, end_idx = all_gather(
+                hidden_states, forward_batch, self.tp_rank, self.tp_size, self.tp_group
+            )
+            hidden_states = self.mlp(hidden_states)
+            hidden_states = hidden_states[start_idx:end_idx]
+        else:
+            hidden_states = self.mlp(hidden_states)
+</code></pre>
+<p>‍</p>
+<p>ep 每个rank会保留属于自己负责的expert 的数据；</p>
+<p>ep 后每个rank会通过 allreduce 来拿到所有数据的处理结果</p>
+<p>代码位于：python/sglang/srt/models/deepseek_v2.py</p>
+<pre><code class="language-python">def forward(self, hidden_states: torch.Tensor) -&gt; torch.Tensor:
+    # ...
+    final_hidden_states = self.experts(hidden_states=hidden_states, router_logits=router_logits)
+    if self.tp_size &gt; 1:
+        # MoE输出需要在不同GPU间做all_reduce
+        final_hidden_states = tensor_model_parallel_all_reduce(final_hidden_states)
+    return final_hidden_states
+</code></pre>
+<p>‍</p>
+<p>核心的处理在 python/sglang/srt/layers/moe/ep_moe/layer.py</p>
+<p>‍</p>
+<h2 id="2-expert-分配和数据划分">2、expert 分配和数据划分</h2>
+<p>EPMoE将experts平均分配到不同的GPU上</p>
+<p>代码位于 python/sglang/srt/layers/moe/ep_moe/layer.py</p>
+<pre><code class="language-python">self.num_experts = num_experts
+assert self.num_experts % self.tp_size == 0  # 确保experts可以平均分配
+self.num_experts_per_partition = self.num_experts // self.tp_size
+self.start_expert_id = self.tp_rank * self.num_experts_per_partition 
+self.end_expert_id = self.start_expert_id + self.num_experts_per_partition - 1
+</code></pre>
+<p>首先通过router_logits计算每个token应该被哪些experts处理:</p>
+<pre><code class="language-python">topk_weights, topk_ids = select_experts(
+    hidden_states=hidden_states,
+    ...
+)
+</code></pre>
+<p>对expert ids排序,构建数据结构:</p>
+<pre><code class="language-python">reorder_topk_ids, src2dst, seg_indptr = run_moe_ep_preproess(topk_ids, self.num_experts)
+</code></pre>
+<p>生成了三个重要的数据结构:</p>
+<ul>
+<li>reorder_topk_ids: 排序后的expert ids</li>
+<li>src2dst: 原始位置到重排序后位置的映射</li>
+<li>seg_indptr: 每个expert处理的token范围的索引</li>
+</ul>
+<p>‍</p>
+<p>这里跟稀疏架构的请求ps 或alltoall 通信前的操作有点类似，不过稀疏架构更多是为了去重。</p>
+<p>重排输入数据:</p>
+<pre><code class="language-python">pre_reorder_triton_kernel(
+    hidden_states,
+    gateup_input, # 重排后的输入
+    src2dst,
+    topk_ids,
+    ...
+)
+</code></pre>
+<p>这个 kernel 完成了关键的数据重排序工作：</p>
+<ul>
+<li>将输入 token 按照它们请求的专家 ID 重新排序</li>
+<li><strong>只保留当前 rank 负责的专家对应的请求</strong>，过滤掉其他 rank 的数据</li>
+</ul>
+<p>‍</p>
+<p>‍</p>
+<h2 id="3-expert-计算与结果恢复">3、expert 计算与结果恢复</h2>
+<pre><code class="language-python">gateup_output = self.grouped_gemm_runner(
+    a=gateup_input,
+    b=self.w13_weight,
+    c=gateup_output,
+    batch_size=self.num_experts_per_partition,
+</code></pre>
+<p>使用分组矩阵乘法，每个专家单独处理自己负责的 token：</p>
+<ul>
+<li>seg_indptr_cur_rank 指示每个专家负责的 token 范围</li>
+<li>每个专家只处理分配给自己的 token</li>
+</ul>
+<p>‍</p>
+<pre><code class="language-python">post_reorder_triton_kernel(hidden_states.size(0),),
+    BLOCK_SIZE=512,
+)
+</code></pre>
+<p>这个 kernel 完成了最终的输出重排序：</p>
+<ul>
+<li>将专家计算的结果重新排回原始 token 顺序</li>
+<li>应用专家权重进行加权求和</li>
+<li><strong>只处理当前 rank 负责的专家输出</strong>，其他 rank 的专家输出会在各自的 rank 上处理</li>
+</ul>
+<p>‍</p>
+<p>‍</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/sglang-dp-de-shi-xian/">
+              <h3 class="post-title">
+                下一篇：sglang dp的实现
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

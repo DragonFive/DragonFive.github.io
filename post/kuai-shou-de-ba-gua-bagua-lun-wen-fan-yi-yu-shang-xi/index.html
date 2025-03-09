@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -102,7 +103,7 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>《八卦-使用系统松弛（Relaxations）扩展分布式学习</p>
 <blockquote>
 <p>点评：这篇论文的作者中的后面发了很多论文，快手人才济济呀</p>
@@ -252,8 +253,8 @@
 </ul>
 <h3 id="通信抽象">通信抽象</h3>
 <p>在通信抽象方面，现有系统分为两种范式：参数服务器（PS）和 Allreduce ，图 1 说明了这两种范式。 在参数服务器架构中，模型可以划分为分片并分布到多个节点（我们称这些节点为“参数服务器”）。 在训练阶段，worker 定期从 PS 中获取模型，利用 GPU 等计算单元进行前向和反向传播并将梯度推送到 PS，而 PS 聚合梯度并更新参数。使用 Allreduce 范式，所有worker 与他们的邻居合作进行模型/梯度交换。 现有系统通常采用环形拓扑 <a href="https://link.springer.com/chapter/10.1007/978-3-540-24685-5_1">Optimization of Collective Reduction Operations</a> 进行两阶段通信：首先，范式将模型/梯度划分为 n 个块（其中 n 是节点数），并使用 n 个具有不同起点和终点的环 指向聚合 n 个块； 其次，通过环广播位于不同节点的每个块的聚合结果。</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1630754817474.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1630754865306.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1630754817474.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1630754865306.png" alt="" loading="lazy"></figure>
 <p><em>图 2：DP-SG 的通信模式以及 Horovod、BytePS 和 PyTorch-DDP 如何优化此通信模式的执行</em></p>
 <blockquote>
 <p>点评：这个图需要关注一下</p>
@@ -268,7 +269,7 @@
 <p>虽然现有系统主要关注同步和异步 DP-SG 算法，但研究界已经开发出一套多样化的技术来进一步优化通信的不同方面。 这些技术通常会导致不同的训练算法，从而导致不同的通信模式，如 DP-SG。鉴于这些差异，Horovod、BytePS 和 PyTorch-DDP 都没有提供对这些算法的系统支持，如表 1 所述。BAGUA 的目标是提供灵活的抽象来支持这些具有自动性能优化框架的不同训练算法，而无需 假设特定的通信模式，例如 DP-SG 之一。 提出了不同的策略来加速 DP-SG 中昂贵的参数交换阶段。 为了减少通信量，引入了有损通信压缩方法，如量化，稀疏化，素描（sketching）和误差补偿 . 为了摆脱延迟瓶颈，人们提出了分散式通信方法。 此外，还讨论了 localSGD 以优化训练期间的通信轮数。最后，值得一提的是，有些方法结合了上面列出的多种策略。</p>
 <p><strong>示例</strong><br>
 为了说明这些高级训练算法与普通 DP-SG 之间的通信模式的差异，以及仅考虑使用 DP-SG 进行优化的系统在以模块化和系统的方式支持这些新算法方面面临挑战的原因，我们取 QSGD 和去中心化低精度 SGD 的示例。 图 3 说明了 DP-SG、QSGD 和分散的低精度 SGD 的执行管道和通信模式。 与DP-SG相比，流水线的执行组件及其依赖关系可以在高级算法中改变。例如，DP-SG 中甚至不存在两种算法所需的组件“量化”，而去中心化低精度 SGD 中的“模型更新”组件需要在通信之前发生。 由于这些高级算法无法适应 DP-SG 通信模式，因此为 DP-SG 而生的系这些统处理这些算法具有挑战性。</p>
-<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1630755592348.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io/post-images/1630755592348.png" alt="" loading="lazy"></figure>
 <p><em>图 3：BAGUA 自动优化的系统松弛训练算法的通信模式</em></p>
 <blockquote>
 <p>点评：</p>
@@ -280,10 +281,10 @@
 <li>（优化）如何通过平衡通信和计算来优化端到端执行？ 在 BAGUA 中，我们开发了一个简单但有效的自动优化框架，可用于优化在 BAGUA 中实现的算法的执行。</li>
 </ol>
 <p>这两个设计决策使 BAGUA 具有灵活性和效率——通过系统松弛实现新的高级算法（例如，1-big Adam 或去中心化 SGD ）在 BAGUA 中，开发人员无需担心手动平衡通信与计算； 相反，开发人员可以在高层指定逻辑语义，BAGUA 将自动优化其执行。 在本节中，我们首先提供高级系统概述，然后描述这些原语及其实现，然后是 BAGUA 中简单但有效的优化框架。</p>
-<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1630755614240.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io/post-images/1630755614240.png" alt="" loading="lazy"></figure>
 <h2 id="31-系统总览">3.1 系统总览</h2>
 <p>BAGUA 的目标是促进利用系统松弛的高效且可扩展的分布式训练算法的开发。 如图 4 所示，存在三个参与者：最终用户、优化算法和 BAGUA 运行时。</p>
-<figure data-type="image" tabindex="5"><img src="https://DragonFive.github.io//post-images/1630755631672.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://DragonFive.github.io/post-images/1630755631672.png" alt="" loading="lazy"></figure>
 <p><strong>终端用户</strong> 从最终用户的角度来看，使用 BAGUA 非常类似于在单台机器上使用 PyTorch 或 TensorFlow 进行训练，只需对其现有代码进行最少的更改。 最终用户应提供：（1）需要训练的神经网络模型，在 PyTorch 中指定为图形，以及（2）数据样本流。 然后，最终用户指定要使用的训练算法，例如 QSGD （通信压缩训练）、1 位 Adam 或 DecentralizedSGD，以及训练基础设施的信息，例如 机器数量以及是否应该使用 MPI 或 NCCL 进行通信。</p>
 <p>BAGUA 的核心是一个训练算法，由开发人员使用 BAGUA 提供的通信原语和抽象实现。 算法将最终用户提供的神经网络作为输入，并为其配备特定于算法的通信功能。 具体来说，算法的开发者通过在不同的执行阶段将此通信函数注册为钩子来实现这一点。 一个例子是在每一层的反向计算之后注册一个钩子。 通信函数包含训练算法的核心逻辑，其签名如下：</p>
 <p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mo>(</mo><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>g</mi><mn>1</mn></msub><mo>)</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo>(</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><msub><mi>g</mi><mi>n</mi></msub><mo>)</mo><mo>)</mo><mo>−</mo><mo>&gt;</mo><mo>(</mo><msubsup><mi>x</mi><mn>1</mn><mi>l</mi></msubsup><mo separator="true">,</mo><msubsup><mi>g</mi><mn>1</mn><mi>l</mi></msubsup><mo>)</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo>(</mo><msubsup><mi>x</mi><mi>n</mi><mi>l</mi></msubsup><mo separator="true">,</mo><msubsup><mi>g</mi><mi>n</mi><mi>l</mi></msubsup><mo>)</mo></mrow><annotation encoding="application/x-tex">f((x_1, g_1)...(x_n, g_n)) -&gt; (x^l_1 , g^l_1 )...(x^l_n , g^l_n )
@@ -308,14 +309,14 @@
 <p>我们使用这个符号来表示，CFPS 算子的作用是计算所有本地副本的总和 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mo>∑</mo><mi>j</mi></msub><msub><mi>x</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\sum_jx_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.185818em;vertical-align:-0.43581800000000004em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16195399999999993em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.43581800000000004em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span> ，并使其可供所有worker 访问。</p>
 <h3 id="集中式-低精度">集中式、低精度</h3>
 <p>鉴于许多深度神经网络可以容忍其梯度的激进有损压缩，最近通信压缩引起了广泛的兴趣。BAGUA 为此提供了 CLPS 原语。 具体来说：</p>
-<figure data-type="image" tabindex="6"><img src="https://DragonFive.github.io//post-images/1630755670795.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://DragonFive.github.io/post-images/1630755670795.png" alt="" loading="lazy"></figure>
 <p>其中 Q 是有损压缩函数，由开发人员指定，CLPS 支持带有错误补偿的通用通信压缩形式。 请注意，将 δi 和 i 设置为 None 将禁用误差补偿并给出。直观上，δi 和 i 保留了上次迭代压缩引起的误差。 误差补偿方法引入的收敛效率对压缩非常稳健。 当压缩功能相对激进时，此技术特别有用。</p>
 <h3 id="去中心化-全精度">去中心化、全精度</h3>
 <p>BAGUA 还支持去中心化通信，消除了模型同步的延迟瓶颈——而不是在集群中的所有 n 个 worker 之间同步，每个 worker <strong>只将更新发送给它的邻居</strong>。 例如，根据<strong>基于环的拓扑</strong>，工人的邻居包括环中的紧邻左worker和紧邻右worker。 形式上，BAGUA 的去中心化全精度通信原语 DFPS 可以形式化如下：</p>
 <blockquote>
 <p>点评：就是ring allreduce 呀</p>
 </blockquote>
-<figure data-type="image" tabindex="7"><img src="https://DragonFive.github.io//post-images/1630755688224.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://DragonFive.github.io/post-images/1630755688224.png" alt="" loading="lazy"></figure>
 <h3 id="去中心化-低精度">去中心化、低精度</h3>
 <p>BAGUA 还为去中心化低精度通信提供原始 DLPS</p>
 <h3 id="讨论支持异步算法">讨论：支持异步算法</h3>
@@ -410,7 +411,7 @@
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

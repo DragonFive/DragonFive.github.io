@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -109,7 +110,7 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>AIBox 是百度提出的训练框架，论文 AIBox: CTR Prediction Model Training on a Single Node 进行了相关介绍。</p>
 <h1 id="一-aibox-的技术创新及优势">一、AIBox 的技术创新及优势</h1>
 <p>创新点与动机：<br>
@@ -151,8 +152,8 @@ HBMs如同片上ps一样工作，<br>
 </li>
 </ul>
 <p><strong>3阶段流水线：network, SSDs and CPUs + GPUs</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625143570973.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625143575338.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625143570973.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1625143575338.png" alt="" loading="lazy"></figure>
 <h1 id="四-sparsetable-架构">四、sparseTable 架构</h1>
 <p>由两部分构成：key hash index and bi-level cache management</p>
 <h2 id="一key-hash-index">（一）key hash index</h2>
@@ -176,11 +177,11 @@ HBMs如同片上ps一样工作，<br>
 <li>LFU链按访问频次来保存key，用于缓存管理，只有当LFU满了需要删除低频key时，相应的数据才会写回到ssd上面</li>
 </ul>
 <p>由于经常有链条中的节点进行增删，所以使用线程池以Slab memory allocation mechanism机制 进行管理。</p>
-<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1625143705399.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io/post-images/1625143705399.png" alt="" loading="lazy"></figure>
 <p><strong>文件管理系统</strong><br>
 batch产生的小文件对于先有的文件系统有很大的压力，把许多小文件组成一个组来创建较少的文件。小文件的名字由大文件的名字加上offset构成，保存在第一级cache slot 中</p>
 <p>监控文件系统的大小，合并访问量少的小问题，当model_size 达到最大冗余度的时候删掉访问少的文件，MAX_REPLICATION=SSD capacity ∗ (85% + overprovisioning)/model size<br>
-<img src="https://DragonFive.github.io//post-images/1625143710125.png" alt="" loading="lazy"></p>
+<img src="https://DragonFive.github.io/post-images/1625143710125.png" alt="" loading="lazy"></p>
 <h1 id="五-实验部分">五、实验部分</h1>
 <p><strong>实验</strong><br>
 AIBox 8 个GPU， 服务器级别的cpu, 1T 内存，Raid 0 nvme ssd<br>
@@ -193,7 +194,7 @@ MPI集群方式用75个计算节点</p>
 <p>AIBox 的auc 比集群方式稍好，可能是因为AIBox 这种单节点的方式，同步参数频率更高</p>
 </li>
 </ul>
-<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1625143749656.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io/post-images/1625143749656.png" alt="" loading="lazy"></figure>
 <p>六、总结与一些细节问题：<br>
 论文介绍了 AIBox 架构的一些细节方面，借助一系列系统设计方案如缓存机制来解决问题，通过这些并不是很fashion的技术合并，论文实现了集中式训练的技术突破，这种通过技术积累然后撬动难题的解决问题的方式值得我们学习。</p>
 <p>但是还有一些细节没有讲清楚：</p>
@@ -252,7 +253,7 @@ MPI集群方式用75个计算节点</p>
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

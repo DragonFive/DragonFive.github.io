@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -82,13 +83,13 @@
           
           <h2 class="post-title">gpu 编程</h2>
           <div class="post-info post-detail-info">
-            <span><i class="icon-calendar-outline"></i> 2021-11-29</span>
+            <span><i class="icon-calendar-outline"></i> 2019-07-15</span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>CPU 和 GPU 的主要区别在于它们的设计目标。CPU 的设计初衷是执行顺序指令。一直以来，为提高顺序执行性能，CPU 设计中引入了许多功能。其重点在于减少指令执行时延，使CPU 能够尽可能快地执行一系列指令。</p>
 <p>而 GPU 则专为并行和高吞吐量而设计，，但这种设计导致了中等至高程度的指令时延。当需要进行数百万甚至数十亿次这样的计算时，由于 GPU 具有强大的大规模并行能力，它将比 CPU 更快地完成这些计算任务。</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1706353703504.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1706353703504.png" alt="" loading="lazy"></figure>
 <p>CPU 在芯片上有大量的内存和缓存以及控制单元，但只有少量的ALU和寄存器。GPU缓存较少，但ALU较多，GPU 拥有大量线程和强大的计算能力，即使单个指令具有高延迟，GPU 也会有效地调度线程运行，以便它们在任意时间点都能利用计算能力。</p>
 <h1 id="sm">SM</h1>
 <p>GPU 的计算架构GPU 由一系列流式多处理器（SM）组成，其中每个 SM 又由多个流式处理器、核心或线程组成。<br>
@@ -116,9 +117,9 @@
 
         
           <div class="next-post">
-            <a class="purple-link" href="https://DragonFive.github.io/post/kuai-shou-bagua-shi-yong-jiao-cheng-fan-yi-yu-zhai-chao/">
+            <a class="purple-link" href="https://DragonFive.github.io/post/tf-de-op-yu-tensor/">
               <h3 class="post-title">
-                下一篇：快手bagua使用教程翻译与摘抄
+                下一篇：TF的OP与Tensor
               </h3>
             </a>
           </div>
@@ -147,7 +148,7 @@
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

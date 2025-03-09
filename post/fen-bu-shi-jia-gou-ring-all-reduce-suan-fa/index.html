@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -95,7 +96,7 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <blockquote>
 <p>注：本文内容多参考自 <a href="https://zhuanlan.zhihu.com/p/56991108">一文说清楚Tensorflow分布式训练必备知识 - 知乎</a></p>
 </blockquote>
@@ -104,7 +105,7 @@
 <p>目前应用于深度学习的 AllReduce 算法有多种，如 Ring AllReduce 以及 NCCL 等</p>
 <p>传统的同步更新方法（各个gpu卡算好梯度，求和算平均的方式），在融合梯度时，会产生巨大的通信数据量，这种通信压力往往在模型参数量很大时，显得很明显。因此我们需要找到一种方法，来解决同步更新的网络瓶颈问题。其中最具代表性的一种方法就是：ring all-reduce。</p>
 <p>Ring AllReduce架构中各个设备都是worker，没有中心节点来聚合所有worker计算的梯度。Ring AllReduce算法将 device 放置在一个逻辑环路（logical ring）中。每个 device 从上行的device 接收数据，并向下行的 deivce 发送数据，因此可以充分利用每个 device 的上下行带宽。</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625216429335.jpeg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625216429335.jpeg" alt="" loading="lazy"></figure>
 <p>梯度融合过程分为两阶段：</p>
 <ol>
 <li>
@@ -170,7 +171,7 @@
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

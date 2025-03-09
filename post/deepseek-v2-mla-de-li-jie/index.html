@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>deepseek V2 MLA 的理解 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">deepseek V2 MLA 的理解</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-08-10</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/tui-li/">
+                    推理
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>上个月deepseekv2 发布了， https://arxiv.org/pdf/2405.04434，学习了一下论文，感觉MLA还挺重要的，不过只看到了 transformers 的实现，感觉deepseek内部应该有更快的实现，期待vllm的版本。</p>
+<p>‍<img src="https://DragonFive.github.io/post-images/1740919815298.png" alt="" loading="lazy"></p>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1740919825744.png" alt="" loading="lazy"></figure>
+<p>MLA 中 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>C</mi><mi>t</mi><mrow><mi>K</mi><mi>V</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">C_t^{KV}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.088331em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span><span class="mord mathdefault mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span> 表示低秩压缩的KV，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>K</mi><mi>t</mi><mi>R</mi></msubsup></mrow><annotation encoding="application/x-tex">K_t^R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.088331em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span> 是多query共享的 k， 是key做了RoPE的部分，</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>C</mi><mi>t</mi><mrow><mi>K</mi><mi>V</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">C_t^{KV}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.088331em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.07153em;">K</span><span class="mord mathdefault mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span> 的shape 为 (4*d_h)=512, <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>K</mi><mi>t</mi><mi>R</mi></msubsup></mrow><annotation encoding="application/x-tex">K_t^R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.088331em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span> 的维度为 d_h/2 = 64, d_h=128</p>
+<p>‍</p>
+<pre><code class="language-python">&quot;hidden_size&quot;: 5120,
+&quot;q_lora_rank&quot;: 1536,
+&quot;num_attention_heads&quot;: 128,
+&quot;kv_lora_rank&quot;: 512,
+&quot;v_head_dim&quot;: 128,
+&quot;qk_nope_head_dim&quot;: 128,
+&quot;qk_rope_head_dim&quot;: 64,
+</code></pre>
+<p>‍</p>
+<p>query 的 linear 层</p>
+<p>代码来源： https://huggingface.co/deepseek-ai/DeepSeek-V2/blob/main/modeling_deepseek.py</p>
+<pre><code class="language-python">self.q_head_dim = config.qk_nope_head_dim + config.qk_rope_head_dim
+self.q_a_proj = nn.Linear(
+   self.hidden_size, config.q_lora_rank, bias=config.attention_bias
+)
+self.q_a_layernorm = DeepseekV3RMSNorm(config.q_lora_rank)
+self.q_b_proj = nn.Linear(
+   config.q_lora_rank, self.num_heads * self.q_head_dim, bias=False
+)
+</code></pre>
+<p>q_a_proj:  (5120, 1536)</p>
+<p>q_b_proj: (1536, 128*192=24576)</p>
+<p>‍</p>
+<p>kv 低秩压缩层</p>
+<pre><code class="language-python">self.kv_a_proj_with_mqa = nn.Linear(
+            self.hidden_size,
+            config.kv_lora_rank + config.qk_rope_head_dim,
+            bias=config.attention_bias,
+        )
+self.kv_a_layernorm = DeepseekV3RMSNorm(config.kv_lora_rank)
+self.kv_b_proj = nn.Linear(
+            config.kv_lora_rank,
+            self.num_heads
+            * (self.q_head_dim - self.qk_rope_head_dim + self.v_head_dim),
+            bias=False,
+        )
+</code></pre>
+<p>kv_a_proj_with_mqa: (5120, 576)</p>
+<p>kv_b_proj（512, 128*(192-64+128) ）</p>
+<pre><code class="language-python"># 7168-&gt;576
+compressed_kv = self.kv_a_proj_with_mqa(hidden_states)
+# compressed_kv:512, k_pe:64 
+compressed_kv, k_pe = torch.split(
+     compressed_kv, [self.kv_lora_rank, self.qk_rope_head_dim], dim=-1
+   )
+# 升维：[bsz, 1, q_len,64]
+k_pe = k_pe.view(bsz, q_len, 1, self.qk_rope_head_dim).transpose(1, 2)
+
+# 【bsz, 128, q_len， 128+128】
+kv = (
+  self.kv_b_proj(self.kv_a_layernorm(compressed_kv))
+      .view(bsz, q_len, self.num_heads, self.qk_nope_head_dim + self.v_head_dim)
+      .transpose(1, 2)
+)
+# 然后拆分出value 部分和不做 rope 的 key部分
+k_nope, value_states = torch.split(
+     kv, [self.qk_nope_head_dim, self.v_head_dim], dim=-1
+)
+</code></pre>
+<p>整个过程就是先把 hidden_states 经过一个低秩压缩（kv_lora_rank），然后从中取出要做rope的那部分key，剩下的部分升维到多head 的 key 和 value 。（128， 128）</p>
+<p>然后拆分出value 部分和不做 rope 的 key部分。</p>
+<p>不过 这个版本并看出来MLA kvcache 哪里省显存，下边 key_states 还是分配了 num_heads</p>
+<pre><code class="language-python">q_pe, k_pe = apply_rotary_pos_emb(q_pe, k_pe, cos, sin, position_ids)
+
+query_states = k_pe.new_empty(bsz, self.num_heads, q_len, self.q_head_dim)
+query_states[:, :, :, : self.qk_nope_head_dim] = q_nope
+query_states[:, :, :, self.qk_nope_head_dim :] = q_pe
+
+key_states = k_pe.new_empty(bsz, self.num_heads, q_len, self.q_head_dim)
+key_states[:, :, :, : self.qk_nope_head_dim] = k_nope
+key_states[:, :, :, self.qk_nope_head_dim :] = k_pe
+</code></pre>
+<p>query_states 和 key_states 都是 nope 部分和做了 rope的部分拼接而成的</p>
+<p>query_states 的 shape 为 (bsz, num_heads, q_len, q_head_dim)</p>
+<p>key_states 的 shape 为 (bsz, num_heads, kv_seq_len, q_head_dim)</p>
+<p>得到的 q,k包括两部分拼接而成：一部分是做了低秩压缩得到的 q,k<br>
+向量，一部分是增加了RoPE位置编码的 q,k 向量。</p>
+<p>‍</p>
+<p>query 与 key 的转置进行矩阵乘，后面的操作就跟普通 MHA差不多了</p>
+<p>attn_weight shape 为 （bsz, num_heads, q_len, kv_seq_len）</p>
+<p>value_states 的 shape 为（bsz, num_heads, kv_seq_len, v_head_dim)</p>
+<p>‍</p>
+<p>最后 attn_weight 与 value_states 矩阵乘得到 bsz, num_heads, q_len, v_head_dim)</p>
+<p>可以看到 q,k包括两部分拼接而成：一部分是做了低秩压缩得到的 q,k<br>
+向量，一部分是增加了RoPE位置编码的 q,k 向量。v 是只有一份的，key 的最后一维比value 多了 rope部分。</p>
+<p>‍</p>
+<p>‍</p>
+<p>单独计算了两个带着位置编码的q_pe, k_pe, 维度为 单Attention Head维度的一半：128/2=64， K_pe 也是一层一份的，多query的头共享同一个，注意它的shape, num_head 的那一维是1</p>
+<pre><code class="language-python">k_pe = k_pe.view(bsz, q_len, 1, self.qk_rope_head_dim).transpose(1, 2)
+</code></pre>
+<p>然后在复制给 key_states 时进行了broadcast</p>
+<pre><code class="language-python">key_states[:, :, :, self.qk_nope_head_dim :] = k_pe
+</code></pre>
+<p>‍https://spaces.ac.cn/archives/10091        2024-05-13</p>
+<p>原理上苏剑林大佬已经解释的非常清晰了，“RoPE与低秩KV不兼容，没法做矩阵吸收计<br>
+算”，  2/3 的key不需要做位置相关的 ROPE 所以可以通过矩阵吸收在算Q的时候先算好对key的运算，可以缓存低秩压缩低部分，做ROPE的key部分是多head 共享的，所以也可以省kc cache 的显存。这也是MLA的压缩KV Cache的核心原理。</p>
+<p>‍<br>
+​<img src="https://DragonFive.github.io/post-images/1740919895912.png" alt="" loading="lazy"></p>
+<p>从效果上看，虽然MLA缓存的Latent KV比较短（相当于2.25个MQA的缓存量），但MLA有恢复全 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi><mo separator="true">,</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">k,v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span></span></span></span> 的能力，特征表达能力显著比GQA、MQA要强。</p>
+<p>‍</p>
+<p>这里 transformers 的实现明显并不是实际的实现，后续有时间再看看别的仓库的实现吧。</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/sglang-model-run/">
+              <h3 class="post-title">
+                下一篇：sglang 的模型执行
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

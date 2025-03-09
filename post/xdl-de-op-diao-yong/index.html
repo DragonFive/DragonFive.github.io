@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -102,7 +103,7 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>emb 和 statis，那么最基本要实现的功能就是增、删、改、查，其中增对应的就是注册和初始化变量，删就是进行特征过滤，改就是进行更新，查就是从ps上把最新的值取下来，</p>
 <p>并且这些功能需要保证一定的顺序，只有先注册才能初始化，之后才能删改查。</p>
 <p>但是emb和statis都是函数，返回的分别是embedding_op 对应的op，加入到计算图中，那么对于变量的注册、初始化、更新就需要想其它的办法加入计算，</p>
@@ -487,7 +488,7 @@ Status HashAuxiliaryData::CombineInit(PartitionerContext* ctx, std::unique_ptr&l
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -85,7 +86,7 @@
             <span><i class="icon-calendar-outline"></i> 2019-01-30</span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <blockquote>
 <p>最近在读《TensorFlow 内核剖析》这本书，作者刘光聪。有一些收获，记录一下。</p>
 </blockquote>
@@ -102,7 +103,7 @@ tf.get_default_session().run(tensor)
 </code></pre>
 <h1 id="session-类型">Session 类型</h1>
 <h2 id="前端-session">前端 Session</h2>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625220300985.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625220300985.png" alt="" loading="lazy"></figure>
 <p>分为普通Session和交互式InteractiveSession， 区别在于：</p>
 <ul>
 <li>
@@ -123,7 +124,7 @@ tf.get_default_session().run(tensor)
 <h2 id="后端session">后端Session</h2>
 <p>后端master中，根据前端client调用tf.Session(target=’’, graph=None, config=None)时指定的target，来创建不同的Session。target为要连接的tf后端执行引擎，默认为空字符串。Session创建采用了抽象工厂模式，如果为空字符串，则创建本地DirectSession，如果以grpc://开头，则创建分布式GrpcSession。</p>
 <p>DirectSession只能利用本地设备，将任务创建到本地的CPU GPU上。而GrpcSession则可以利用远端分布式设备，将任务创建到其他机器的CPU GPU上，然后通过grpc协议进行通信。</p>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625220817848.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1625220817848.png" alt="" loading="lazy"></figure>
 <h1 id="session-生命周期">Session 生命周期</h1>
 <p>Session作为前后端连接的桥梁，以及上下文运行环境，其生命周期尤其关键。大致分为4个阶段</p>
 <ul>
@@ -298,7 +299,7 @@ class Graph(object):
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

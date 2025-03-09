@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -85,11 +86,11 @@
             <span><i class="icon-calendar-outline"></i> 2022-01-27</span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>Transformer由论文<a href="https%3A//arxiv.org/abs/1706.03762">《Attention is All You Need》</a>提出，Tensorflow的代码可以从 GitHub 上的 Tensor2Tensor 仓库获取。</p>
 <h1 id="1-transformer-的结构">1. Transformer 的结构</h1>
 <p>Transformer 由 Encoder 和 Decoder 两个部分组成，Encoder 和 Decoder 都包含 6 个 block。每一个encoder和decoder的内部结构如下图：</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1706350731616.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1706350731616.png" alt="" loading="lazy"></figure>
 <p>encoder，包含两层，一个self-attention层和一个前馈神经网络，self-attention能帮助当前节点不仅仅只关注当前的词，从而能获取到上下文的语义。<br>
 decoder也包含encoder提到的两层网络，但是在这两层中间还有一层attention层，帮助当前节点获取到当前需要关注的重点内容。</p>
 <p>Transformer 的工作流程大体如下：<br>
@@ -97,7 +98,7 @@ decoder也包含encoder提到的两层网络，但是在这两层中间还有一
 <p>第二步：将得到的单词表示向量矩阵传入 Encoder 中，经过 6 个 Encoder block 后可以得到句子所有单词的编码信息矩阵 C。</p>
 <p>第三步：将 Encoder 输出的编码信息矩阵 C传递到 Decoder 中，Decoder 依次会根据当前翻译过的单词 1~ i 翻译下一个单词 i+1，如下图所示。在使用的过程中，翻译到单词 i+1 的时候需要通过 Mask (掩盖) 操作遮盖住 i+1 之后的单词。</p>
 <p>Encoder block 包含一个 Multi-Head Attention，而 Decoder block 包含两个 Multi-Head Attention (其中有一个用到 Masked)。Multi-Head Attention 上方还包括一个 Add &amp; Norm 层，Add 表示残差连接 (Residual Connection) 用于防止网络退化，Norm 表示 Layer Normalization，用于对每一层的激活值进行归一化。</p>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1706352386198.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1706352386198.png" alt="" loading="lazy"></figure>
 <p>上图是 Self-Attention 的结构，在计算的时候需要用到矩阵Q(查询),K(键值),V(值)。在实际中，Self-Attention 接收的是输入(单词的表示向量x组成的矩阵X) 或者上一个 Encoder block 的输出。而Q,K,V正是通过 Self-Attention 的输入进行线性变换得到的。</p>
 
           </div>
@@ -105,9 +106,9 @@ decoder也包含encoder提到的两层网络，但是在这两层中间还有一
 
         
           <div class="next-post">
-            <a class="purple-link" href="https://DragonFive.github.io/post/gpu-bian-cheng/">
+            <a class="purple-link" href="https://DragonFive.github.io/post/kuai-shou-bagua-shi-yong-jiao-cheng-fan-yi-yu-zhai-chao/">
               <h3 class="post-title">
-                下一篇：gpu 编程
+                下一篇：快手bagua使用教程翻译与摘抄
               </h3>
             </a>
           </div>
@@ -136,7 +137,7 @@ decoder也包含encoder提到的两层网络，但是在这两层中间还有一
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

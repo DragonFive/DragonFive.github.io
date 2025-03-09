@@ -1,0 +1,491 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>vllm prefill 和 decode 的kernel代码解读  | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">vllm prefill 和 decode 的kernel代码解读 </h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-04-10</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/vllm/">
+                    vllm
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/tui-li/">
+                    推理
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p><a href="https://github.com/vllm-project/vllm/pull/3462">https://github.com/vllm-project/vllm/pull/3462</a></p>
+<p>在3月25号 vllm 对 attention 进行了一下重构，估计一月一次的版本发布马上就来了，可以先看看代码了解它的工作机制。</p>
+<p>我们已经知道推理是分位 prefill 阶段和 decode 阶段的，这个是在 vllm scheudler里控制的，</p>
+<p>prefill阶段 先把句子设置为 prefill 状态，执行一下图，这prefill阶段会填充 kv_cache。</p>
+<h2 id="0-整体执行">0. 整体执行</h2>
+<p>在 vllm 的 model_runner.py 里 execute_model 时调用模型的 forward 生成logit 然后做 sample.</p>
+<p>代码位于 vllm/worker/model_runner.py</p>
+<pre><code class="language-python">    def execute_model(
+        self,
+        seq_group_metadata_list: Optional[List[SequenceGroupMetadata]],
+        kv_caches: List[torch.Tensor],
+    ) -&gt; Optional[SamplerOutput]:
+        # ......
+        # 0. 准备数据
+		(input_tokens, input_positions, attn_metadata, sampling_metadata,
+         lora_requests, lora_mapping, multi_modal_input
+         ) = self.prepare_input_tensors(seq_group_metadata_list)
+		model_executable = self.model
+        # 1. 执行模型前向
+		hidden_states = model_executable(**execute_model_kwargs)
+        # Compute the logits.
+        logits = self.model.compute_logits(hidden_states, sampling_metadata)
+
+        # Only perform sampling in the driver worker.
+        if not sampling_metadata.perform_sampling:
+            return None
+
+        # Sample the next token.
+ 		# 3. 采样出下一个token
+        output = self.model.sample(
+            logits=logits,
+            sampling_metadata=sampling_metadata,
+        )
+        return output
+</code></pre>
+<h2 id="1-准备输入">1、准备输入</h2>
+<p>这里是第一个关键点，也就是 prefill 把整个query 输入模型，decode 把当前token输入模型</p>
+<pre><code class="language-python">    def prepare_input_tensors(
+        self,
+        seq_group_metadata_list: Optional[List[SequenceGroupMetadata]],
+    ) -&gt; Tuple[torch.Tensor, torch.Tensor, AttentionMetadata, SamplingMetadata,
+               Set[int], LoRAMapping, torch.Tensor]:
+        if self.is_driver_worker:
+            # NOTE: We assume that all sequences in the group are all prompts or
+            # all decodes.
+            is_prompt = seq_group_metadata_list[0].is_prompt
+            # Prepare input tensors.
+            if is_prompt:
+                # 1、如果是 prefill 就调用 _prepare_prompt 
+                (input_tokens, input_positions, attn_metadata, prompt_lens,
+                 subquery_lens, lora_index_mapping, lora_prompt_mapping,
+                 lora_requests, multi_modal_input
+                 ) = self._prepare_prompt(seq_group_metadata_list)
+            else:
+				# 2、# 1、如果是 decode 就调用 _prepare_decode 
+                (input_tokens, input_positions, attn_metadata,
+                 lora_index_mapping, lora_prompt_mapping,
+                 lora_requests) = self._prepare_decode(seq_group_metadata_list)
+                prompt_lens = []
+                subquery_lens = None
+</code></pre>
+<p>​<code>_prepare_prompt</code>​ 是去拿到 prefill 的 token</p>
+<pre><code class="language-python">def _prepare_prompt(
+        self,
+        seq_group_metadata_list: List[SequenceGroupMetadata],
+    ) -&gt; Tuple[torch.Tensor, torch.Tensor, AttentionMetadata, List[int],
+               List[int], List[int], List[int], Set[LoRARequest],
+               torch.Tensor]:
+		prefill_end = min(seq_data.get_len(),
+                              computed_len + token_chunk_size)
+            # TODO(sang): Rename it after chunked prefill is introduced.
+            prompt_tokens = seq_data.get_token_ids()[computed_len:prefill_end]
+</code></pre>
+<p>可以看到 prefill 的时候是把整个seq 的 prompt 的 token 都拿到</p>
+<pre><code class="language-python">def _prepare_decode(
+        self,
+        seq_group_metadata_list: List[SequenceGroupMetadata],
+    ) -&gt; Tuple[torch.Tensor, torch.Tensor, AttentionMetadata, List[int],
+               List[int], Set[LoRARequest]]:
+        assert len(seq_group_metadata_list) &gt; 0
+        input_tokens: List[int] = []
+        for seq_group_metadata in seq_group_metadata_list:
+        
+            for seq_id in seq_ids:
+                seq_data = seq_group_metadata.seq_data[seq_id]
+                generation_token = seq_data.get_last_token_id()
+                input_tokens.append(generation_token)
+</code></pre>
+<p>可以看到 decode 得时候是拿到最后的一个 token （get_last_token_id）</p>
+<p>‍</p>
+<p>‍</p>
+<h2 id="2-attention-准备">2、attention 准备</h2>
+<p>在模型 forward的时候会调到每一层的forward，在 attention 这一层就进入 attention 的 forward，以llama 为例，在 vllm/model_executor/models/llama.py 中，LlamaAttention 部分会通过 qkw linear层 算出 q，k，v，这里在 prefill 阶段算的 q k v是seqlen 的长query对应的值，这里算出了 k 和 v，就可以把 k 和 v 写进 kvcache 里。</p>
+<pre><code class="language-python">    def forward(
+        self,
+        positions: torch.Tensor,
+        hidden_states: torch.Tensor,
+        kv_cache: torch.Tensor,
+        attn_metadata: AttentionMetadata,
+    ) -&gt; torch.Tensor:
+        qkv, _ = self.qkv_proj(hidden_states)
+        q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+        q, k = self.rotary_emb(positions, q, k)
+        attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
+        output, _ = self.o_proj(attn_output)
+        return output
+</code></pre>
+<p>‍</p>
+<p>在 vllm/attention/layer.py 中，会调用真正的attention 实现</p>
+<pre><code class="language-python">    def forward(
+        self,
+        query: torch.Tensor,
+        key: torch.Tensor,
+        value: torch.Tensor,
+        kv_cache: Optional[torch.Tensor],
+        attn_metadata: AttentionMetadata,
+    ) -&gt; torch.Tensor:
+        return self.impl.forward(query, key, value, kv_cache, attn_metadata)
+</code></pre>
+<p>‍</p>
+<h2 id="3-写入kv-cache">3、写入kv cache</h2>
+<p>以flash_attention 为例，在 vllm/attention/backends/flash_attn.py 中，调用 forward 函数时，会把当前传入的 key 和 value 写入 kv cache 里，如果是prefill，那写的就是整个prompt的key 和 value，如果是decode 阶段，那就是写当前token的</p>
+<pre><code class="language-python">class FlashAttentionImpl(AttentionImpl):
+    def forward(
+        self,
+        query: torch.Tensor,
+        key: torch.Tensor,
+        value: torch.Tensor,
+        kv_cache: torch.Tensor,
+        attn_metadata: FlashAttentionMetadata,
+    ) -&gt; torch.Tensor:
+      
+        num_tokens, hidden_size = query.shape
+        # Reshape the query, key, and value tensors.
+        query = query.view(-1, self.num_heads, self.head_size)
+        key = key.view(-1, self.num_kv_heads, self.head_size)
+        value = value.view(-1, self.num_kv_heads, self.head_size)
+
+        if kv_cache is not None:
+            key_cache, value_cache = PagedAttention.split_kv_cache(
+                kv_cache, self.num_kv_heads, self.head_size)
+
+            # Reshape the input keys and values and store them in the cache.
+            # If kv_cache is not provided, the new key and value tensors are
+            # not cached. This happens during the initial memory profiling run.
+            PagedAttention.write_to_paged_cache(key, value, key_cache,
+                                                value_cache,
+                                                attn_metadata.slot_mapping,
+                                                attn_metadata.kv_cache_dtype)
+</code></pre>
+<p>通过 write_to_paged_cache 把 key 和 value 写入 kv cache。</p>
+<p>‍</p>
+<h2 id="4-prefill-和-decode-执行kernel">4、prefill 和 decode 执行kernel</h2>
+<p>‍</p>
+<p>然后 prefill 和 decode 调用自己的 kernel，传入 kcache 和 vcache 进行 load</p>
+<p>‍</p>
+<pre><code class="language-python">        if attn_metadata.is_prompt:
+            # Prompt run.
+            if kv_cache is None or attn_metadata.block_tables.numel() == 0:
+                # normal attention
+                # When block_tables are not filled, it means q and k are the
+                # prompt, and they have the same length.
+                output = flash_attn_varlen_func(
+                    q=query,
+                    k=key,
+                    v=value,
+                    cu_seqlens_q=attn_metadata.seq_start_loc,
+                    cu_seqlens_k=attn_metadata.seq_start_loc,
+                    max_seqlen_q=attn_metadata.max_prompt_len,
+                    max_seqlen_k=attn_metadata.max_prompt_len,
+                    softmax_scale=self.scale,
+                    causal=True,
+                    window_size=self.sliding_window,
+                    alibi_slopes=self.alibi_slopes,
+                )
+            else:
+                # prefix-enabled attention
+                output = PagedAttention.forward_prefix(
+                    query,
+                    key,
+                    value,
+                    key_cache,
+                    value_cache,
+                    attn_metadata.block_tables,
+                    attn_metadata.subquery_start_loc,
+                    attn_metadata.prompt_lens_tensor,
+                    attn_metadata.context_lens,
+                    attn_metadata.max_subquery_len,
+                    self.alibi_slopes,
+                )
+        else:
+            # Decoding run.
+            output = PagedAttention.forward_decode(
+                query,
+                key_cache,
+                value_cache,
+                attn_metadata.block_tables,
+                attn_metadata.context_lens,
+                attn_metadata.max_context_len,
+                attn_metadata.kv_cache_dtype,
+                self.num_kv_heads,
+                self.scale,
+                self.alibi_slopes,
+            )
+</code></pre>
+<p>‍</p>
+<p>prefill 调用 <code>flash_attn_varlen_func</code>​ 对应的 kernel</p>
+<p>以 forward_decode 为例，在 csrc/attention/attention_kernels.cu 中真正执行 kernel</p>
+<pre><code class="language-python">__device__ void paged_attention_kernel(
+  float* __restrict__ exp_sums,           // [num_seqs, num_heads, max_num_partitions]
+  float* __restrict__ max_logits,         // [num_seqs, num_heads, max_num_partitions]
+  scalar_t* __restrict__ out,             // [num_seqs, num_heads, max_num_partitions, head_size]
+  const scalar_t* __restrict__ q,         // [num_seqs, num_heads, head_size]
+  const cache_t* __restrict__ k_cache,    // [num_blocks, num_kv_heads, head_size/x, block_size, x]
+  const cache_t* __restrict__ v_cache,    // [num_blocks, num_kv_heads, head_size, block_size]
+  const int num_kv_heads,                 // [num_heads]
+</code></pre>
+<p>‍</p>
+<pre><code class="language-cpp">// 向量化访问设置
+constexpr int VEC_SIZE = MAX(16 / (THREAD_GROUP_SIZE * sizeof(scalar_t)), 1);
+using K_vec = typename Vec&lt;scalar_t, VEC_SIZE&gt;::Type;
+using Q_vec = typename Vec&lt;scalar_t, VEC_SIZE&gt;::Type;
+</code></pre>
+<p>为了提高内存访问效率，代码使用向量化加载，每次加载16字节数据。</p>
+<p>‍</p>
+<ul>
+<li>加载Query数据</li>
+</ul>
+<pre><code class="language-cpp">// 加载query到寄存器
+const scalar_t* q_ptr = q + seq_idx * q_stride + head_idx * HEAD_SIZE;
+__shared__ Q_vec q_vecs[THREAD_GROUP_SIZE][NUM_VECS_PER_THREAD];
+
+#pragma unroll
+for (int i = thread_group_idx; i &lt; NUM_VECS_PER_THREAD; i += NUM_THREAD_GROUPS) {
+  const int vec_idx = thread_group_offset + i * THREAD_GROUP_SIZE;
+  q_vecs[thread_group_offset][i] = *reinterpret_cast&lt;const Q_vec*&gt;(q_ptr + vec_idx * VEC_SIZE);
+}
+__syncthreads();
+</code></pre>
+<p>每个线程组协作加载一个完整的query向量到共享内存。</p>
+<ul>
+<li>计算Query-Key点积</li>
+</ul>
+<pre><code class="language-cpp">// 共享内存规划
+extern __shared__ char shared_mem[];
+float* logits = reinterpret_cast&lt;float*&gt;(shared_mem);
+__shared__ float red_smem[2 * NUM_WARPS];
+
+// 初始化最大logit值
+float qk_max = -FLT_MAX;
+
+// 遍历key块
+const int* block_table = block_tables + seq_idx * max_num_blocks_per_seq;
+for (int block_idx = start_block_idx + warp_idx; block_idx &lt; end_block_idx; block_idx += NUM_WARPS) {
+  const int64_t physical_block_number = static_cast&lt;int64_t&gt;(block_table[block_idx]);
+  
+  // 加载key并计算点积
+  for (int i = 0; i &lt; NUM_TOKENS_PER_THREAD_GROUP; i++) {
+    const int physical_block_offset = (thread_group_idx + i * WARP_SIZE) % BLOCK_SIZE;
+    const int token_idx = block_idx * BLOCK_SIZE + physical_block_offset;
+    K_vec k_vecs[NUM_VECS_PER_THREAD];
+  
+    // 加载key向量
+    #pragma unroll
+    for (int j = 0; j &lt; NUM_VECS_PER_THREAD; j++) {
+      // 计算key缓存指针
+      const cache_t* k_ptr = k_cache + physical_block_number * kv_block_stride
+                                     + kv_head_idx * kv_head_stride
+                                     + physical_block_offset * x;
+      // 加载key向量(支持FP8量化)
+      // ...
+    }
+  
+    // 计算点积
+    float qk = scale * Qk_dot&lt;scalar_t, THREAD_GROUP_SIZE&gt;::dot(q_vecs[thread_group_offset], k_vecs);
+  
+    // 添加ALiBi位置编码偏置
+    qk += (alibi_slope != 0) ? alibi_slope * (token_idx - context_len + 1) : 0;
+  
+    // 存储结果到共享内存
+    if (thread_group_offset == 0) {
+      const bool mask = token_idx &gt;= context_len;
+      logits[token_idx - start_token_idx] = mask ? 0.f : qk;
+      qk_max = mask ? qk_max : fmaxf(qk_max, qk);
+    }
+  }
+}
+</code></pre>
+<p>这部分是核心计算，每个线程组加载key并计算与query的点积，同时应用ALiBi位置编码。</p>
+<p>在这里读取 v_cache 并与logit 进行计算</p>
+<pre><code class="language-python">    const cache_t* v_ptr = v_cache + physical_block_number * kv_block_stride
+                                   + kv_head_idx * kv_head_stride;
+#pragma unroll
+    for (int i = 0; i &lt; NUM_ROWS_PER_THREAD; i++) {
+      const int row_idx = lane / NUM_V_VECS_PER_ROW + i * NUM_ROWS_PER_ITER;
+      if (row_idx &lt; HEAD_SIZE) {
+        const int offset = row_idx * BLOCK_SIZE + physical_block_offset;
+        V_vec v_vec;
+        if constexpr (IS_FP8_E5M2_KV_CACHE) {
+#ifdef ENABLE_FP8_E5M2
+          V_quant_vec v_quant_vec = *reinterpret_cast&lt;const V_quant_vec*&gt;(v_ptr + offset);
+          // Vector conversion from V_quant_vec to V_vec.
+          v_vec = fp8_e5m2_unscaled::vec_conversion&lt;V_vec, V_quant_vec&gt;(v_quant_vec);
+#else
+          assert(false);
+#endif
+        } else {
+          v_vec = *reinterpret_cast&lt;const V_vec*&gt;(v_ptr + offset);
+        }
+        if (block_idx == num_context_blocks - 1) {
+          // NOTE(woosuk): When v_vec contains the tokens that are out of the context,
+          // we should explicitly zero out the values since they may contain NaNs.
+          // See https://github.com/vllm-project/vllm/issues/641#issuecomment-1682544472
+          scalar_t* v_vec_ptr = reinterpret_cast&lt;scalar_t*&gt;(&amp;v_vec);
+#pragma unroll
+          for (int j = 0; j &lt; V_VEC_SIZE; j++) {
+            v_vec_ptr[j] = token_idx + j &lt; context_len ? v_vec_ptr[j] : zero_value;
+          }
+        }
+        accs[i] += dot(logits_vec, v_vec);
+      }
+    }
+  }
+</code></pre>
+<p>‍</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/megetron-server-accuracy/">
+              <h3 class="post-title">
+                下一篇：megetron server精度问题排查记录
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

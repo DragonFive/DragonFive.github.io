@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -102,7 +103,7 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>华为诺亚方舟提出了SFCTR <a href="https://arxiv.org/pdf/2104.08542.pdf">ScaleFreeCTR: a MixCache-based distributed training system for CTR</a>，scalefree 可能是因为数据规模对训练吞吐没有影响，后面实验部分有具体的数据。</p>
 <h1 id="一-动机与主要创新">一、动机与主要创新</h1>
 <p>现有的分布式CTR训练框架使用CPU内存来保存和更新参数，使用gpu 进行前向和反向计算（也有用CPU的），会有两个瓶颈</p>
@@ -160,11 +161,11 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 <li>Data-Loader, 提出虚拟sparse id op 来减少batch中重复的特征emb(unique?)</li>
 <li>Host-Manager, 使用混合缓存策略来减少host-gpu延迟，MixCache 的管理器部分在 CPU 的内存中，MixCache 的缓冲区在 GPU 的 HBM 中</li>
 <li>GPU-WORKER<br>
-<img src="https://DragonFive.github.io//post-images/1625142600332.png" alt="" loading="lazy"></li>
+<img src="https://DragonFive.github.io/post-images/1625142600332.png" alt="" loading="lazy"></li>
 </ul>
 <p><strong>3级pipeline</strong><br>
 把 Data-Loader,Host-Manager 和gpu worker 中，三阶段资源不同 Disk, CPU and GPU在三个不同的线程里完成</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625142730082.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625142730082.png" alt="" loading="lazy"></figure>
 <h2 id="1data-loader">（1）data loader</h2>
 <p>sparse id op 来减少batch中重复的特征emb，就是xdl中的unique。减少host-gpu 和gpu-gpu 的数据传输量。</p>
 <h2 id="2host-manager">（2）HOST-MANAGER</h2>
@@ -177,12 +178,12 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 <h2 id="3gpu-worker">（3）GPU-WORKER</h2>
 <p>不同的GPU保存了不同的参数，所以前向和反向的时候都需要同步。<br>
 前向传播，每个worekr从其它worker拿到batch所需要的参数，使用all-reduce 通信方式，一个gpu只需要跟另外两个gpu通信两次，首先通过gather_cache ，从cache buffer 中获得local common emb, 因为global_id 顺序一致，所以可以做all_reduce同步, 然后通过all_reduce 或者 global common emb，最后通过vis 算出来自己worker需要执行的batch emb<br>
-<img src="https://DragonFive.github.io//post-images/1625142803471.png" alt="" loading="lazy"></p>
+<img src="https://DragonFive.github.io/post-images/1625142803471.png" alt="" loading="lazy"></p>
 <p>梯度更新<br>
-<img src="https://DragonFive.github.io//post-images/1625142812224.png" alt="" loading="lazy"></p>
+<img src="https://DragonFive.github.io/post-images/1625142812224.png" alt="" loading="lazy"></p>
 <h1 id="四-sfctr-执行流程">四、SFCTR 执行流程</h1>
 <p>执行流程<br>
-<img src="https://DragonFive.github.io//post-images/1625142836322.png" alt="" loading="lazy"></p>
+<img src="https://DragonFive.github.io/post-images/1625142836322.png" alt="" loading="lazy"></p>
 <ul>
 <li>
 <p>2-3行是 data loader 部分，有个虚拟Sparse Id OP，对batch Sparse ID 去重后形成 global_id，对于batch 中每个实例有个virtual_id，可以找到其对应的global_id ，跟XDL 的unique 操作很像。使用global_id, 各个gpu在同步的时候数据量就会少很多。</p>
@@ -204,16 +205,16 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
 <h2 id="2框架对比实验">（2）框架对比实验</h2>
 <p>基于VSI OP，混合缓存机制，和三级pipeline，在10GB数据上SFCTR 在4机32卡上的吞吐量是psmxnet的1.6倍，hugectr的5.6倍，100GB 数据上是1.3倍和6.9倍<br>
 如果GPU卡只有8个，hugectr在100GB数据上根本无法训练</p>
-<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io//post-images/1625143001706.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://DragonFive.github.io/post-images/1625143001706.png" alt="" loading="lazy"></figure>
 <h2 id="3vsi-op">（3）vsi op</h2>
 <p>Host-gpu 数据传输量减少 94% ，g pu-gpu数据量减少88%</p>
-<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io//post-images/1625143009606.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://DragonFive.github.io/post-images/1625143009606.png" alt="" loading="lazy"></figure>
 <h2 id="4mixcache">（4）mixcache</h2>
 <p>Cache 大小对传数据的影响<br>
 2GB的cache可以把数据传输推迟到1000步之后<br>
 如果cache 大小比较大，batch中要传输的数据的比例就会小，因为可以存更多高频特征<br>
 12%（2GB）, 27%（0.5GB） and 29%（0.25GB）</p>
-<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io//post-images/1625143020154.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://DragonFive.github.io/post-images/1625143020154.png" alt="" loading="lazy"></figure>
 <h2 id="53级pipeline">（5）3级pipeline</h2>
 <p>GPU-Worker 训练时间在pipeline中占比最高<br>
 一个节点跑100GB数据，使用pipeline需要 75 s，不用pipeline就需要150s</p>
@@ -277,7 +278,7 @@ Ps server 保存并同步参数，worker执行前向和反向计算，</p>
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

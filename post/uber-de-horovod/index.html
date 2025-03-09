@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://DragonFive.github.io//favicon.ico?v=1740894216240">
-<link rel="stylesheet" href="https://DragonFive.github.io//styles/main.css">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
 
 
 
@@ -29,10 +30,10 @@
       <div class="site-header-container">
   <div class="site-header">
     <div class="left">
-      <a href="https://DragonFive.github.io/">
-        <img class="avatar" src="https://DragonFive.github.io//images/avatar.png?v=1740894216240" alt="" width="32px" height="32px">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
       </a>
-      <a href="https://DragonFive.github.io/">
+      <a href="https://DragonFive.github.io">
         <h1 class="site-title">dragon</h1>
       </a>
     </div>
@@ -102,12 +103,12 @@
               </span>
             
           </div>
-          <div class="post-content">
+          <div class="post-content" v-pre>
             <p>uber的Horovod 发表在 <a href="https://arxiv.org/abs/1802.05799">Horovod: fast and easy distributed deeplearninginTensorFlow</a>。</p>
 <p>horovod 提供的各种框架的支持可以让 horovod 比较好的在各个框架的基础上使用，他支持 tensorflow/keras/mxnet/pytorch，MPI 的实现也有很多，比如 OpenMPI 还有 Nvidia 的 NCCL，还有 facebook 的 gloo，他们都实现了一种并行计算的通信和计算方式。</p>
 <h1 id="用法">用法</h1>
 <p>horovod追求以尽可能小的代码侵入性。<br>
-<img src="https://DragonFive.github.io//post-images/1625217840093.png" alt="" loading="lazy"></p>
+<img src="https://DragonFive.github.io/post-images/1625217840093.png" alt="" loading="lazy"></p>
 <p>在用户已经构建的代码上，只需要插入三段很短的代码即可，Horovod易用性甚好。因为只要用户的代码没问题，Horovod这三段植入不会让你的程序break。</p>
 <ul>
 <li>
@@ -121,7 +122,7 @@
 </li>
 </ul>
 <p>hvd.init()这个函数。用户的这一句话，启动了Horovod的所有轮询进程及资源管理过程，下图描述了hvd.init()的宏观调用栈，核心就是background thread上启动的BackgroundThreadLoop()函数，它将常驻在进程中并不断轮询，直到程序完全结束。</p>
-<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io//post-images/1625218453054.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1625218453054.png" alt="" loading="lazy"></figure>
 <p>Horovod借助BackgroundThreadLoop()函数对RunLoopOnce()函数做无限循环调用。<br>
 若某份gradients已经产生，何时做AllReduce才能不死锁？显然，不可能见到一份gradients就马上做，因为这有概率会陷入死锁。正确答案应该是：</p>
 <blockquote>
@@ -170,7 +171,7 @@
       
     
   </div>
-  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
 </div>
 
 

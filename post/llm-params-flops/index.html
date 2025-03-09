@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>LLM 的参数量与计算量 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">LLM 的参数量与计算量</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2023-08-13</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian/">
+                    训练
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
+                    训练框架
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>‍</p>
+<p>‍</p>
+<p>结论来自：<a href="https://zhuanlan.zhihu.com/p/624740065">分析transformer模型的参数量、计算量、中间激活、KV cache</a></p>
+<p>‍</p>
+<p>从托马斯那里的一些takeaway</p>
+<p>‍</p>
+<p><img src="https://DragonFive.github.io/post-images/1741338851093.png" alt="" loading="lazy"><br>
+‍</p>
+<p>当 h &gt;&gt; L 时 前向计算量约为 24BLH^2  * layers，参数量约为 12H^2 * layers</p>
+<p>前向计算量/参数量 = 2</p>
+<p>后向计算量=2前向计算量</p>
+<p>所以总计算量  = 6 * 参数量，一次训练迭代中，对于每个token，每个模型参数，需要进行 2∗3=6 次浮点数运算。</p>
+<p>所以我们知道了参数量，知道了总的token的 token 数，就可以算出训练完一个 epoch 需要的 flops，这样除以 gpu 的可达算力，就可以得到训练时间</p>
+<p>一般来讲，<strong>GPU利用率一般在 0.3∼0.55 之间</strong>。token数最好为 模型参数的10倍到100倍。</p>
+<p>对于每个token，每个模型参数，进行2次浮点数计算。使用激活重计算技术来减少中间激活显存（下文会详细介绍）需要进行一次额外的前向传递，因此前向传递 + 后向传递 + 激活重计算的系数=1+2+1=4。使用<strong>激活重计算</strong>的一次训练迭代中，对于每个token，每个模型参数，需要进行 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2</mn><mo>∗</mo><mn>4</mn><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">2*4=8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">8</span></span></span></span></p>
+<p><strong>在给定训练tokens数、硬件环境配置的情况下，训练transformer模型的计算时间为</strong>：</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext> 训练时间 </mtext><mo>≈</mo><mfrac><mrow><mn>8</mn><mo>×</mo><mtext> tokens数 </mtext><mo>×</mo><mtext> 模型参数量 </mtext></mrow><mrow><mi>G</mi><mi>P</mi><mi>U</mi><mtext> 数 </mtext><mo>×</mo><mi>G</mi><mi>P</mi><mi>U</mi><mtext> 峰值 </mtext><mi>f</mi><mi>l</mi><mi>o</mi><mi>p</mi><mi>s</mi><mo>×</mo><mi>G</mi><mi>P</mi><mi>U</mi><mtext> 利用率 </mtext></mrow></mfrac></mrow><annotation encoding="application/x-tex">\text { 训练时间 } \approx \frac{8 \times \text { tokens数 } \times \text { 模型参数量 }}{G P U \text { 数 } \times G P U \text { 峰值 } f l o p s \times G P U \text { 利用率 }}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">训练时间</span><span class="mord"> </span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.3612159999999998em;vertical-align:-0.481108em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">G</span><span class="mord mathdefault mtight" style="margin-right:0.13889em;">P</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord text mtight"><span class="mord mtight"> </span><span class="mord cjk_fallback mtight">数</span><span class="mord mtight"> </span></span><span class="mbin mtight">×</span><span class="mord mathdefault mtight">G</span><span class="mord mathdefault mtight" style="margin-right:0.13889em;">P</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord text mtight"><span class="mord mtight"> </span><span class="mord cjk_fallback mtight">峰值</span><span class="mord mtight"> </span></span><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight">p</span><span class="mord mathdefault mtight">s</span><span class="mbin mtight">×</span><span class="mord mathdefault mtight">G</span><span class="mord mathdefault mtight" style="margin-right:0.13889em;">P</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">U</span><span class="mord text mtight"><span class="mord mtight"> </span><span class="mord cjk_fallback mtight">利用率</span><span class="mord mtight"> </span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">8</span><span class="mbin mtight">×</span><span class="mord text mtight"><span class="mord mtight"> tokens</span><span class="mord cjk_fallback mtight">数</span><span class="mord mtight"> </span></span><span class="mbin mtight">×</span><span class="mord text mtight"><span class="mord mtight"> </span><span class="mord cjk_fallback mtight">模型参数量</span><span class="mord mtight"> </span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+<p>‍</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/fp16-train-problem/">
+              <h3 class="post-title">
+                下一篇：fp16训练的问题
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>fp16训练的问题 | dragon</title>
+<meta name="description" content="邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://DragonFive.github.io/favicon.ico?v=1741502035297">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://DragonFive.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://DragonFive.github.io">
+        <img class="avatar" src="https://DragonFive.github.io/images/avatar.png?v=1741502035297" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://DragonFive.github.io">
+        <h1 class="site-title">dragon</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">fp16训练的问题</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2022-07-16</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian/">
+                    训练
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://DragonFive.github.io/tag/xun-lian-kuang-jia/">
+                    训练框架
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>‍</p>
+<p>float16的组成分为了三个部分：</p>
+<ol>
+<li>最高位表示符号位；</li>
+<li>有5位表示exponent位;</li>
+<li>有10位表示fraction位;</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="https://DragonFive.github.io/post-images/1741334892432.png" alt="" loading="lazy"></figure>
+<h2 id="fp16bf16-在计算中的精度问题">FP16/BF16 在计算中的精度问题</h2>
+<h3 id="141-溢出问题">1.4.1 溢出问题</h3>
+<ol>
+<li>FP16 的可表示范围较 FP32 等更小，容易触发上、下溢出问题。</li>
+</ol>
+<p>关于 FP16 的上下溢出可以参考图 1-3。对于绝对值大于 65504 的数，触发上溢出会舍入到±INF；对于绝对值小于的数，触发下溢出舍入到 0，具体示例可参考下表。</p>
+<p>‍</p>
+<p>​<img src="https://www.paddlepaddle.org.cn/documentation/docs/zh/_images/overflow.png" alt="../../_images/overflow.png" loading="lazy"></p>
+<p>​</p>
+<ol>
+<li>BF16 则因为阶码同 FP32 等长，因此并不容易出现上下溢出问题。</li>
+</ol>
+<h3 id="142-舍入问题">1.4.2 舍入问题</h3>
+<ol>
+<li>
+<p>FP16 格式的浮点数最多只能表示 3 位有效数字，所以各浮点区间的固定间隔都是 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>a</mi><mi>l</mi><mo>=</mo><mi>M</mi><mi>i</mi><mi>n</mi><mi mathvariant="normal">∗</mi><msup><mn>2</mn><mrow><mi mathvariant="normal">−</mi><mn>10</mn></mrow></msup></mrow><annotation encoding="application/x-tex">Interval=Min∗2^{−10}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mord">∗</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span><span class="mord mtight">0</span></span></span></span></span></span></span></span></span></span></span></span>，也就是区间最小值的1/1024。</p>
+<ol>
+<li>
+<p>因此当 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi mathvariant="normal">累</mi><mi mathvariant="normal">加</mi><mi mathvariant="normal">值</mi></mrow><mrow><mi mathvariant="normal">加</mi><mi mathvariant="normal">数</mi></mrow></mfrac><mo>&gt;</mo><mn>211</mn></mrow><annotation encoding="application/x-tex">\frac{累加值}{加数}&gt;211</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8841em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.394em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord cjk_fallback mtight">加</span><span class="mord cjk_fallback mtight">数</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord cjk_fallback mtight">累</span><span class="mord cjk_fallback mtight">加</span><span class="mord cjk_fallback mtight">值</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span><span class="mord">1</span><span class="mord">1</span></span></span></span> 时，计算结果超过了 3 位有效数字；这会造成累加值最终无法被有效表示，累加结果会被舍入到累加值本身。</p>
+<ol>
+<li>数值:1+0.0001=1.0001</li>
+<li>FP16: 1+0.0001=1.0001</li>
+</ol>
+</li>
+<li>
+<p>FP32 格式拥有 7 位有效数字的表达效果，因此当 FP32 格式向 FP16 格式转化时，也会出现精度的舍入问题。</p>
+<ol>
+<li>FP32：0.1234567</li>
+<li>FP16：0.1235</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>BF16 格式的浮点数，在各个区间内的固定间隔是 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>a</mi><mi>l</mi><mo>=</mo><mi>M</mi><mi>i</mi><mi>n</mi><mo>∗</mo><msup><mn>2</mn><mrow><mo>−</mo><mn>7</mn></mrow></msup></mrow><annotation encoding="application/x-tex">Interval=Min*2^{-7}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">7</span></span></span></span></span></span></span></span></span></span></span></span>​ ，故 BF16 相较于 FP16 的精度更低，也更容易出现 FP16 中所阐述的计算舍入和转换精度丢失的问题。</p>
+</li>
+</ol>
+<p>‍</p>
+<p>下表摘自 <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format">wikipedia fp16</a>，表示fp16不同区间的间隔，可见fp16的加法如果直接往param上加，会有很多失效。</p>
+<h3 id="precision-limitations">Precision limitations</h3>
+<table>
+<thead>
+<tr>
+<th>Min</th>
+<th>Max</th>
+<th>interval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>2<sup>−13</sup></td>
+<td>2<sup>−24</sup></td>
+</tr>
+<tr>
+<td>2<sup>−13</sup></td>
+<td>2<sup>−12</sup></td>
+<td>2<sup>−23</sup></td>
+</tr>
+<tr>
+<td>2<sup>−12</sup></td>
+<td>2<sup>−11</sup></td>
+<td>2<sup>−22</sup></td>
+</tr>
+<tr>
+<td>2<sup>−11</sup></td>
+<td>2<sup>−10</sup></td>
+<td>2<sup>−21</sup></td>
+</tr>
+<tr>
+<td>2<sup>−10</sup></td>
+<td>2<sup>−9</sup></td>
+<td>2<sup>−20</sup></td>
+</tr>
+<tr>
+<td>2<sup>−9</sup></td>
+<td>2<sup>−8</sup></td>
+<td>2<sup>−19</sup></td>
+</tr>
+<tr>
+<td>2<sup>−8</sup></td>
+<td>2<sup>−7</sup></td>
+<td>2<sup>−18</sup></td>
+</tr>
+<tr>
+<td>2<sup>−7</sup></td>
+<td>2<sup>−6</sup></td>
+<td>2<sup>−17</sup></td>
+</tr>
+<tr>
+<td>2<sup>−6</sup></td>
+<td>2<sup>−5</sup></td>
+<td>2<sup>−16</sup></td>
+</tr>
+<tr>
+<td>2<sup>−5</sup></td>
+<td>2<sup>−4</sup></td>
+<td>2<sup>−15</sup></td>
+</tr>
+<tr>
+<td>2<sup>−4</sup></td>
+<td>⁠1/8⁠</td>
+<td>2<sup>−14</sup></td>
+</tr>
+<tr>
+<td>⁠1/8⁠</td>
+<td>⁠1/4⁠</td>
+<td>2<sup>−13</sup></td>
+</tr>
+<tr>
+<td>⁠1/4⁠</td>
+<td>⁠1/2⁠</td>
+<td>2<sup>−12</sup></td>
+</tr>
+<tr>
+<td>⁠1/2⁠</td>
+<td>1</td>
+<td>2<sup>−11</sup></td>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>2<sup>−10</sup></td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>2<sup>−9</sup></td>
+</tr>
+<tr>
+<td>4</td>
+<td>8</td>
+<td>2<sup>−8</sup></td>
+</tr>
+<tr>
+<td>8</td>
+<td>16</td>
+<td>2<sup>−7</sup></td>
+</tr>
+<tr>
+<td>16</td>
+<td>32</td>
+<td>2<sup>−6</sup></td>
+</tr>
+<tr>
+<td>32</td>
+<td>64</td>
+<td>2<sup>−5</sup></td>
+</tr>
+<tr>
+<td>64</td>
+<td>128</td>
+<td>2<sup>−4</sup></td>
+</tr>
+<tr>
+<td>128</td>
+<td>256</td>
+<td>⁠1/8⁠</td>
+</tr>
+<tr>
+<td>256</td>
+<td>512</td>
+<td>⁠1/4⁠</td>
+</tr>
+<tr>
+<td>512</td>
+<td>1024</td>
+<td>⁠1/2⁠</td>
+</tr>
+<tr>
+<td>1024</td>
+<td>2048</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2048</td>
+<td>4096</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4096</td>
+<td>8192</td>
+<td>4</td>
+</tr>
+<tr>
+<td>8192</td>
+<td>16384</td>
+<td>8</td>
+</tr>
+<tr>
+<td>16384</td>
+<td>32768</td>
+<td>16</td>
+</tr>
+<tr>
+<td>32768</td>
+<td>65520</td>
+<td>32</td>
+</tr>
+<tr>
+<td>65520</td>
+<td>∞</td>
+<td>∞</td>
+</tr>
+</tbody>
+</table>
+<p>‍</p>
+<h2 id="解决方法">解决方法</h2>
+<h3 id="溢出问题">溢出问题</h3>
+<p><strong>损失放大（Loss Scaling）</strong>  即使用了混合精度训练，还是会存在无法收敛的情况，原因是激活梯度的值太小，造成了下溢出（Underflow）。损失放大的思路是：</p>
+<ol>
+<li>反向传播前，将损失变化（dLoss）手动增大 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span> 倍，因此反向传播时得到的中间变量（激活函数梯度）则不会溢出；</li>
+<li>反向传播后，将权重梯度缩 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.849108em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span> 倍，恢复正常值。</li>
+</ol>
+<p>‍</p>
+<p>混合精度训练并不意味着所有的模型参数都用fp16训练，例如做layernorm、batchnorm时的参数一般就保持fp32的形式，Loss也保持fp32的形式，主要原因还是这些数值的精度对模型训练过程影响较大，同时它们占据的存储也不大，因此维持原始形式，越高精越好。</p>
+<p>loss scale 有两种方式</p>
+<ul>
+<li>常量损失放大</li>
+<li>动量损失放大</li>
+</ul>
+<p>‍</p>
+<p>上溢出可以通过 clip gradient 解决</p>
+<p>‍</p>
+<p>‍</p>
+<p>‍</p>
+<h3 id="舍入误差">舍入误差</h3>
+<p>可以在参数更新时将 fp16 转成fp32，weights, activations, gradients 等数据在训练中都利用FP16来存储，同时拷贝一份FP32的weights，用于更新。 参考论文：<a href="https://arxiv.org/pdf/1710.03740">MIXED PRECISION TRAINING</a></p>
+<p>‍<img src="https://DragonFive.github.io/post-images/1741334933305.png" alt="" loading="lazy"></p>
+<p>‍</p>
+<p>参考资料：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/79887894">【PyTorch】唯快不破：基于Apex的混合精度加速</a></p>
+<p><a href="https://www.paddlepaddle.org.cn/documentation/docs/zh/dev_guides/amp_precision/amp_op_dev_guide_cn.html">paddle低精度算子支持开发规范</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/103685761">浅谈混合精度训练</a></p>
+<p>‍</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://DragonFive.github.io/post/bert-jie-gou/">
+              <h3 class="post-title">
+                下一篇：Bert 结构
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">邮箱(base64)：MTY5MDMwMjk2M0BxcS5jb20=
+</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/DragonFive" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://DragonFive.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
